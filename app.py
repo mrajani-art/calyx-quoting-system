@@ -228,15 +228,22 @@ def _generate_demo_data() -> pd.DataFrame:
 # ═══════════════════════════════════════════════════════════════════
 # HELPER: Render prediction results
 # ═══════════════════════════════════════════════════════════════════
-def _render_results(result: dict):
-    """Render prediction results."""
+def _render_results(result: dict, margin_pct: int = 35):
+    """Render prediction results with margin-adjusted sell prices."""
     st.markdown("---")
-    st.markdown("## 📋 Quote Results")
+
+    # Calculate margin multiplier: Sell = Cost / (1 - margin/100)
+    if margin_pct >= 100:
+        margin_pct = 99
+    margin_multiplier = 1.0 / (1.0 - margin_pct / 100.0)
+
+    # Header
+    st.markdown(f"## 📋 Quote Results — {margin_pct}% Margin")
 
     # Header metrics
     preds = result["predictions"]
     if preds:
-        mcols = st.columns(4)
+        mcols = st.columns(5)
         with mcols[0]:
             vendor_label = "Dazpak" if result["vendor"] == "dazpak" else "Ross"
             st.markdown(f"""
@@ -251,13 +258,20 @@ def _render_results(result: dict):
                 <div class="value">{result['print_method'].title()}</div>
             </div>""", unsafe_allow_html=True)
         with mcols[2]:
-            lowest = min(p["unit_price"] for p in preds)
+            lowest_cost = min(p["unit_price"] for p in preds)
             st.markdown(f"""
             <div class="metric-card">
-                <div class="label">Best Unit Price</div>
-                <div class="value">{format_currency(lowest, 5)}</div>
+                <div class="label">Best Cost</div>
+                <div class="value">{format_currency(lowest_cost, 5)}</div>
             </div>""", unsafe_allow_html=True)
         with mcols[3]:
+            lowest_sell = lowest_cost * margin_multiplier
+            st.markdown(f"""
+            <div class="metric-card">
+                <div class="label">Best Sell Price</div>
+                <div class="value" style="color:#2d6a4f;">{format_currency(lowest_sell, 5)}</div>
+            </div>""", unsafe_allow_html=True)
+        with mcols[4]:
             mape = result.get("model_metrics", {}).get("mape", "—")
             mape_str = f"{mape:.1f}%" if isinstance(mape, (int, float)) else mape
             st.markdown(f"""
@@ -270,10 +284,25 @@ def _render_results(result: dict):
     for w in result.get("warnings", []):
         st.warning(w)
 
-    # Pricing table
+    # Pricing table with both cost and sell columns
     st.markdown("### Pricing by Quantity Tier")
-    price_df = predictions_to_dataframe(preds)
-    if not price_df.empty:
+    if preds:
+        import pandas as pd
+        rows = []
+        for p in preds:
+            cost = p["unit_price"]
+            sell = cost * margin_multiplier
+            total_cost = p["total_price"]
+            total_sell = total_cost * margin_multiplier
+            rows.append({
+                "Quantity": f"{p['quantity']:,}",
+                "Unit Cost": format_currency(cost, 5),
+                "Unit Sell Price": format_currency(sell, 5),
+                "Total Cost": format_currency(total_cost, 2),
+                "Total Sell Price": format_currency(total_sell, 2),
+                "90% CI Range": f"{format_currency(p['lower_bound'], 5)} – {format_currency(p['upper_bound'], 5)}",
+            })
+        price_df = pd.DataFrame(rows)
         st.dataframe(price_df, use_container_width=True, hide_index=True)
 
     # Charts
@@ -284,27 +313,36 @@ def _render_results(result: dict):
             st.markdown("### Unit Price vs Quantity")
             fig = go.Figure()
             qtys = [p["quantity"] for p in preds]
-            prices = [p["unit_price"] for p in preds]
+            costs = [p["unit_price"] for p in preds]
+            sells = [p["unit_price"] * margin_multiplier for p in preds]
             lowers = [p["lower_bound"] for p in preds]
             uppers = [p["upper_bound"] for p in preds]
 
-            # Confidence band
+            # Confidence band (on cost)
             fig.add_trace(go.Scatter(
                 x=qtys + qtys[::-1],
                 y=uppers + lowers[::-1],
                 fill="toself",
-                fillcolor="rgba(45, 106, 79, 0.12)",
+                fillcolor="rgba(45, 106, 79, 0.08)",
                 line=dict(color="rgba(0,0,0,0)"),
-                name="90% CI",
+                name="90% CI (Cost)",
                 showlegend=True,
             ))
-            # Point prediction line
+            # Cost line
             fig.add_trace(go.Scatter(
-                x=qtys, y=prices,
+                x=qtys, y=costs,
+                mode="lines+markers",
+                line=dict(color="#9e9e9e", width=2, dash="dot"),
+                marker=dict(size=7, color="#9e9e9e"),
+                name="Cost",
+            ))
+            # Sell price line
+            fig.add_trace(go.Scatter(
+                x=qtys, y=sells,
                 mode="lines+markers",
                 line=dict(color="#2d6a4f", width=3),
                 marker=dict(size=10, color="#1a472a"),
-                name="Predicted Price",
+                name=f"Sell Price ({margin_pct}% margin)",
             ))
             fig.update_layout(
                 xaxis_title="Quantity",
@@ -463,6 +501,27 @@ if page == "🏷️ Quote Builder":
 
         st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
+        # ── Margin Setting ───────────────────────────────────────
+        st.markdown("### 💰 Margin")
+        margin_cols = st.columns([2, 1])
+        with margin_cols[0]:
+            margin_pct = st.slider(
+                "Margin %",
+                min_value=0,
+                max_value=100,
+                value=35,
+                step=5,
+                help="Markup applied on top of cost to get the sell price. Sell Price = Cost ÷ (1 - Margin%/100)",
+            )
+        with margin_cols[1]:
+            st.markdown(f"""
+            <div class="metric-card" style="margin-top:0.5rem;">
+                <div class="label">Margin</div>
+                <div class="value">{margin_pct}%</div>
+            </div>""", unsafe_allow_html=True)
+
+        st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+
         # ── Generate Quote Button ───────────────────────────────────
         generate = st.button("🔮 Generate Quote", type="primary", use_container_width=True)
 
@@ -502,7 +561,7 @@ if page == "🏷️ Quote Builder":
                     st.error(result["error"])
                     st.info("💡 Go to **Model Manager** to train models with your historical data first.")
                 else:
-                    _render_results(result)
+                    _render_results(result, margin_pct)
             else:
                 st.error("Models not loaded. Train models first via the Model Manager page.")
 
@@ -510,7 +569,7 @@ if page == "🏷️ Quote Builder":
     elif st.session_state.last_result and not generate:
         st.markdown("---")
         st.caption("Showing previous quote results:")
-        _render_results(st.session_state.last_result)
+        _render_results(st.session_state.last_result, margin_pct)
 
 
 
