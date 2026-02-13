@@ -20,19 +20,19 @@ def calculate_print_width(height: float, gusset: float = 0) -> float:
 
 
 def check_ross_eligibility(height: float, gusset: float = 0) -> tuple[bool, str]:
-    """Ross only accepts print width ≥ 12"."""
+    """Ross only accepts print width > 12"."""
     pw = calculate_print_width(height, gusset)
-    if pw >= ROSS_MIN_PRINT_WIDTH_INCHES:
-        return True, f"Print width {pw:.2f}\" ≥ 12\" — eligible for Ross"
-    return False, f"Print width {pw:.2f}\" < 12\" — does NOT meet Ross minimum"
+    if pw > ROSS_MIN_PRINT_WIDTH_INCHES:
+        return True, f"Print width {pw:.2f}\" > 12\" — eligible for Ross"
+    return False, f"Print width {pw:.2f}\" ≤ 12\" — does NOT meet Ross minimum"
 
 
 def check_internal_eligibility(height: float, gusset: float = 0) -> tuple[bool, str]:
-    """Internal (HP 6900) handles web width < 12"."""
+    """Internal (HP 6900) handles web width ≤ 12"."""
     pw = calculate_print_width(height, gusset)
-    if pw < INTERNAL_MAX_WEB_WIDTH:
-        return True, f"Print width {pw:.2f}\" < 12\" — eligible for Internal (HP 6900)"
-    return False, f"Print width {pw:.2f}\" ≥ 12\" — too wide for Internal"
+    if pw <= INTERNAL_MAX_WEB_WIDTH:
+        return True, f"Print width {pw:.2f}\" ≤ 12\" — eligible for Internal (HP 6900)"
+    return False, f"Print width {pw:.2f}\" > 12\" — too wide for Internal"
 
 
 def check_dazpak_eligibility(quantities: list[int]) -> tuple[bool, str]:
@@ -75,12 +75,12 @@ def route_vendor(print_method: str, height: float, gusset: float,
 
     elif print_method.lower() == "digital":
         # Digital routing: web width determines Internal vs Ross
-        if pw < INTERNAL_MAX_WEB_WIDTH:
+        if pw <= INTERNAL_MAX_WEB_WIDTH:
             vendor = "internal"
-            reason = f"Digital + print width {pw:.2f}\" < 12\" → Internal (HP 6900)"
+            reason = f"Digital + print width {pw:.2f}\" ≤ 12\" → Internal (HP 6900)"
         else:
             vendor = "ross"
-            reason = f"Digital + print width {pw:.2f}\" ≥ 12\" → Ross"
+            reason = f"Digital + print width {pw:.2f}\" > 12\" → Ross"
 
     else:
         # Auto-route
@@ -89,10 +89,10 @@ def route_vendor(print_method: str, height: float, gusset: float,
             reason = f"Auto: high volume ({max(quantities):,}) → Dazpak Flexographic"
         elif internal_ok:
             vendor = "internal"
-            reason = f"Auto: print width {pw:.1f}\" < 12\" → Internal (HP 6900)"
+            reason = f"Auto: print width {pw:.1f}\" ≤ 12\" → Internal (HP 6900)"
         elif ross_ok:
             vendor = "ross"
-            reason = f"Auto: print width {pw:.1f}\" ≥ 12\" → Ross Digital"
+            reason = f"Auto: print width {pw:.1f}\" > 12\" → Ross Digital"
         else:
             vendor = "internal"
             reason = "Auto: defaulting to Internal for smaller runs"
