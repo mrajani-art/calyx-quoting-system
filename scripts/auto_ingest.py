@@ -253,7 +253,7 @@ def main():
 
     # Initialize services
     drive_service = get_google_drive_service()
-    supabase = get_supabase_client()
+    supabase = get_client()
 
     results = {}
 
