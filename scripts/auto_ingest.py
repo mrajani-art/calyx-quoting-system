@@ -17,7 +17,7 @@ from config.settings import (
     SUPABASE_URL, SUPABASE_KEY,
     DAZPAK_FOLDER_ID, ROSS_FOLDER_ID
 )
-from src.data.supabase_client import get_supabase_client
+from src.data.supabase_client import get_client
 from src.data.pdf_extraction import extract_dazpak_pdf, extract_ross_pdf
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
