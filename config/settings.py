@@ -23,16 +23,19 @@ SPREADSHEET_ID = os.getenv("SPREADSHEET_ID", "1hXfQiACUAkFK04lTdj5NFx1rxE8A7jcSq
 SPREADSHEET_GID = os.getenv("SPREADSHEET_GID", "1053012450")
 DAZPAK_FOLDER_ID = os.getenv("DAZPAK_FOLDER_ID", "12A8sPC0mL4XanLAgfcT_mTQzmG6hItpl")
 ROSS_FOLDER_ID = os.getenv("ROSS_FOLDER_ID", "1SxqbXb7Xn7Cw9xsEVNp2QWiWrOdqFXUc")
+INTERNAL_SHEET_ID = os.getenv("INTERNAL_SHEET_ID", "1L1HRn7WpTnGvZwRIQnppNlMxQdmnOxxUcpbU2r25Bkk")
 
 # ── Vendor Business Rules ──────────────────────────────────────────
 # Dazpak: Flexographic, MOQ 35,000-50,000 per SKU (from PDF: "35,000 MOQ per SKU")
 DAZPAK_MIN_ORDER_QTY = 35_000
 # Ross: Digital, only accepts print width > 12" (Height × 2 + Gusset)
 ROSS_MIN_PRINT_WIDTH_INCHES = 12.0
+# Internal: Digital (HP 6900), web width < 12" (Height × 2 + Gusset)
+INTERNAL_MAX_WEB_WIDTH = 12.0
 
 # ── Specification Options (from actual spreadsheet data) ───────────
 # Column A: Vendor
-VENDORS = ["Dazpak", "Ross"]
+VENDORS = ["Dazpak", "Ross", "Internal"]
 
 # Column E: Substrate — observed values from spreadsheet
 SUBSTRATE_TYPES = [
@@ -70,7 +73,7 @@ FINISH_OPTIONS = [
     "Matte Lam",          # Abbreviation seen in data
     "N/A",
 ]
-FINISH_UI_OPTIONS = ["Matte Laminate", "Soft Touch Laminate", "None"]
+FINISH_UI_OPTIONS = ["Matte Laminate", "Soft Touch Laminate", "Gloss Laminate", "None"]
 
 # Column G: Embellishment
 EMBELLISHMENT_OPTIONS = ["N/A", "NA", "None"]
@@ -85,16 +88,17 @@ SEAL_TYPE_OPTIONS = [
     "3 Side Seal",
     "3-Side Seal",
 ]
-SEAL_TYPE_UI_OPTIONS = ["Stand Up", "3 Side Seal"]
+SEAL_TYPE_UI_OPTIONS = ["Stand Up", "3 Side Seal", "2 Side Seal", "3 Side Top Fill"]
 
 # Column J: Gusset Details
 GUSSET_OPTIONS = [
     "Flat Bottom / Side Gusset",
     "K Seal",
     "K Seal & Skirt Seal",
+    "Plow Bottom",
     "N/A",
 ]
-GUSSET_UI_OPTIONS = ["Flat Bottom / Side Gusset", "K Seal", "K Seal & Skirt Seal", "None"]
+GUSSET_UI_OPTIONS = ["Flat Bottom / Side Gusset", "K Seal", "K Seal & Skirt Seal", "Plow Bottom", "None"]
 
 # Column K: Zipper
 ZIPPER_OPTIONS = [
@@ -102,8 +106,11 @@ ZIPPER_OPTIONS = [
     "Standard CR",        # Standard Child-Resistant
     "No Zipper",
     "Presto CR Zipper",   # From Ross PDF
+    "Single Profile Non-CR",  # From internal Cerm data
+    "Double Profile Non-CR",  # From internal Cerm data
 ]
-ZIPPER_UI_OPTIONS = ["CR Zipper", "Standard CR", "Presto CR Zipper", "No Zipper"]
+ZIPPER_UI_OPTIONS = ["CR Zipper", "Standard CR", "Presto CR Zipper",
+                     "Single Profile Non-CR", "Double Profile Non-CR", "No Zipper"]
 
 # Column L: Tear Notch
 TEAR_NOTCH_OPTIONS = ["Standard", "N/A", "2 - Tear Notch"]
@@ -148,6 +155,8 @@ ROSS_MATERIAL_STOCKS = {
 DAZPAK_DEFAULT_TIERS = [75_000, 100_000, 200_000, 350_000, 500_000]
 # Ross typical tiers (from PDF): 4K, 5K, 6K, 10K
 ROSS_DEFAULT_TIERS = [4_000, 5_000, 6_000, 10_000]
+# Internal typical tiers (from Cerm data): 500-250K range
+INTERNAL_DEFAULT_TIERS = [500, 1_000, 5_000, 10_000, 25_000, 50_000]
 # User-configurable tiers (6 tiers)
 DEFAULT_QTY_TIERS = [1_000, 5_000, 10_000, 25_000, 50_000, 100_000]
 
