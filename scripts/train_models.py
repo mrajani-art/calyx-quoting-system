@@ -20,21 +20,22 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s | %(message)s")
 
 
 def generate_demo_training_data(n: int = 300) -> pd.DataFrame:
-    """Generate realistic synthetic training data for both vendors."""
+    """Generate realistic synthetic training data for all three vendors."""
     np.random.seed(42)
 
     rows = []
     for _ in range(n):
-        vendor = np.random.choice(["dazpak", "ross"], p=[0.55, 0.45])
+        vendor = np.random.choice(["dazpak", "ross", "internal"], p=[0.35, 0.25, 0.40])
         w = round(np.random.uniform(3, 8), 3)
         h = round(np.random.uniform(4, 12), 3)
         g = round(np.random.choice([0, 1.5, 2, 2.5, 3]), 2)
         substrate = np.random.choice(["MET_PET", "CLR_PET", "WHT_MET_PET", "HB_CLR_PET"])
-        finish = np.random.choice(["Matte Laminate", "Soft Touch Laminate", "None"])
+        finish = np.random.choice(["Matte Laminate", "Soft Touch Laminate", "Gloss Laminate", "None"])
         fill_style = np.random.choice(["Top", "Bottom"])
-        seal_type = np.random.choice(["Stand Up", "3 Side Seal"])
-        gusset_type = np.random.choice(["None", "K Seal", "K Seal & Skirt Seal", "Flat Bottom / Side Gusset"])
-        zipper = np.random.choice(["CR Zipper", "Standard CR", "Presto CR Zipper", "No Zipper"])
+        seal_type = np.random.choice(["Stand Up", "3 Side Seal", "2 Side Seal"])
+        gusset_type = np.random.choice(["None", "K Seal", "K Seal & Skirt Seal", "Plow Bottom", "Flat Bottom / Side Gusset"])
+        zipper = np.random.choice(["CR Zipper", "Standard CR", "Presto CR Zipper",
+                                    "Single Profile Non-CR", "Double Profile Non-CR", "No Zipper"])
         tear_notch = np.random.choice(["None", "Standard", "Double (2)"])
         hole_punch = np.random.choice(["None", "Standard"])
         corner = np.random.choice(["Straight", "Rounded"])
@@ -43,17 +44,26 @@ def generate_demo_training_data(n: int = 300) -> pd.DataFrame:
         # Generate multiple quantity tiers per quote
         if vendor == "dazpak":
             qtys = [75000, 100000, 200000, 350000, 500000]
-        else:
+        elif vendor == "ross":
             qtys = [4000, 5000, 6000, 10000]
+        else:  # internal
+            qtys = [500, 1000, 5000, 10000, 25000, 50000]
 
         for qty in qtys:
             # Pricing model: base + area effect + volume discount + feature premiums
-            base = 0.10 if vendor == "dazpak" else 0.40
+            if vendor == "dazpak":
+                base = 0.10
+            elif vendor == "ross":
+                base = 0.40
+            else:  # internal — between dazpak and ross
+                base = 0.25
             area_effect = (w * h) * 0.0025
             volume_discount = -np.log10(qty) * 0.035
             substrate_map = {"CLR_PET": 0, "MET_PET": 0.01, "WHT_MET_PET": 0.02, "HB_CLR_PET": 0.04}
-            finish_map = {"None": 0, "Matte Laminate": 0.008, "Soft Touch Laminate": 0.015}
-            zipper_map = {"No Zipper": 0, "Standard CR": 0.01, "CR Zipper": 0.02, "Presto CR Zipper": 0.025}
+            finish_map = {"None": 0, "Matte Laminate": 0.008, "Gloss Laminate": 0.006, "Soft Touch Laminate": 0.015}
+            zipper_map = {"No Zipper": 0, "Single Profile Non-CR": 0.005,
+                          "Double Profile Non-CR": 0.008, "Standard CR": 0.01,
+                          "CR Zipper": 0.02, "Presto CR Zipper": 0.025}
             gusset_effect = g * 0.003
             embellish_map = {"None": 0, "Hot Stamp (Gold)": 0.03, "Hot Stamp (Silver)": 0.03, "Embossing": 0.02, "Spot UV": 0.015}
 
