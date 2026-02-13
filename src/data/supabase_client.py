@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS quotes (
     created_at      TIMESTAMPTZ DEFAULT now(),
 
     -- Source tracking
-    vendor          TEXT NOT NULL CHECK (vendor IN ('dazpak','ross')),
+    vendor          TEXT NOT NULL CHECK (vendor IN ('dazpak','ross','internal')),
     print_method    TEXT NOT NULL CHECK (print_method IN ('digital','flexographic')),
     fl_number       TEXT,                 -- e.g. FL-DL-1495, FL-CQ-0855
     quote_number    TEXT,                 -- Dazpak Quote # or Ross Estimate No.
