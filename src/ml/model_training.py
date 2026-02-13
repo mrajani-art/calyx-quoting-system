@@ -37,11 +37,14 @@ logger = logging.getLogger(__name__)
 class QuoteModelTrainer:
     """Trains and evaluates quote-prediction models per vendor."""
 
-    def __init__(self, vendor: str):
+    def __init__(self, vendor: str, use_log_target: bool = False):
         """
-        vendor: 'dazpak' or 'ross'
+        vendor: 'dazpak', 'ross', or 'internal'
+        use_log_target: If True, train on log(price) for better fit on
+                        data with wide price ranges (e.g., internal estimates)
         """
         self.vendor = vendor
+        self.use_log_target = use_log_target
         self.preprocessor = build_preprocessor()
         self.model_point = None       # Main prediction model (squared error)
         self.model_lower = None       # 10th percentile
@@ -59,7 +62,8 @@ class QuoteModelTrainer:
 
         Returns dict of performance metrics.
         """
-        logger.info(f"Training {self.vendor} model on {len(df)} samples...")
+        logger.info(f"Training {self.vendor} model on {len(df)} samples "
+                     f"(log_target={self.use_log_target})...")
 
         # Prepare features
         df = prepare_features(df)
@@ -75,7 +79,13 @@ class QuoteModelTrainer:
                              "adder_per_m_imps", "adder_per_msi",
                              "adder_per_ea_imp"],
                     errors="ignore")
-        y = df[target_col].values
+        y_raw = df[target_col].values
+
+        # Log-transform target if configured
+        if self.use_log_target:
+            y = np.log(np.clip(y_raw, 1e-6, None))
+        else:
+            y = y_raw
 
         # Fit preprocessor and transform
         self.preprocessor.fit(X)
@@ -86,6 +96,11 @@ class QuoteModelTrainer:
         X_train, X_test, y_train, y_test = train_test_split(
             X_transformed, y, test_size=TEST_SIZE, random_state=RANDOM_STATE
         )
+        # Keep raw y_test for evaluation in original scale
+        if self.use_log_target:
+            _, _, y_raw_train, y_raw_test = train_test_split(
+                X_transformed, y_raw, test_size=TEST_SIZE, random_state=RANDOM_STATE
+            )
 
         # ── Point prediction model ─────────────────────────────────
         self.model_point = GradientBoostingRegressor(
@@ -125,23 +140,36 @@ class QuoteModelTrainer:
         self.model_upper.fit(X_train, y_train)
 
         # ── Evaluate ───────────────────────────────────────────────
-        y_pred = self.model_point.predict(X_test)
-        y_pred_lower = self.model_lower.predict(X_test)
-        y_pred_upper = self.model_upper.predict(X_test)
+        y_pred_raw = self.model_point.predict(X_test)
+        y_pred_lower_raw = self.model_lower.predict(X_test)
+        y_pred_upper_raw = self.model_upper.predict(X_test)
 
-        # Metrics
+        # Back-transform if using log target
+        if self.use_log_target:
+            y_pred = np.exp(y_pred_raw)
+            y_pred_lower = np.exp(y_pred_lower_raw)
+            y_pred_upper = np.exp(y_pred_upper_raw)
+            y_eval = y_raw_test  # Compare against original scale
+        else:
+            y_pred = y_pred_raw
+            y_pred_lower = y_pred_lower_raw
+            y_pred_upper = y_pred_upper_raw
+            y_eval = y_test
+
+        # Metrics (always in original price scale)
         self.metrics = {
             "n_train": len(X_train),
             "n_test": len(X_test),
-            "mape": float(mean_absolute_percentage_error(y_test, y_pred) * 100),
-            "rmse": float(np.sqrt(mean_squared_error(y_test, y_pred))),
-            "r2": float(r2_score(y_test, y_pred)),
+            "mape": float(mean_absolute_percentage_error(y_eval, y_pred) * 100),
+            "rmse": float(np.sqrt(mean_squared_error(y_eval, y_pred))),
+            "r2": float(r2_score(y_eval, y_pred)),
             "coverage_90": float(
-                np.mean((y_test >= y_pred_lower) & (y_test <= y_pred_upper)) * 100
+                np.mean((y_eval >= y_pred_lower) & (y_eval <= y_pred_upper)) * 100
             ),
+            "use_log_target": self.use_log_target,
         }
 
-        # Cross-validation on full data
+        # Cross-validation on full data (in transformed space)
         cv_scores = cross_val_score(
             self.model_point, X_transformed, y,
             cv=min(CV_FOLDS, len(df) // 2),
@@ -149,6 +177,8 @@ class QuoteModelTrainer:
         )
         self.metrics["cv_mape_mean"] = float(-cv_scores.mean() * 100)
         self.metrics["cv_mape_std"] = float(cv_scores.std() * 100)
+        if self.use_log_target:
+            self.metrics["cv_note"] = "CV MAPE is in log-space; actual MAPE reported above is in original scale"
 
         # Feature importances
         importances = self.model_point.feature_importances_
@@ -180,6 +210,7 @@ class QuoteModelTrainer:
         joblib.dump(self.feature_names, model_dir / f"{tag}_features.joblib")
         joblib.dump(self.metrics, model_dir / f"{tag}_metrics.joblib")
         joblib.dump(self.feature_importances, model_dir / f"{tag}_importances.joblib")
+        joblib.dump(self.use_log_target, model_dir / f"{tag}_log_target.joblib")
 
         logger.info(f"Saved {self.vendor} models to {model_dir}")
 
@@ -189,7 +220,11 @@ class QuoteModelTrainer:
         tag = f"{vendor}{suffix}"
         model_dir = Path(MODEL_DIR)
 
-        trainer = cls(vendor)
+        # Check if log_target flag exists
+        log_target_path = model_dir / f"{tag}_log_target.joblib"
+        use_log = joblib.load(log_target_path) if log_target_path.exists() else False
+
+        trainer = cls(vendor, use_log_target=use_log)
         trainer.model_point = joblib.load(model_dir / f"{tag}_point.joblib")
         trainer.model_lower = joblib.load(model_dir / f"{tag}_lower.joblib")
         trainer.model_upper = joblib.load(model_dir / f"{tag}_upper.joblib")
@@ -198,7 +233,7 @@ class QuoteModelTrainer:
         trainer.metrics = joblib.load(model_dir / f"{tag}_metrics.joblib")
         trainer.feature_importances = joblib.load(model_dir / f"{tag}_importances.joblib")
 
-        logger.info(f"Loaded {vendor} model (MAPE={trainer.metrics.get('mape', '?')}%)")
+        logger.info(f"Loaded {vendor} model (MAPE={trainer.metrics.get('mape', '?')}%, log_target={use_log})")
         return trainer
 
 
@@ -209,13 +244,15 @@ def train_all_models(training_df: pd.DataFrame) -> dict:
     """
     results = {}
 
-    for vendor in ["dazpak", "ross"]:
+    for vendor in ["dazpak", "ross", "internal"]:
         vendor_df = training_df[training_df["vendor"] == vendor].copy()
         if len(vendor_df) == 0:
             logger.warning(f"No data for {vendor} — skipping")
             continue
 
-        trainer = QuoteModelTrainer(vendor)
+        # Internal model uses log-target for better fit across wide qty range
+        use_log = (vendor == "internal")
+        trainer = QuoteModelTrainer(vendor, use_log_target=use_log)
         metrics = trainer.train(vendor_df)
         trainer.save()
         results[vendor] = metrics
