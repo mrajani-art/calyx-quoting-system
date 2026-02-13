@@ -174,14 +174,14 @@ with st.sidebar:
     - MOQ: {DAZPAK_MIN_ORDER_QTY:,} units/SKU
     - Typical tiers: 75K–500K
 
-    **Ross** (Digital ≥12")
-    - Web width must be ≥ 12\"
+    **Ross** (Digital >12")
+    - Web width must be > 12\"
     - Web width = H×2 + G
     - Typical tiers: 4K–10K
 
-    **Internal** (Digital <12")
+    **Internal** (Digital ≤12")
     - HP 6900 in-house press
-    - Web width < 12\"
+    - Web width ≤ 12\"
     - Typical tiers: 500–50K
     """)
 
@@ -422,19 +422,19 @@ if page == "🏷️ Quote Builder":
 
         # Calculated print width display
         pw = calculate_print_width(height, gusset)
-        if pw >= 12:
+        if pw > 12:
             pw_color = "🔵"
-            pw_label = "Ross eligible (≥12\")"
+            pw_label = "Ross eligible (>12\")"
         else:
             pw_color = "🟣"
-            pw_label = "Internal (HP 6900) — below 12\""
+            pw_label = "Internal (HP 6900) — ≤12\""
         st.caption(f"Print Width: **{pw:.2f}\"** (H×2 + G)  {pw_color} {pw_label}")
 
         st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
         # Print method
         print_method = st.selectbox("Print Method", PRINT_METHODS,
-                                    help="Flexographic → Dazpak | Digital: <12\" → Internal, ≥12\" → Ross")
+                                    help="Flexographic → Dazpak | Digital: ≤12\" → Internal, >12\" → Ross")
 
         # Material & finish
         mat_cols = st.columns(2)
@@ -475,7 +475,7 @@ if page == "🏷️ Quote Builder":
         # Auto-suggest tiers based on vendor routing
         if print_method == "Flexographic":
             suggested = DAZPAK_DEFAULT_TIERS[:]
-        elif pw < 12:
+        elif pw <= 12:
             suggested = INTERNAL_DEFAULT_TIERS[:]
         else:
             suggested = ROSS_DEFAULT_TIERS[:]
@@ -507,8 +507,8 @@ if page == "🏷️ Quote Builder":
         vendor_class_map = {"dazpak": "vendor-dazpak", "ross": "vendor-ross", "internal": "vendor-internal"}
         vendor_label_map = {
             "dazpak": "Dazpak (Flexographic)",
-            "ross": "Ross (Digital ≥12\")",
-            "internal": "Internal — HP 6900 (Digital <12\")",
+            "ross": "Ross (Digital >12\")",
+            "internal": "Internal — HP 6900 (Digital ≤12\")",
         }
         vendor_class = vendor_class_map.get(routing["vendor"], "vendor-internal")
         vendor_label = vendor_label_map.get(routing["vendor"], routing["vendor"])
@@ -713,8 +713,8 @@ elif page == "⚙️ Model Manager":
         st.markdown("""
         This will train separate Gradient Boosting models for:
         - **Dazpak** (Flexographic) — predicts Price/Ea Impression
-        - **Ross** (Digital ≥12") — predicts unit price per bag
-        - **Internal** (Digital <12" / HP 6900) — predicts unit cost per bag (log-target)
+        - **Ross** (Digital >12") — predicts unit price per bag
+        - **Internal** (Digital ≤12" / HP 6900) — predicts unit cost per bag (log-target)
 
         Each model includes:
         - Point prediction (squared error loss)
