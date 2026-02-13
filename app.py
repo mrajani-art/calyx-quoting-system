@@ -29,6 +29,7 @@ from config.settings import (
     TEAR_NOTCH_UI_OPTIONS, HOLE_PUNCH_UI_OPTIONS,
     CORNER_UI_OPTIONS, PRINT_METHODS,
     DEFAULT_QTY_TIERS, DAZPAK_DEFAULT_TIERS, ROSS_DEFAULT_TIERS,
+    INTERNAL_DEFAULT_TIERS, INTERNAL_MAX_WEB_WIDTH,
     DAZPAK_MIN_ORDER_QTY, ROSS_MIN_PRINT_WIDTH_INCHES,
     MODEL_DIR,
 )
@@ -101,6 +102,9 @@ st.markdown("""
     .vendor-ross {
         background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9;
     }
+    .vendor-internal {
+        background: #f3e5f5; color: #7b1fa2; border: 1px solid #ce93d8;
+    }
 
     /* Warning box */
     .warning-box {
@@ -170,10 +174,15 @@ with st.sidebar:
     - MOQ: {DAZPAK_MIN_ORDER_QTY:,} units/SKU
     - Typical tiers: 75K–500K
 
-    **Ross** (Digital)
-    - Print width must be > 12\"
-    - Print width = H×2 + G
+    **Ross** (Digital ≥12")
+    - Web width must be ≥ 12\"
+    - Web width = H×2 + G
     - Typical tiers: 4K–10K
+
+    **Internal** (Digital <12")
+    - HP 6900 in-house press
+    - Web width < 12\"
+    - Typical tiers: 500–50K
     """)
 
 
@@ -185,22 +194,24 @@ def _generate_demo_data() -> pd.DataFrame:
     np.random.seed(42)
     n = 200
 
-    vendors = np.random.choice(["dazpak", "ross"], n, p=[0.6, 0.4])
+    vendors = np.random.choice(["dazpak", "ross", "internal"], n, p=[0.35, 0.25, 0.40])
     widths = np.random.uniform(3, 8, n).round(2)
     heights = np.random.uniform(4, 12, n).round(2)
     gussets = np.random.choice([0, 1.5, 2, 2.5, 3], n)
     substrates = np.random.choice(["MET_PET", "CLR_PET", "WHT_MET_PET", "HB_CLR_PET"], n)
-    finishes = np.random.choice(["Matte Laminate", "Soft Touch Laminate", "None"], n, p=[0.5, 0.3, 0.2])
-    zippers = np.random.choice(["CR Zipper", "Standard CR", "No Zipper"], n, p=[0.4, 0.35, 0.25])
+    finishes = np.random.choice(["Matte Laminate", "Soft Touch Laminate", "Gloss Laminate", "None"], n, p=[0.4, 0.25, 0.15, 0.2])
+    zippers = np.random.choice(["CR Zipper", "Standard CR", "Single Profile Non-CR", "No Zipper"], n, p=[0.35, 0.25, 0.15, 0.25])
 
     quantities = []
     for v in vendors:
         if v == "dazpak":
             quantities.append(np.random.choice([75000, 100000, 200000, 350000, 500000]))
-        else:
+        elif v == "ross":
             quantities.append(np.random.choice([4000, 5000, 6000, 10000]))
+        else:
+            quantities.append(np.random.choice([500, 1000, 5000, 10000, 25000, 50000]))
 
-    base = np.where(vendors == "dazpak", 0.12, 0.45)
+    base = np.where(vendors == "dazpak", 0.12, np.where(vendors == "ross", 0.45, 0.25))
     area_factor = (widths * heights) * 0.002
     qty_discount = -np.log10(np.array(quantities)) * 0.03
     substrate_premium = np.where(substrates == "HB_CLR_PET", 0.04, 0)
@@ -245,7 +256,7 @@ def _render_results(result: dict, margin_pct: int = 35):
     if preds:
         mcols = st.columns(5)
         with mcols[0]:
-            vendor_label = "Dazpak" if result["vendor"] == "dazpak" else "Ross"
+            vendor_label = {"dazpak": "Dazpak", "ross": "Ross", "internal": "Internal"}.get(result["vendor"], result["vendor"])
             st.markdown(f"""
             <div class="metric-card">
                 <div class="label">Vendor</div>
@@ -411,14 +422,19 @@ if page == "🏷️ Quote Builder":
 
         # Calculated print width display
         pw = calculate_print_width(height, gusset)
-        pw_color = "🟢" if pw > ROSS_MIN_PRINT_WIDTH_INCHES else "🔴"
-        st.caption(f"Print Width: **{pw:.2f}\"** (H×2 + G)  {pw_color} {'Ross eligible' if pw > 12 else 'Below Ross 12\" min'}")
+        if pw >= 12:
+            pw_color = "🔵"
+            pw_label = "Ross eligible (≥12\")"
+        else:
+            pw_color = "🟣"
+            pw_label = "Internal (HP 6900) — below 12\""
+        st.caption(f"Print Width: **{pw:.2f}\"** (H×2 + G)  {pw_color} {pw_label}")
 
         st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
         # Print method
         print_method = st.selectbox("Print Method", PRINT_METHODS,
-                                    help="Flexographic → Dazpak | Digital → Ross")
+                                    help="Flexographic → Dazpak | Digital: <12\" → Internal, ≥12\" → Ross")
 
         # Material & finish
         mat_cols = st.columns(2)
@@ -456,11 +472,13 @@ if page == "🏷️ Quote Builder":
         st.markdown("### 📦 Quantity Tiers")
         st.caption("Enter up to 6 quantity tiers for pricing (ascending order)")
 
-        # Auto-suggest tiers based on vendor
+        # Auto-suggest tiers based on vendor routing
         if print_method == "Flexographic":
-            suggested = DAZPAK_DEFAULT_TIERS
+            suggested = DAZPAK_DEFAULT_TIERS[:]
+        elif pw < 12:
+            suggested = INTERNAL_DEFAULT_TIERS[:]
         else:
-            suggested = ROSS_DEFAULT_TIERS
+            suggested = ROSS_DEFAULT_TIERS[:]
 
         # Use suggested defaults but pad to 6
         while len(suggested) < 6:
@@ -486,8 +504,14 @@ if page == "🏷️ Quote Builder":
 
         # ── Vendor Routing Preview ──────────────────────────────────
         routing = route_vendor(print_method, height, gusset, quantities)
-        vendor_class = "vendor-dazpak" if routing["vendor"] == "dazpak" else "vendor-ross"
-        vendor_label = "Dazpak (Flexographic)" if routing["vendor"] == "dazpak" else "Ross (Digital)"
+        vendor_class_map = {"dazpak": "vendor-dazpak", "ross": "vendor-ross", "internal": "vendor-internal"}
+        vendor_label_map = {
+            "dazpak": "Dazpak (Flexographic)",
+            "ross": "Ross (Digital ≥12\")",
+            "internal": "Internal — HP 6900 (Digital <12\")",
+        }
+        vendor_class = vendor_class_map.get(routing["vendor"], "vendor-internal")
+        vendor_label = vendor_label_map.get(routing["vendor"], routing["vendor"])
 
         st.markdown(f"""
         <div style="background:#f8faf9; padding:1rem; border-radius:10px; border:1px solid #d8e8df; margin-bottom:1rem;">
@@ -606,7 +630,7 @@ elif page == "📊 Analytics":
 
     if not data.empty:
         # Summary metrics
-        mcols = st.columns(4)
+        mcols = st.columns(5)
         with mcols[0]:
             st.metric("Total Quotes", f"{data['fl_number'].nunique() if 'fl_number' in data.columns else len(data):,}")
         with mcols[1]:
@@ -616,6 +640,9 @@ elif page == "📊 Analytics":
             if 'vendor' in data.columns:
                 st.metric("Ross Quotes", f"{(data['vendor'] == 'ross').sum():,}")
         with mcols[3]:
+            if 'vendor' in data.columns:
+                st.metric("Internal Quotes", f"{(data['vendor'] == 'internal').sum():,}")
+        with mcols[4]:
             if 'unit_price' in data.columns:
                 st.metric("Avg Unit Price", format_currency(data['unit_price'].mean(), 4))
 
@@ -686,7 +713,8 @@ elif page == "⚙️ Model Manager":
         st.markdown("""
         This will train separate Gradient Boosting models for:
         - **Dazpak** (Flexographic) — predicts Price/Ea Impression
-        - **Ross** (Digital) — predicts unit price per bag
+        - **Ross** (Digital ≥12") — predicts unit price per bag
+        - **Internal** (Digital <12" / HP 6900) — predicts unit cost per bag (log-target)
 
         Each model includes:
         - Point prediction (squared error loss)
@@ -727,7 +755,7 @@ elif page == "⚙️ Model Manager":
     with tab_metrics:
         st.markdown("### Current Model Performance")
 
-        for vendor in ["dazpak", "ross"]:
+        for vendor in ["dazpak", "ross", "internal"]:
             try:
                 import joblib
                 metrics = joblib.load(MODEL_DIR / f"{vendor}_metrics.joblib")
@@ -782,7 +810,13 @@ elif page == "⚙️ Model Manager":
         python scripts/ingest_pdfs.py --vendor ross --folder ./data/ross_pdfs/
         ```
 
-        **Step 4:** Train models (or use the Train tab above)
+        **Step 4:** Ingest internal Cerm estimates (from Google Sheet or xlsx):
+        ```bash
+        python scripts/ingest_internal.py                              # From Google Sheet
+        python scripts/ingest_internal.py --xlsx data/cerm_export.xlsx  # From xlsx file
+        ```
+
+        **Step 5:** Train models (or use the Train tab above)
         """)
 
         st.markdown("#### Manual CSV Upload")
