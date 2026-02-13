@@ -1,0 +1,80 @@
+name: Auto-Ingest PDFs & Retrain
+
+on:
+  schedule:
+    # Runs every Monday at 6:00 AM UTC (midnight Mountain Time)
+    - cron: '0 6 * * 1'
+
+  # Manual trigger from GitHub Actions tab
+  workflow_dispatch:
+    inputs:
+      skip_retrain:
+        description: 'Skip model retraining after ingestion'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+jobs:
+  ingest-and-retrain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # ─── Checkout repo ───
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # ─── Python setup ───
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # ─── Google credentials ───
+      - name: Write Google credentials to file
+        run: |
+          echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > /tmp/google-creds.json
+        shell: bash
+
+      # ─── Run auto-ingest ───
+      - name: Ingest new PDFs from Google Drive
+        id: ingest
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          GOOGLE_CREDENTIALS: /tmp/google-creds.json
+          DAZPAK_FOLDER_ID: ${{ secrets.DAZPAK_FOLDER_ID }}
+          ROSS_FOLDER_ID: ${{ secrets.ROSS_FOLDER_ID }}
+        run: python scripts/auto_ingest.py
+
+      # ─── Retrain models (only if new data was ingested) ───
+      - name: Retrain ML models
+        if: steps.ingest.outputs.total_new != '0' && github.event.inputs.skip_retrain != 'true'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: python scripts/train_models.py
+
+      # ─── Commit updated model files ───
+      - name: Commit updated models
+        if: steps.ingest.outputs.total_new != '0' && github.event.inputs.skip_retrain != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add models/*.joblib
+          git diff --staged --quiet || git commit -m "Auto-retrain: $(date +%Y-%m-%d) — new quotes ingested"
+          git push
+
+      # ─── Cleanup ───
+      - name: Clean up credentials
+        if: always()
+        run: rm -f /tmp/google-creds.json
