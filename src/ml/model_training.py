@@ -103,12 +103,19 @@ class QuoteModelTrainer:
             )
 
         # ── Point prediction model ─────────────────────────────────
+        # Tuned for internal vendor's smaller dataset (498 rows):
+        # more estimators + lower learning rate = better generalization
+        n_est = 500 if self.vendor == "internal" else 300
+        depth = 6 if self.vendor == "internal" else 5
+        lr = 0.03 if self.vendor == "internal" else 0.05
+        min_leaf = 3 if self.vendor == "internal" else 5
+
         self.model_point = GradientBoostingRegressor(
-            n_estimators=300,
-            max_depth=5,
-            learning_rate=0.05,
+            n_estimators=n_est,
+            max_depth=depth,
+            learning_rate=lr,
             subsample=0.8,
-            min_samples_leaf=5,
+            min_samples_leaf=min_leaf,
             loss="squared_error",
             random_state=RANDOM_STATE,
         )
@@ -116,11 +123,11 @@ class QuoteModelTrainer:
 
         # ── Confidence interval models (quantile regression) ───────
         self.model_lower = GradientBoostingRegressor(
-            n_estimators=200,
-            max_depth=4,
-            learning_rate=0.05,
+            n_estimators=min(n_est, 300),
+            max_depth=min(depth, 4),
+            learning_rate=lr,
             subsample=0.8,
-            min_samples_leaf=5,
+            min_samples_leaf=min_leaf,
             loss="quantile",
             alpha=CONFIDENCE_LOWER,
             random_state=RANDOM_STATE,
@@ -128,11 +135,11 @@ class QuoteModelTrainer:
         self.model_lower.fit(X_train, y_train)
 
         self.model_upper = GradientBoostingRegressor(
-            n_estimators=200,
-            max_depth=4,
-            learning_rate=0.05,
+            n_estimators=min(n_est, 300),
+            max_depth=min(depth, 4),
+            learning_rate=lr,
             subsample=0.8,
-            min_samples_leaf=5,
+            min_samples_leaf=min_leaf,
             loss="quantile",
             alpha=CONFIDENCE_UPPER,
             random_state=RANDOM_STATE,
