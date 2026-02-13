@@ -157,20 +157,20 @@ class QuotePredictor:
             return "dazpak", "Print method: Flexographic → Dazpak"
 
         if print_method.lower() == "digital":
-            if print_width < INTERNAL_MAX_WEB_WIDTH:
-                return "internal", f"Print method: Digital, web width {print_width:.1f}\" < 12\" → Internal (HP 6900)"
+            if print_width <= INTERNAL_MAX_WEB_WIDTH:
+                return "internal", f"Print method: Digital, web width {print_width:.1f}\" ≤ 12\" → Internal (HP 6900)"
             else:
-                return "ross", f"Print method: Digital, web width {print_width:.1f}\" ≥ 12\" → Ross"
+                return "ross", f"Print method: Digital, web width {print_width:.1f}\" > 12\" → Ross"
 
         # Auto-route
         if max_qty >= DAZPAK_MIN_ORDER_QTY:
             return "dazpak", f"Auto-route: max qty {max_qty:,} ≥ {DAZPAK_MIN_ORDER_QTY:,} → Dazpak (Flexographic)"
 
-        if print_width < INTERNAL_MAX_WEB_WIDTH:
-            return "internal", f"Auto-route: web width {print_width:.1f}\" < 12\" → Internal (HP 6900)"
+        if print_width <= INTERNAL_MAX_WEB_WIDTH:
+            return "internal", f"Auto-route: web width {print_width:.1f}\" ≤ 12\" → Internal (HP 6900)"
 
-        if print_width >= ROSS_MIN_PRINT_WIDTH_INCHES:
-            return "ross", f"Auto-route: web width {print_width:.1f}\" ≥ 12\" → Ross (Digital)"
+        if print_width > ROSS_MIN_PRINT_WIDTH_INCHES:
+            return "ross", f"Auto-route: web width {print_width:.1f}\" > 12\" → Ross (Digital)"
 
         # Default to internal for smaller runs
         return "internal", "Auto-route: smaller quantities → Internal (HP 6900)"
@@ -189,17 +189,17 @@ class QuotePredictor:
                 )
 
         if vendor == "ross":
-            if print_width < ROSS_MIN_PRINT_WIDTH_INCHES:
+            if print_width <= ROSS_MIN_PRINT_WIDTH_INCHES:
                 warnings.append(
-                    f"⚠ Ross requires web width ≥ 12\". "
+                    f"⚠ Ross requires web width > 12\". "
                     f"Current web width: {print_width:.2f}\" "
                     f"(Height×2 + Gusset). Job may be rejected."
                 )
 
         if vendor == "internal":
-            if print_width >= INTERNAL_MAX_WEB_WIDTH:
+            if print_width > INTERNAL_MAX_WEB_WIDTH:
                 warnings.append(
-                    f"⚠ Internal (HP 6900) handles web width < 12\". "
+                    f"⚠ Internal (HP 6900) handles web width ≤ 12\". "
                     f"Current web width: {print_width:.2f}\". "
                     f"Consider routing to Ross instead."
                 )
