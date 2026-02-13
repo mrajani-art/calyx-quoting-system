@@ -8,6 +8,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Streamlit Cloud secrets fallback
+try:
+    import streamlit as st
+    for key in ["SUPABASE_URL", "SUPABASE_KEY", "GOOGLE_CREDENTIALS",
+                "SPREADSHEET_ID", "SPREADSHEET_GID", "DAZPAK_FOLDER_ID",
+                "ROSS_FOLDER_ID", "INTERNAL_SHEET_ID"]:
+        if key in st.secrets and key not in os.environ:
+            os.environ[key] = st.secrets[key]
+except Exception:
+    pass
+
 # ── Paths ───────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent.parent
 MODEL_DIR = BASE_DIR / os.getenv("MODEL_DIR", "models")
