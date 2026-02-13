@@ -29,23 +29,24 @@ def get_google_drive_service():
     from google.oauth2 import service_account
     from googleapiclient.discovery import build
 
-    creds_path = os.environ.get("GOOGLE_CREDENTIALS")
-    if not creds_path:
-        raise ValueError("GOOGLE_CREDENTIALS env var not set")
-
-    # Support both file path and raw JSON (for GitHub Actions)
-    if os.path.isfile(creds_path):
-        creds = service_account.Credentials.from_service_account_file(
-            creds_path, scopes=["https://www.googleapis.com/auth/drive.readonly"]
-        )
-    else:
-        # Assume it's raw JSON content
-        creds_info = json.loads(creds_path)
+    # First try: GOOGLE_CREDENTIALS_JSON env var (raw JSON string, used in GitHub Actions)
+    creds_json = os.environ.get("GOOGLE_CREDENTIALS_JSON")
+    if creds_json:
+        creds_info = json.loads(creds_json)
         creds = service_account.Credentials.from_service_account_info(
             creds_info, scopes=["https://www.googleapis.com/auth/drive.readonly"]
         )
+        return build("drive", "v3", credentials=creds)
 
-    return build("drive", "v3", credentials=creds)
+    # Second try: GOOGLE_CREDENTIALS file path (used locally)
+    creds_path = os.environ.get("GOOGLE_CREDENTIALS")
+    if creds_path and os.path.isfile(creds_path):
+        creds = service_account.Credentials.from_service_account_file(
+            creds_path, scopes=["https://www.googleapis.com/auth/drive.readonly"]
+        )
+        return build("drive", "v3", credentials=creds)
+
+    raise ValueError("Set GOOGLE_CREDENTIALS_JSON or GOOGLE_CREDENTIALS env var")
 
 
 def list_pdfs_in_folder(drive_service, folder_id: str) -> list[dict]:
@@ -87,7 +88,6 @@ def get_existing_fl_numbers(supabase, vendor: str) -> set[str]:
     """Query Supabase for all FL numbers already ingested for a vendor."""
     existing = set()
     try:
-        # Paginate in case there are many records
         offset = 0
         batch_size = 1000
         while True:
@@ -114,14 +114,11 @@ def get_existing_fl_numbers(supabase, vendor: str) -> set[str]:
 def extract_fl_from_filename(filename: str, vendor: str) -> str | None:
     """
     Extract the FL number from a PDF filename.
-    Dazpak: typically "FL-CQ-0123 ..." or similar
-    Ross: typically "FL-DL-0456 ..." or similar
-
+    Dazpak: typically "FL-CQ-0123 ..."
+    Ross: typically "FL-DL-0456 ..."
     Adjust these patterns to match your actual filenames.
     """
     import re
-
-    # Match FL-CQ-XXXX or FL-DL-XXXX patterns
     match = re.search(r"(FL-[A-Z]{2}-\d{3,5})", filename, re.IGNORECASE)
     if match:
         return match.group(1).upper()
@@ -134,8 +131,6 @@ def ingest_vendor(vendor: str, folder_id: str, extract_fn, drive_service, supaba
     1. List PDFs in Drive folder
     2. Check which FL numbers already exist in Supabase
     3. Download + parse + insert only new ones
-
-    Returns: {"total_in_drive": N, "already_ingested": N, "newly_ingested": N, "errors": N}
     """
     stats = {"total_in_drive": 0, "already_ingested": 0, "newly_ingested": 0, "errors": 0}
 
@@ -158,7 +153,7 @@ def ingest_vendor(vendor: str, folder_id: str, extract_fn, drive_service, supaba
             file_name = pdf_file["name"]
             file_id = pdf_file["id"]
 
-            # Try to extract FL number from filename for quick dedup
+            # Layer 1: Filename-level dedup (skip download entirely)
             fl_number = extract_fl_from_filename(file_name, vendor)
             if fl_number and fl_number in existing_fls:
                 logger.debug(f"[{vendor}] SKIP (already exists): {fl_number} — {file_name}")
@@ -188,8 +183,9 @@ def ingest_vendor(vendor: str, folder_id: str, extract_fn, drive_service, supaba
                 stats["errors"] += 1
                 continue
 
-            # Insert each parsed quote (with second-pass dedup on FL number from content)
+            # Insert each parsed quote
             for quote_data in parsed_quotes:
+                # Layer 2: Content-level dedup
                 parsed_fl = quote_data.get("fl_number", "").strip().upper()
                 if parsed_fl and parsed_fl in existing_fls:
                     logger.debug(f"[{vendor}] SKIP (content-level dedup): {parsed_fl}")
@@ -197,7 +193,6 @@ def ingest_vendor(vendor: str, folder_id: str, extract_fn, drive_service, supaba
                     continue
 
                 try:
-                    # Insert quote record
                     quote_row = {
                         "vendor": vendor,
                         "fl_number": parsed_fl or None,
@@ -217,7 +212,6 @@ def ingest_vendor(vendor: str, folder_id: str, extract_fn, drive_service, supaba
                         "corner_treatment": quote_data.get("corner_treatment"),
                         "embellishment": quote_data.get("embellishment"),
                     }
-                    # Remove None values to let DB defaults apply
                     quote_row = {k: v for k, v in quote_row.items() if v is not None}
 
                     result = supabase.table("quotes").insert(quote_row).execute()
@@ -236,7 +230,7 @@ def ingest_vendor(vendor: str, folder_id: str, extract_fn, drive_service, supaba
 
                     stats["newly_ingested"] += 1
                     if parsed_fl:
-                        existing_fls.add(parsed_fl)  # Prevent intra-batch dupes
+                        existing_fls.add(parsed_fl)  # Layer 3: Prevent intra-batch dupes
                     logger.info(f"[{vendor}] INGESTED: {parsed_fl or file_name} ({len(price_tiers)} tiers)")
 
                 except Exception as e:
@@ -251,13 +245,11 @@ def main():
     logger.info("CALYX AUTO-INGEST — Starting")
     logger.info("=" * 60)
 
-    # Initialize services
     drive_service = get_google_drive_service()
     supabase = get_client()
 
     results = {}
 
-    # Ingest Dazpak
     if DAZPAK_FOLDER_ID:
         results["dazpak"] = ingest_vendor(
             vendor="dazpak",
@@ -269,7 +261,6 @@ def main():
     else:
         logger.warning("DAZPAK_FOLDER_ID not set, skipping Dazpak")
 
-    # Ingest Ross
     if ROSS_FOLDER_ID:
         results["ross"] = ingest_vendor(
             vendor="ross",
