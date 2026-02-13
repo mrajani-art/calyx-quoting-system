@@ -39,20 +39,13 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # ─── Google credentials ───
-      - name: Write Google credentials to file
-        env:
-          GOOGLE_CREDS: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
-        run: |
-          python -c "import os; f=open('/tmp/google-creds.json','w'); f.write(os.environ['GOOGLE_CREDS']); f.close()"
-
       # ─── Run auto-ingest ───
       - name: Ingest new PDFs from Google Drive
         id: ingest
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          GOOGLE_CREDENTIALS: /tmp/google-creds.json
+          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
           DAZPAK_FOLDER_ID: ${{ secrets.DAZPAK_FOLDER_ID }}
           ROSS_FOLDER_ID: ${{ secrets.ROSS_FOLDER_ID }}
         run: python scripts/auto_ingest.py
@@ -74,8 +67,3 @@ jobs:
           git add models/*.joblib
           git diff --staged --quiet || git commit -m "Auto-retrain: $(date +%Y-%m-%d) — new quotes ingested"
           git push
-
-      # ─── Cleanup ───
-      - name: Clean up credentials
-        if: always()
-        run: rm -f /tmp/google-creds.json
