@@ -79,6 +79,9 @@ CERM_COLUMNS = {
 
     # Date
     "EnteredDate": "entered_date",
+
+    # Profit adjustment — critical for filtering cost-only estimates
+    "ProfitAdjLabel": "profit_adj_label",
 }
 
 
@@ -325,6 +328,11 @@ def main():
     parser.add_argument("--xlsx", type=str, help="Path to local xlsx file")
     parser.add_argument("--dry-run", action="store_true", help="Preview without inserting")
     parser.add_argument("--csv-out", type=str, help="Save processed data as CSV")
+    parser.add_argument("--cost-only", action="store_true", default=True,
+                        help="Filter to cost-only estimates (default: True). "
+                             "Excludes estimates with Standard/Custom margin markup.")
+    parser.add_argument("--all-estimates", action="store_true",
+                        help="Include ALL estimates (cost + margin). Overrides --cost-only.")
     args = parser.parse_args()
 
     # Load data
@@ -341,6 +349,18 @@ def main():
             return
 
     print(f"Raw data: {len(raw_df)} rows × {len(raw_df.columns)} columns")
+
+    # Filter to cost-only estimates if requested (default)
+    if not args.all_estimates:
+        if 'ProfitAdjLabel' in raw_df.columns:
+            cost_label = raw_df['ProfitAdjLabel'] == 'Costs only'
+            cost_desc = raw_df['AdditionalDescr'].astype(str).str.lower().str.contains('cost only', na=False)
+            cost_mask = cost_label | cost_desc
+            raw_df = raw_df[cost_mask].copy()
+            print(f"Filtered to cost-only: {len(raw_df)} rows "
+                  f"(ProfitAdjLabel='Costs only' or 'Cost Only' in description)")
+        else:
+            print("⚠ ProfitAdjLabel column not found — using all estimates")
 
     # Process
     records = process_internal_data(raw_df)
