@@ -28,6 +28,7 @@ NUMERIC_FEATURES = [
     "bag_area_sqin",   # calculated: width × height
     "quantity",        # order quantity for this tier
     "log_quantity",    # log10(quantity) — captures volume discount curve
+    "inv_quantity",    # 1/quantity — captures fixed-cost amortization
 ]
 
 CATEGORICAL_FEATURES = [
@@ -46,11 +47,12 @@ CATEGORICAL_FEATURES = [
 # Ordinal encoding order (from least to most "complex/expensive")
 CATEGORY_ORDERS = {
     "substrate": ["CLR_PET", "MET_PET", "WHT_MET_PET", "HB_CLR_PET", "CUSTOM"],
-    "finish": ["None", "Matte Laminate", "Soft Touch Laminate"],
+    "finish": ["None", "Matte Laminate", "Gloss Laminate", "Soft Touch Laminate", "Holographic"],
     "fill_style": ["Top", "Bottom"],
-    "seal_type": ["Stand Up", "3 Side Seal"],
-    "gusset_type": ["None", "K Seal", "K Seal & Skirt Seal", "Flat Bottom / Side Gusset"],
-    "zipper": ["No Zipper", "Standard CR", "CR Zipper", "Presto CR Zipper"],
+    "seal_type": ["Stand Up", "2 Side Seal", "3 Side Seal", "3 Side Top Fill"],
+    "gusset_type": ["None", "K Seal", "K Seal & Skirt Seal", "Plow Bottom", "Flat Bottom / Side Gusset"],
+    "zipper": ["No Zipper", "Single Profile Non-CR", "Double Profile Non-CR",
+               "Standard CR", "CR Zipper", "Presto CR Zipper"],
     "tear_notch": ["None", "Standard", "Double (2)"],
     "hole_punch": ["None", "Standard", "Round (Butterfly)", "Euro Slot", "Sombrero"],
     "corner_treatment": ["Straight", "Rounded"],
@@ -92,6 +94,7 @@ def prepare_features(df: pd.DataFrame) -> pd.DataFrame:
     df["print_width"] = df["height"] * 2 + df["gusset"]
     df["bag_area_sqin"] = df["width"] * df["height"]
     df["log_quantity"] = np.log10(df["quantity"].clip(lower=1))
+    df["inv_quantity"] = 1.0 / df["quantity"].clip(lower=1)  # Fixed-cost amortization
 
     # ── Normalize substrate to canonical ────────────────────────────
     if "substrate" in df.columns:
@@ -124,7 +127,9 @@ def prepare_features(df: pd.DataFrame) -> pd.DataFrame:
     df["has_gusset"] = (df["gusset"] > 0).astype(int)
 
     # Zipper complexity score (0-3)
-    zipper_score = {"No Zipper": 0, "Standard CR": 1, "CR Zipper": 2, "Presto CR Zipper": 3}
+    zipper_score = {"No Zipper": 0, "Single Profile Non-CR": 1,
+                    "Double Profile Non-CR": 1.5, "Standard CR": 2,
+                    "CR Zipper": 3, "Presto CR Zipper": 3.5}
     df["zipper_score"] = df["zipper"].map(zipper_score).fillna(0)
 
     return df
