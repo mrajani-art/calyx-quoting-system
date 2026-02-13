@@ -41,9 +41,10 @@ jobs:
 
       # ─── Google credentials ───
       - name: Write Google credentials to file
+        env:
+          GOOGLE_CREDS: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
         run: |
-          echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > /tmp/google-creds.json
-        shell: bash
+          python -c "import os; f=open('/tmp/google-creds.json','w'); f.write(os.environ['GOOGLE_CREDS']); f.close()"
 
       # ─── Run auto-ingest ───
       - name: Ingest new PDFs from Google Drive
