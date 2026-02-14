@@ -243,7 +243,7 @@ def ingest_vendor(vendor: str, folder_id: str, extract_fn, drive_service, supaba
                     quote_id = result.data[0]["id"]
 
                     # Insert price tiers
-                    price_tiers = quote_data.get("price_tiers", [])
+                   price_tiers = quote_data.get("price_tiers") or quote_data.get("prices", [])
                     for i, tier in enumerate(price_tiers):
                         supabase.table("quote_prices").insert({
                             "quote_id": quote_id,
