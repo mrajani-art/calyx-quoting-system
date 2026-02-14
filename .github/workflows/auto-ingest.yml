@@ -2,8 +2,8 @@ name: Auto-Ingest PDFs & Retrain
 
 on:
   schedule:
-    # Runs every Monday at 6:00 AM UTC (midnight Mountain Time)
-    - cron: '0 6 * * 1'
+    # Every day at 6am UTC:
+    - cron: '0 6 * * *'
 
   # Manual trigger from GitHub Actions tab
   workflow_dispatch:
