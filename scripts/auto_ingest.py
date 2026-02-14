@@ -161,7 +161,9 @@ def ingest_vendor(vendor: str, folder_id: str, extract_fn, drive_service, supaba
                 continue
 
             # Download PDF
-            local_path = os.path.join(tmpdir, file_name)
+           # Truncate long filenames to avoid OS path length limits
+            safe_name = file_name[:100] + ".pdf" if len(file_name) > 150 else file_name
+            local_path = os.path.join(tmpdir, safe_name)
             try:
                 logger.info(f"[{vendor}] Downloading: {file_name}")
                 download_pdf(drive_service, file_id, local_path)
@@ -203,8 +205,15 @@ def ingest_vendor(vendor: str, folder_id: str, extract_fn, drive_service, supaba
                     continue
 
                 try:
+                    # Set print_method based on vendor (required NOT NULL field)
+                    if vendor == "dazpak":
+                        print_method = "flexographic"
+                    else:
+                        print_method = "digital"
+
                     quote_row = {
                         "vendor": vendor,
+                        "print_method": print_method,
                         "fl_number": parsed_fl or None,
                         "width": quote_data.get("width"),
                         "height": quote_data.get("height"),
