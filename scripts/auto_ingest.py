@@ -116,7 +116,6 @@ def extract_fl_from_filename(filename: str, vendor: str) -> str | None:
     Extract the FL number from a PDF filename.
     Dazpak: typically "FL-CQ-0123 ..."
     Ross: typically "FL-DL-0456 ..."
-    Adjust these patterns to match your actual filenames.
     """
     import re
     match = re.search(r"(FL-[A-Z]{2}-\d{3,5})", filename, re.IGNORECASE)
@@ -160,8 +159,7 @@ def ingest_vendor(vendor: str, folder_id: str, extract_fn, drive_service, supaba
                 stats["already_ingested"] += 1
                 continue
 
-            # Download PDF
-           # Truncate long filenames to avoid OS path length limits
+            # Download PDF — truncate long filenames to avoid OS path length limits
             safe_name = file_name[:100] + ".pdf" if len(file_name) > 150 else file_name
             local_path = os.path.join(tmpdir, safe_name)
             try:
@@ -194,7 +192,7 @@ def ingest_vendor(vendor: str, folder_id: str, extract_fn, drive_service, supaba
                 logger.error(f"[{vendor}] Unexpected return type from parser: {type(parsed_result)}")
                 stats["errors"] += 1
                 continue
-                
+
             # Insert each parsed quote
             for quote_data in parsed_quotes:
                 # Layer 2: Content-level dedup
@@ -203,13 +201,13 @@ def ingest_vendor(vendor: str, folder_id: str, extract_fn, drive_service, supaba
                     logger.debug(f"[{vendor}] SKIP (content-level dedup): {parsed_fl}")
                     stats["already_ingested"] += 1
                     continue
-                    
-# Validate required fields before inserting
+
+                # Validate required fields before inserting
                 if not quote_data.get("width") or not quote_data.get("height"):
                     logger.warning(f"[{vendor}] SKIP (missing width/height): {parsed_fl or file_name}")
                     stats["errors"] += 1
                     continue
-                    
+
                 try:
                     # Set print_method based on vendor (required NOT NULL field)
                     if vendor == "dazpak":
@@ -224,8 +222,6 @@ def ingest_vendor(vendor: str, folder_id: str, extract_fn, drive_service, supaba
                         "width": quote_data.get("width"),
                         "height": quote_data.get("height"),
                         "gusset": quote_data.get("gusset", 0),
-                        "print_width": quote_data.get("print_width"),
-                        "bag_area_sqin": quote_data.get("bag_area_sqin"),
                         "substrate": quote_data.get("substrate"),
                         "finish": quote_data.get("finish"),
                         "fill_style": quote_data.get("fill_style"),
@@ -242,14 +238,21 @@ def ingest_vendor(vendor: str, folder_id: str, extract_fn, drive_service, supaba
                     result = supabase.table("quotes").insert(quote_row).execute()
                     quote_id = result.data[0]["id"]
 
-                    # Insert price tiers
-                   price_tiers = quote_data.get("price_tiers") or quote_data.get("prices", [])
+                    # Insert price tiers — parsers use "prices", auto_ingest uses "price_tiers"
+                    price_tiers = quote_data.get("price_tiers") or quote_data.get("prices", [])
                     for i, tier in enumerate(price_tiers):
                         supabase.table("quote_prices").insert({
                             "quote_id": quote_id,
                             "quantity": tier["quantity"],
                             "unit_price": tier["unit_price"],
                             "total_price": tier.get("total_price"),
+                            "price_per_m_imps": tier.get("price_per_m_imps"),
+                            "price_per_msi": tier.get("price_per_msi"),
+                            "price_per_ea_imp": tier.get("price_per_ea_imp"),
+                            "tolerance_pct": tier.get("tolerance_pct"),
+                            "adder_per_m_imps": tier.get("adder_per_m_imps"),
+                            "adder_per_msi": tier.get("adder_per_msi"),
+                            "adder_per_ea_imp": tier.get("adder_per_ea_imp"),
                             "tier_index": i
                         }).execute()
 
