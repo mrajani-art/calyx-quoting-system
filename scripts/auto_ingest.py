@@ -172,17 +172,27 @@ def ingest_vendor(vendor: str, folder_id: str, extract_fn, drive_service, supaba
 
             # Parse PDF
             try:
-                parsed_quotes = extract_fn(local_path)
+                parsed_result = extract_fn(local_path)
             except Exception as e:
                 logger.error(f"[{vendor}] Failed to parse {file_name}: {e}")
                 stats["errors"] += 1
                 continue
 
-            if not parsed_quotes:
+            if not parsed_result:
                 logger.warning(f"[{vendor}] No quotes extracted from {file_name}")
                 stats["errors"] += 1
                 continue
 
+            # Normalize to list — some parsers return a single dict, others a list
+            if isinstance(parsed_result, dict):
+                parsed_quotes = [parsed_result]
+            elif isinstance(parsed_result, list):
+                parsed_quotes = parsed_result
+            else:
+                logger.error(f"[{vendor}] Unexpected return type from parser: {type(parsed_result)}")
+                stats["errors"] += 1
+                continue
+                
             # Insert each parsed quote
             for quote_data in parsed_quotes:
                 # Layer 2: Content-level dedup
