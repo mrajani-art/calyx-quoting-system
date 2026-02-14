@@ -203,7 +203,13 @@ def ingest_vendor(vendor: str, folder_id: str, extract_fn, drive_service, supaba
                     logger.debug(f"[{vendor}] SKIP (content-level dedup): {parsed_fl}")
                     stats["already_ingested"] += 1
                     continue
-
+                    
+# Validate required fields before inserting
+                if not quote_data.get("width") or not quote_data.get("height"):
+                    logger.warning(f"[{vendor}] SKIP (missing width/height): {parsed_fl or file_name}")
+                    stats["errors"] += 1
+                    continue
+                    
                 try:
                     # Set print_method based on vendor (required NOT NULL field)
                     if vendor == "dazpak":
