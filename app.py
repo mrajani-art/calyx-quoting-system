@@ -202,6 +202,17 @@ def _generate_demo_data() -> pd.DataFrame:
     finishes = np.random.choice(["Matte Laminate", "Soft Touch Laminate", "Gloss Laminate", "None"], n, p=[0.4, 0.25, 0.15, 0.2])
     zippers = np.random.choice(["CR Zipper", "Standard CR", "Single Profile Non-CR", "No Zipper"], n, p=[0.35, 0.25, 0.15, 0.25])
 
+    # Simulate quote dates spread over last 2 years (recent quotes more common)
+    from datetime import datetime, timedelta, timezone
+    now = datetime.now(timezone.utc)
+    # Skew toward recent dates: 40% within last 90 days, 60% older
+    days_ago = np.concatenate([
+        np.random.randint(0, 90, size=int(n * 0.4)),
+        np.random.randint(90, 730, size=n - int(n * 0.4)),
+    ])
+    np.random.shuffle(days_ago)
+    created_dates = [now - timedelta(days=int(d)) for d in days_ago]
+
     quantities = []
     for v in vendors:
         if v == "dazpak":
@@ -233,6 +244,7 @@ def _generate_demo_data() -> pd.DataFrame:
         "zipper": zippers,
         "quantity": quantities,
         "unit_price": unit_prices.round(5),
+        "created_at": created_dates,
     })
 
 
@@ -720,6 +732,7 @@ elif page == "⚙️ Model Manager":
         - Point prediction (squared error loss)
         - Lower/upper confidence bounds (10th/90th quantile regression)
         - Cross-validated performance metrics
+        - **Recency weighting** — quotes from the last 90 days get 3× training weight
         """)
 
         data_source = st.radio(
@@ -773,6 +786,17 @@ elif page == "⚙️ Model Manager":
                     st.metric("90% CI Coverage", f"{metrics['coverage_90']:.0f}%")
                 with metric_cols[4]:
                     st.metric("CV MAPE", f"{metrics['cv_mape_mean']:.1f}% ± {metrics['cv_mape_std']:.1f}%")
+
+                # Show recency weighting info if present
+                if metrics.get("recency_weighting"):
+                    n_recent = metrics.get("n_recent_train", "?")
+                    n_total = metrics.get("n_train", "?")
+                    recent_days = metrics.get("recency_recent_days", 90)
+                    st.caption(
+                        f"📅 Recency weighted: {n_recent}/{n_total} training samples "
+                        f"from last {recent_days} days received "
+                        f"{metrics.get('recency_recent_weight', 3.0):.0f}× weight"
+                    )
 
                 # Feature importance chart
                 imp_items = sorted(importances.items(), key=lambda x: x[1], reverse=True)[:12]
