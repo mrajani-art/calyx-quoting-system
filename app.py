@@ -297,9 +297,14 @@ def _render_results(result: dict, margin_pct: int = 35):
         with mcols[4]:
             mape = result.get("model_metrics", {}).get("mape", "—")
             mape_str = f"{mape:.1f}%" if isinstance(mape, (int, float)) else mape
+            method_label = result.get("model_metrics", {}).get("method", "ML Model")
+            if result.get("is_deterministic"):
+                metric_label = "Calc MAPE"
+            else:
+                metric_label = "Model MAPE"
             st.markdown(f"""
             <div class="metric-card">
-                <div class="label">Model MAPE</div>
+                <div class="label">{metric_label}</div>
                 <div class="value">{mape_str}</div>
             </div>""", unsafe_allow_html=True)
 
@@ -311,25 +316,29 @@ def _render_results(result: dict, margin_pct: int = 35):
     st.markdown("### Pricing by Quantity Tier")
     if preds:
         import pandas as pd
+        is_det = result.get("is_deterministic", False)
         rows = []
         for p in preds:
             cost = p["unit_price"]
             sell = cost * margin_multiplier
             total_cost = p["total_price"]
             total_sell = total_cost * margin_multiplier
-            rows.append({
+            row = {
                 "Quantity": f"{p['quantity']:,}",
                 "Unit Cost": format_currency(cost, 5),
                 "Unit Sell Price": format_currency(sell, 5),
                 "Total Cost": format_currency(total_cost, 2),
                 "Total Sell Price": format_currency(total_sell, 2),
-                "90% CI Range": f"{format_currency(p['lower_bound'], 5)} – {format_currency(p['upper_bound'], 5)}",
-            })
+            }
+            if not is_det:
+                row["90% CI Range"] = f"{format_currency(p['lower_bound'], 5)} – {format_currency(p['upper_bound'], 5)}"
+            rows.append(row)
         price_df = pd.DataFrame(rows)
         st.dataframe(price_df, use_container_width=True, hide_index=True)
 
     # Charts
     if preds:
+        is_det = result.get("is_deterministic", False)
         chart_cols = st.columns(2)
 
         with chart_cols[0]:
@@ -338,19 +347,21 @@ def _render_results(result: dict, margin_pct: int = 35):
             qtys = [p["quantity"] for p in preds]
             costs = [p["unit_price"] for p in preds]
             sells = [p["unit_price"] * margin_multiplier for p in preds]
-            lowers = [p["lower_bound"] for p in preds]
-            uppers = [p["upper_bound"] for p in preds]
 
-            # Confidence band (on cost)
-            fig.add_trace(go.Scatter(
-                x=qtys + qtys[::-1],
-                y=uppers + lowers[::-1],
-                fill="toself",
-                fillcolor="rgba(45, 106, 79, 0.08)",
-                line=dict(color="rgba(0,0,0,0)"),
-                name="90% CI (Cost)",
-                showlegend=True,
-            ))
+            if not is_det:
+                # Confidence band (only for ML models)
+                lowers = [p["lower_bound"] for p in preds]
+                uppers = [p["upper_bound"] for p in preds]
+                fig.add_trace(go.Scatter(
+                    x=qtys + qtys[::-1],
+                    y=uppers + lowers[::-1],
+                    fill="toself",
+                    fillcolor="rgba(45, 106, 79, 0.08)",
+                    line=dict(color="rgba(0,0,0,0)"),
+                    name="90% CI (Cost)",
+                    showlegend=True,
+                ))
+
             # Cost line
             fig.add_trace(go.Scatter(
                 x=qtys, y=costs,
@@ -397,9 +408,47 @@ def _render_results(result: dict, margin_pct: int = 35):
                     coloraxis_showscale=False,
                     yaxis=dict(autorange="reversed"),
                 )
+                if is_det:
+                    fig2.update_layout(
+                        xaxis_title="% of Total Cost",
+                    )
                 st.plotly_chart(fig2, use_container_width=True)
             else:
                 st.info("Cost factor breakdown requires a trained model.")
+
+        # ── Component Cost Breakdown Table (deterministic only) ──
+        if is_det and result.get("component_costs"):
+            st.markdown("### 🔧 Production Cost Breakdown")
+            import pandas as pd
+            comp_rows = []
+            for cc in result["component_costs"]:
+                comp_rows.append({
+                    "Quantity": f"{cc['quantity']:,}",
+                    "Substrate": format_currency(cc.get("substrate", 0), 2),
+                    "Priming": format_currency(cc.get("priming", 0), 2),
+                    "Clicks": format_currency(cc.get("clicks", 0), 2),
+                    "HP Labor": format_currency(cc.get("hp_makeready", 0) + cc.get("hp_running", 0), 2),
+                    "Laminate": format_currency(cc.get("laminate", 0), 2),
+                    "Thermo": format_currency(cc.get("thermo_labor", 0), 2),
+                    "Zipper": format_currency(cc.get("zipper", 0), 2),
+                    "Poucher": format_currency(cc.get("poucher_labor", 0), 2),
+                    "Sealer": format_currency(cc.get("sealer", 0), 2),
+                    "Packaging": format_currency(cc.get("packaging", 0), 2),
+                    "Total": format_currency(cc.get("total", 0), 2),
+                })
+            comp_df = pd.DataFrame(comp_rows)
+            st.dataframe(comp_df, use_container_width=True, hide_index=True)
+
+            # Layout info
+            layout = result.get("layout", {})
+            if layout:
+                st.caption(
+                    f"Layout: {layout.get('no_around', '?')} around × "
+                    f"{layout.get('no_across', '?')} across | "
+                    f"Gear: {layout.get('gear_teeth', '?')} teeth | "
+                    f"Repeat: {layout.get('repeat_in', '?')}\" | "
+                    f"Spoilage: {layout.get('combined_spoilage', 0)*100:.1f}%"
+                )
 
 
 # ═══════════════════════════════════════════════════════════════════
