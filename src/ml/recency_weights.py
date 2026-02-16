@@ -1,0 +1,122 @@
+"""
+Recency weighting for ML model training.
+
+Gives heavier weight to recent quotes (last 90 days) using exponential decay,
+so the model prioritizes current market pricing while still learning from
+historical data.
+
+Usage:
+    from src.ml.recency_weights import compute_recency_weights
+
+    weights = compute_recency_weights(
+        df["created_at"],
+        recent_days=90,
+        recent_weight=3.0,
+        decay_half_life=180,
+    )
+    model.fit(X_train, y_train, sample_weight=weights[train_idx])
+"""
+
+import numpy as np
+import pandas as pd
+from datetime import datetime, timezone
+
+
+def compute_recency_weights(
+    dates: pd.Series,
+    recent_days: int = 90,
+    recent_weight: float = 3.0,
+    decay_half_life: int = 180,
+    min_weight: float = 0.2,
+    reference_date: datetime | None = None,
+) -> np.ndarray:
+    """
+    Compute sample weights that emphasize recent quotes.
+
+    Strategy:
+    - Quotes within `recent_days` get a flat boost of `recent_weight`
+    - Older quotes decay exponentially with `decay_half_life`
+    - No quote drops below `min_weight`
+
+    Parameters
+    ----------
+    dates : pd.Series
+        Timestamps for each training sample. Can be datetime, date strings,
+        or NaT (missing dates get min_weight).
+    recent_days : int
+        Number of days considered "recent" (default 90).
+    recent_weight : float
+        Weight multiplier for recent quotes (default 3.0 = 3x base).
+    decay_half_life : int
+        Days after which an old quote's weight is halved (default 180).
+    min_weight : float
+        Floor weight so no sample is entirely ignored (default 0.2).
+    reference_date : datetime, optional
+        "Now" for age calculations. Defaults to utcnow().
+
+    Returns
+    -------
+    np.ndarray
+        Array of weights, same length as `dates`.
+    """
+    if reference_date is None:
+        reference_date = datetime.now(timezone.utc)
+
+    # Convert to datetime if needed
+    dates_dt = pd.to_datetime(dates, errors="coerce", utc=True)
+
+    # Calculate age in days
+    age_days = (reference_date - dates_dt).dt.total_seconds() / 86400.0
+
+    weights = np.full(len(dates), min_weight)
+
+    for i, age in enumerate(age_days):
+        if pd.isna(age):
+            # Missing date — use min_weight (already set)
+            continue
+        elif age <= recent_days:
+            # Recent quote — full boost
+            weights[i] = recent_weight
+        else:
+            # Exponential decay: weight = recent_weight * 0.5^((age - recent_days) / half_life)
+            excess_age = age - recent_days
+            decay = 0.5 ** (excess_age / decay_half_life)
+            weights[i] = max(recent_weight * decay, min_weight)
+
+    return weights
+
+
+def compute_recency_weights_from_df(
+    df: pd.DataFrame,
+    date_column: str = "created_at",
+    **kwargs,
+) -> np.ndarray:
+    """
+    Convenience wrapper — extracts date column from DataFrame.
+
+    Falls back to uniform weights (all 1.0) if the date column is missing
+    or entirely null, so training still works with legacy data.
+    """
+    if date_column not in df.columns:
+        print(f"  ⚠ No '{date_column}' column found — using uniform weights")
+        return np.ones(len(df))
+
+    dates = df[date_column]
+    if dates.isna().all():
+        print(f"  ⚠ All '{date_column}' values are null — using uniform weights")
+        return np.ones(len(df))
+
+    non_null = dates.notna().sum()
+    total = len(dates)
+    print(f"  📅 Recency weighting: {non_null}/{total} samples have dates")
+
+    weights = compute_recency_weights(dates, **kwargs)
+
+    # Report weight distribution
+    recent_mask = weights >= kwargs.get("recent_weight", 3.0) * 0.99
+    print(f"  ⚖️  Recent (last {kwargs.get('recent_days', 90)}d): "
+          f"{recent_mask.sum()} samples @ weight {kwargs.get('recent_weight', 3.0):.1f}")
+    print(f"  ⚖️  Older: {(~recent_mask).sum()} samples @ avg weight "
+          f"{weights[~recent_mask].mean():.2f}")
+
+    return weights
