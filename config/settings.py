@@ -178,6 +178,20 @@ CV_FOLDS = 5
 CONFIDENCE_LOWER = 0.10
 CONFIDENCE_UPPER = 0.90
 
+# ── Recency Weighting ─────────────────────────────────────────────
+# Recent quotes get heavier weight during training so the model
+# tracks current market pricing while still learning from history.
+#
+# Weight curve:
+#   0–90 days    → 3.0  (full recent boost)
+#   ~270 days    → 1.5  (one half-life of decay)
+#   ~450 days    → 0.75
+#   630+ days    → 0.2  (floor — never fully ignored)
+RECENCY_RECENT_DAYS = 90           # quotes within 90 days = "recent"
+RECENCY_RECENT_WEIGHT = 3.0        # 3× weight for recent quotes
+RECENCY_DECAY_HALF_LIFE = 180      # older quotes halve every 180 days
+RECENCY_MIN_WEIGHT = 0.2           # floor weight for oldest quotes
+
 # ── Dazpak Pricing Columns (from PDF structure) ───────────────────
 # UOM: Impressions
 # Pricing: Price/M Imps, Price/MSI, Price/Ea Imp
