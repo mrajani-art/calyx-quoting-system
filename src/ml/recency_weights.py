@@ -5,16 +5,10 @@ Gives heavier weight to recent quotes (last 90 days) using exponential decay,
 so the model prioritizes current market pricing while still learning from
 historical data.
 
-Usage:
-    from src.ml.recency_weights import compute_recency_weights
-
-    weights = compute_recency_weights(
-        df["created_at"],
-        recent_days=90,
-        recent_weight=3.0,
-        decay_half_life=180,
-    )
-    model.fit(X_train, y_train, sample_weight=weights[train_idx])
+Usage in model_training.py:
+    from src.ml.recency_weights import compute_recency_weights_from_df
+    weights = compute_recency_weights_from_df(df, date_column="created_at")
+    model.fit(X_train, y_train, sample_weight=w_train)
 """
 
 import numpy as np
@@ -28,7 +22,7 @@ def compute_recency_weights(
     recent_weight: float = 3.0,
     decay_half_life: int = 180,
     min_weight: float = 0.2,
-    reference_date: datetime | None = None,
+    reference_date=None,
 ) -> np.ndarray:
     """
     Compute sample weights that emphasize recent quotes.
@@ -95,28 +89,14 @@ def compute_recency_weights_from_df(
     Convenience wrapper — extracts date column from DataFrame.
 
     Falls back to uniform weights (all 1.0) if the date column is missing
-    or entirely null, so training still works with legacy data.
+    or entirely null, so training still works with legacy/demo data.
     """
     if date_column not in df.columns:
-        print(f"  ⚠ No '{date_column}' column found — using uniform weights")
         return np.ones(len(df))
 
     dates = df[date_column]
     if dates.isna().all():
-        print(f"  ⚠ All '{date_column}' values are null — using uniform weights")
         return np.ones(len(df))
 
-    non_null = dates.notna().sum()
-    total = len(dates)
-    print(f"  📅 Recency weighting: {non_null}/{total} samples have dates")
-
     weights = compute_recency_weights(dates, **kwargs)
-
-    # Report weight distribution
-    recent_mask = weights >= kwargs.get("recent_weight", 3.0) * 0.99
-    print(f"  ⚖️  Recent (last {kwargs.get('recent_days', 90)}d): "
-          f"{recent_mask.sum()} samples @ weight {kwargs.get('recent_weight', 3.0):.1f}")
-    print(f"  ⚖️  Older: {(~recent_mask).sum()} samples @ avg weight "
-          f"{weights[~recent_mask].mean():.2f}")
-
     return weights
