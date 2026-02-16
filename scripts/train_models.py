@@ -23,6 +23,9 @@ def generate_demo_training_data(n: int = 300) -> pd.DataFrame:
     """Generate realistic synthetic training data for all three vendors."""
     np.random.seed(42)
 
+    from datetime import datetime, timedelta, timezone
+    now = datetime.now(timezone.utc)
+
     rows = []
     for _ in range(n):
         vendor = np.random.choice(["dazpak", "ross", "internal"], p=[0.35, 0.25, 0.40])
@@ -77,6 +80,13 @@ def generate_demo_training_data(n: int = 300) -> pd.DataFrame:
             )
             price = max(price, 0.01)
 
+            # Simulate quote date: 40% recent (0-90 days), 60% older (90-730 days)
+            if np.random.random() < 0.4:
+                days_ago = np.random.randint(0, 90)
+            else:
+                days_ago = np.random.randint(90, 730)
+            quote_date = now - timedelta(days=days_ago)
+
             rows.append({
                 "vendor": vendor,
                 "print_method": "flexographic" if vendor == "dazpak" else "digital",
@@ -87,6 +97,7 @@ def generate_demo_training_data(n: int = 300) -> pd.DataFrame:
                 "tear_notch": tear_notch, "hole_punch": hole_punch,
                 "corner_treatment": corner, "embellishment": embellishment,
                 "quantity": qty, "unit_price": round(price, 5),
+                "created_at": quote_date,
             })
 
     return pd.DataFrame(rows)
