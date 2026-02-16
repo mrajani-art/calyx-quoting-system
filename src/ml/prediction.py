@@ -18,6 +18,7 @@ from config.settings import (
 )
 from src.ml.feature_engineering import prepare_features
 from src.ml.model_training import QuoteModelTrainer
+from src.ml.internal_calculator import calculate_internal_quote
 
 logger = logging.getLogger(__name__)
 
@@ -95,7 +96,14 @@ class QuotePredictor:
         )
         warnings.extend(vendor_warnings)
 
-        # Check if model is available
+        # ── Internal vendor: use deterministic calculator ─────────
+        if vendor == "internal":
+            result = calculate_internal_quote(specs, quantity_tiers)
+            result["warnings"] = warnings + result.get("warnings", [])
+            result["routing_reason"] = routing_reason
+            return result
+
+        # ── Dazpak / Ross: use ML model ──────────────────────────
         if vendor not in self.models:
             return {
                 "vendor": vendor,
