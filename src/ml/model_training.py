@@ -1,11 +1,12 @@
 """
 ML Model Training Pipeline.
 
-Trains separate models for Dazpak (flexographic) and Ross (digital):
+Trains separate models for Dazpak (flexographic), Ross (digital), and Internal (HP 6900):
   - GradientBoostingRegressor for point predictions
   - Quantile regression (10th/90th percentile) for confidence intervals
   - Cross-validated performance metrics
   - Feature importance extraction for cost-factor breakdown
+  - Recency weighting: quotes from the last 90 days get 3× training weight
 """
 import logging
 from pathlib import Path
@@ -25,11 +26,14 @@ from sklearn.metrics import (
 from config.settings import (
     MODEL_DIR, RANDOM_STATE, TEST_SIZE, CV_FOLDS,
     CONFIDENCE_LOWER, CONFIDENCE_UPPER,
+    RECENCY_RECENT_DAYS, RECENCY_RECENT_WEIGHT,
+    RECENCY_DECAY_HALF_LIFE, RECENCY_MIN_WEIGHT,
 )
 from src.ml.feature_engineering import (
     prepare_features, build_preprocessor, get_feature_names,
     save_preprocessor,
 )
+from src.ml.recency_weights import compute_recency_weights_from_df
 
 logger = logging.getLogger(__name__)
 
@@ -65,11 +69,24 @@ class QuoteModelTrainer:
         logger.info(f"Training {self.vendor} model on {len(df)} samples "
                      f"(log_target={self.use_log_target})...")
 
+        # ── Compute recency weights BEFORE prepare_features ──────────
+        # (prepare_features drops non-feature columns like created_at)
+        sample_weights = compute_recency_weights_from_df(
+            df,
+            date_column="created_at",
+            recent_days=RECENCY_RECENT_DAYS,
+            recent_weight=RECENCY_RECENT_WEIGHT,
+            decay_half_life=RECENCY_DECAY_HALF_LIFE,
+            min_weight=RECENCY_MIN_WEIGHT,
+        )
+
         # Prepare features
         df = prepare_features(df)
 
         # Drop rows with missing target
-        df = df.dropna(subset=[target_col])
+        valid_mask = df[target_col].notna()
+        df = df[valid_mask]
+        sample_weights = sample_weights[valid_mask.values]
         if len(df) < 10:
             logger.warning(f"Only {len(df)} samples for {self.vendor} — model may be unreliable")
 
@@ -92,14 +109,16 @@ class QuoteModelTrainer:
         X_transformed = self.preprocessor.transform(X)
         self.feature_names = get_feature_names(self.preprocessor)
 
-        # Train/test split
-        X_train, X_test, y_train, y_test = train_test_split(
-            X_transformed, y, test_size=TEST_SIZE, random_state=RANDOM_STATE
+        # Train/test split — include sample_weights so they stay aligned
+        X_train, X_test, y_train, y_test, w_train, w_test = train_test_split(
+            X_transformed, y, sample_weights,
+            test_size=TEST_SIZE, random_state=RANDOM_STATE
         )
         # Keep raw y_test for evaluation in original scale
         if self.use_log_target:
-            _, _, y_raw_train, y_raw_test = train_test_split(
-                X_transformed, y_raw, test_size=TEST_SIZE, random_state=RANDOM_STATE
+            _, _, y_raw_train, y_raw_test, _, _ = train_test_split(
+                X_transformed, y_raw, sample_weights,
+                test_size=TEST_SIZE, random_state=RANDOM_STATE
             )
 
         # ── Point prediction model ─────────────────────────────────
@@ -119,7 +138,7 @@ class QuoteModelTrainer:
             loss="squared_error",
             random_state=RANDOM_STATE,
         )
-        self.model_point.fit(X_train, y_train)
+        self.model_point.fit(X_train, y_train, sample_weight=w_train)
 
         # ── Confidence interval models (quantile regression) ───────
         self.model_lower = GradientBoostingRegressor(
@@ -132,7 +151,7 @@ class QuoteModelTrainer:
             alpha=CONFIDENCE_LOWER,
             random_state=RANDOM_STATE,
         )
-        self.model_lower.fit(X_train, y_train)
+        self.model_lower.fit(X_train, y_train, sample_weight=w_train)
 
         self.model_upper = GradientBoostingRegressor(
             n_estimators=min(n_est, 300),
@@ -144,7 +163,7 @@ class QuoteModelTrainer:
             alpha=CONFIDENCE_UPPER,
             random_state=RANDOM_STATE,
         )
-        self.model_upper.fit(X_train, y_train)
+        self.model_upper.fit(X_train, y_train, sample_weight=w_train)
 
         # ── Evaluate ───────────────────────────────────────────────
         y_pred_raw = self.model_point.predict(X_test)
@@ -174,6 +193,10 @@ class QuoteModelTrainer:
                 np.mean((y_eval >= y_pred_lower) & (y_eval <= y_pred_upper)) * 100
             ),
             "use_log_target": self.use_log_target,
+            "recency_weighting": True,
+            "recency_recent_days": RECENCY_RECENT_DAYS,
+            "recency_recent_weight": RECENCY_RECENT_WEIGHT,
+            "n_recent_train": int((w_train >= RECENCY_RECENT_WEIGHT * 0.99).sum()),
         }
 
         # Cross-validation on full data (in transformed space)
