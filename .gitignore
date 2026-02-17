@@ -1,2 +1,7 @@
 config/google_service_account.json
 .env
+
+# Data & models
+data/
+models/
+__pycache__/
