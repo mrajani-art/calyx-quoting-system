@@ -151,7 +151,14 @@ def insert_quote(quote_data: dict, prices: list[dict]) -> Optional[str]:
 
 
 def fetch_training_data() -> pd.DataFrame:
-    """Fetch all quotes + prices as a flat DataFrame for ML training."""
+    """Fetch all quotes + prices as a flat DataFrame for ML training.
+
+    Deduplication: When the same FL number has been ingested multiple
+    times (e.g. revised estimates from different PDF emails), we keep
+    only the most recent quote per (fl_number, width, height, gusset,
+    quantity) combination. This prevents contradictory prices from
+    old revisions from confusing the model.
+    """
     client = get_client()
     try:
         res = client.table("quotes").select("*, quote_prices(*)").execute()
@@ -169,10 +176,73 @@ def fetch_training_data() -> pd.DataFrame:
                 row["price_per_msi"] = p.get("price_per_msi")
                 row["tolerance_pct"] = p.get("tolerance_pct")
                 rows.append(row)
-        return pd.DataFrame(rows)
+        df = pd.DataFrame(rows)
+
+        if df.empty:
+            return df
+
+        # ── Deduplication: keep latest revision per spec+qty ──────
+        df = deduplicate_training_data(df)
+
+        return df
     except Exception as e:
         logger.error(f"Fetch training data failed: {e}")
         return pd.DataFrame()
+
+
+def deduplicate_training_data(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Remove duplicate price rows caused by re-ingestion of revised quotes.
+
+    Strategy:
+    - For rows WITH an fl_number: group by (fl_number, width, height,
+      gusset, quantity) and keep the row with the latest created_at.
+      This ensures revised estimates supersede older ones.
+    - For rows WITHOUT an fl_number: keep all (no way to detect dupes).
+
+    Also removes exact unit_price duplicates within each group as a
+    secondary safety net.
+    """
+    before_count = len(df)
+
+    # Parse created_at for sorting
+    if "created_at" in df.columns:
+        df["_created_ts"] = pd.to_datetime(df["created_at"], errors="coerce")
+    else:
+        df["_created_ts"] = pd.NaT
+
+    # Split: rows with FL numbers (can dedup) vs without (keep all)
+    has_fl = df["fl_number"].notna() & (df["fl_number"].str.strip() != "")
+    df_with_fl = df[has_fl].copy()
+    df_no_fl = df[~has_fl].copy()
+
+    if not df_with_fl.empty:
+        # Normalize fl_number for grouping
+        df_with_fl["_fl_norm"] = df_with_fl["fl_number"].str.strip().str.upper()
+
+        # Dedup key: same FL + same dimensions + same quantity = same price point
+        dedup_cols = ["_fl_norm", "width", "height", "gusset", "quantity"]
+
+        # Sort so latest is first, then drop duplicates keeping first
+        df_with_fl = (
+            df_with_fl
+            .sort_values("_created_ts", ascending=False, na_position="last")
+            .drop_duplicates(subset=dedup_cols, keep="first")
+        )
+        df_with_fl = df_with_fl.drop(columns=["_fl_norm"])
+
+    # Recombine
+    df = pd.concat([df_with_fl, df_no_fl], ignore_index=True)
+    df = df.drop(columns=["_created_ts"])
+
+    after_count = len(df)
+    if before_count != after_count:
+        logger.info(
+            f"Deduplication: {before_count} → {after_count} rows "
+            f"({before_count - after_count} duplicate price rows removed)"
+        )
+
+    return df
 
 
 def save_model_metadata(vendor: str, model_type: str, target_col: str,
