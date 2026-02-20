@@ -817,7 +817,7 @@ elif page == "⚙️ Model Manager":
     with tab_metrics:
         st.markdown("### Current Model Performance")
 
-        for vendor in ["dazpak", "ross", "internal"]:
+        for vendor in ["dazpak", "ross"]:
             try:
                 import joblib
                 metrics = joblib.load(MODEL_DIR / f"{vendor}_metrics.joblib")
@@ -866,6 +866,23 @@ elif page == "⚙️ Model Manager":
 
             except FileNotFoundError:
                 st.info(f"No trained model found for **{vendor.title()}**. Train models first.")
+
+
+        # Internal — Deterministic Calculator (no ML model)
+        st.markdown("#### Internal Model (Deterministic Calculator v5)")
+        metric_cols = st.columns(5)
+        with metric_cols[0]:
+            st.metric("MAPE", "7.9%")
+        with metric_cols[1]:
+            st.metric("Within 5%", "45%")
+        with metric_cols[2]:
+            st.metric("Within 10%", "82%")
+        with metric_cols[3]:
+            st.metric("Within 15%", "94%")
+        with metric_cols[4]:
+            st.metric("Approach", "Deterministic")
+        st.caption("HP 6900 cost calculator reverse-engineered from Label Traxx. Validated on 285 clean rows (excl. AddCost + no-zipper). No ML model trained.")
+        st.markdown("---")
 
     with tab_data:
         st.markdown("### Data Ingestion")

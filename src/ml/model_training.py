@@ -297,7 +297,7 @@ def train_all_models(training_df: pd.DataFrame) -> dict:
     """
     results = {}
 
-    for vendor in ["dazpak", "ross", "internal"]:
+    for vendor in ["dazpak", "ross"]:
         vendor_df = training_df[training_df["vendor"] == vendor].copy()
         if len(vendor_df) == 0:
             logger.warning(f"No data for {vendor} — skipping")
