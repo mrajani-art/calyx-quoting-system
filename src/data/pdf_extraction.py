@@ -358,6 +358,15 @@ def extract_ross_pdf(pdf_path: str) -> Optional[dict]:
     if m:
         result["material_spec"] = m.group(1).strip().replace('\n', ' / ')
 
+    # Parse material_spec into substrate + finish + embellishment
+    if result.get("material_spec"):
+        from ross_material_parser import parse_ross_material_spec
+        mat = parse_ross_material_spec(result["material_spec"])
+        result["substrate"] = mat["substrate"]
+        result["finish"] = mat["finish"]
+        if mat.get("embellishment"):
+            result["embellishment"] = mat["embellishment"]
+
     # ── Finishing details ───────────────────────────────────────────
     # Seal Width
     m = re.search(r'Seal\s*Width:\s*(.+?)(?:\s{2,}|\n)', text)
