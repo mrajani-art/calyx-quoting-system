@@ -187,10 +187,6 @@ def prepare_features(df: pd.DataFrame) -> pd.DataFrame:
     # MSI = (print_width × height) / 1000 — approximate, ignores repeat
     df["print_area_msi"] = (df["print_width"] * df["height"]) / 1000.0
 
-    # Print area × log quantity — captures how material cost per unit
-    # scales with both bag dimensions and order volume simultaneously
-    df["msi_x_logqty"] = df["print_area_msi"] * df["log_quantity"]
-
     # Estimated Ross converting cost per unit (flat + zipper material)
     df["ross_converting_cost"] = df.apply(
         lambda r: _ross_converting_cost(r["width"], r["zipper_score"] > 0),
@@ -221,7 +217,7 @@ def build_preprocessor() -> ColumnTransformer:
 
     all_numeric = NUMERIC_FEATURES + [
         "area_x_logqty", "has_gusset", "zipper_score",
-        "zipper_width", "print_area_msi", "msi_x_logqty",
+        "zipper_width", "print_area_msi",
         "ross_converting_cost",
     ]
 
@@ -239,7 +235,7 @@ def get_feature_names(preprocessor: ColumnTransformer) -> list[str]:
     """Get human-readable feature names after transformation."""
     all_numeric = NUMERIC_FEATURES + [
         "area_x_logqty", "has_gusset", "zipper_score",
-        "zipper_width", "print_area_msi", "msi_x_logqty",
+        "zipper_width", "print_area_msi",
         "ross_converting_cost",
     ]
     return all_numeric + CATEGORICAL_FEATURES

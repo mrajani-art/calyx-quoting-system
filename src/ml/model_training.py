@@ -98,11 +98,11 @@ class QuoteModelTrainer:
             mu, sigma = log_prices.mean(), log_prices.std()
             if sigma > 0:
                 z_scores = np.abs((log_prices - mu) / sigma)
-                inlier_mask = z_scores <= 2.5
+                inlier_mask = z_scores <= 3.0
                 n_outliers = (~inlier_mask).sum()
                 if n_outliers > 0:
                     logger.info(f"  Removed {n_outliers} price outliers "
-                                f"(>{2.5}σ in log-space) for {self.vendor}")
+                                f"(>{3.0}σ in log-space) for {self.vendor}")
                     df = df[inlier_mask]
                     sample_weights = sample_weights[inlier_mask]
 
@@ -158,7 +158,7 @@ class QuoteModelTrainer:
             learning_rate=lr,
             subsample=0.8,
             min_samples_leaf=min_leaf,
-            loss="squared_error",
+            loss="huber" if self.vendor == "ross" else "squared_error",
             random_state=RANDOM_STATE,
         )
         self.model_point.fit(X_train, y_train, sample_weight=w_train)
