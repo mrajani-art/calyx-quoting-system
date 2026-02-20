@@ -9,9 +9,8 @@ from typing import Optional
 
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import OrdinalEncoder, StandardScaler
+from sklearn.preprocessing import OrdinalEncoder
 from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
 import joblib
 
 from config.settings import (
@@ -205,21 +204,21 @@ def prepare_features(df: pd.DataFrame) -> pd.DataFrame:
 def build_preprocessor() -> ColumnTransformer:
     """
     Build a sklearn ColumnTransformer that handles both numeric
-    scaling and ordinal encoding of categoricals.
+    and ordinal encoding of categoricals.
+
+    Note: No StandardScaler — GBR is tree-based so splits are
+    invariant to scaling. Removing it avoids unnecessary state
+    and was shown to improve performance in local testing.
     """
-    # Numeric pipeline: just scale
-    numeric_pipe = Pipeline([
-        ("scaler", StandardScaler()),
-    ])
+    # Numeric pipeline: passthrough (trees don't need scaling)
+    numeric_pipe = "passthrough"
 
     # Categorical pipeline: ordinal encode (tree models handle ordinals well)
-    cat_pipe = Pipeline([
-        ("encoder", OrdinalEncoder(
-            categories=[CATEGORY_ORDERS.get(f, ["unknown"]) for f in CATEGORICAL_FEATURES],
-            handle_unknown="use_encoded_value",
-            unknown_value=-1,
-        )),
-    ])
+    cat_pipe = OrdinalEncoder(
+        categories=[CATEGORY_ORDERS.get(f, ["unknown"]) for f in CATEGORICAL_FEATURES],
+        handle_unknown="use_encoded_value",
+        unknown_value=-1,
+    )
 
     all_numeric = NUMERIC_FEATURES + [
         "area_x_logqty", "has_gusset", "zipper_score",
