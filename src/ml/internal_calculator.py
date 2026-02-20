@@ -75,9 +75,17 @@ HP_PITCH = 0.125      # inches per gear tooth
 HP_MAX_REPEAT = 38.0  # inches
 HP_MAX_GEAR = int(HP_MAX_REPEAT / HP_PITCH)  # 304
 
-# Default color config (most common): 4 CMYKOVG + 1 Premium White
+# Default color config: 4 CMYKOVG + 1 Premium White
+# NOTE: WHT MET PET already has an opaque white base in the substrate,
+# so it does NOT use the Premium White ink channel on the HP 6900.
 DEFAULT_CMYKOVG_COLORS = 4
 DEFAULT_WHITE_COLORS = 1
+
+# Substrates that have a built-in white/opaque base and do NOT need white ink
+NO_WHITE_INK_SUBSTRATES = {
+    "WHT MET PET", "WHT_MET_PET",
+    "WHT MET PET (White Metallic)",  # UI display name variant
+}
 
 # ── Thermo Laminator (Stage 2) ──
 THERMO_RATE = 45.0    # $/hr
@@ -215,7 +223,7 @@ def calculate_internal_cost(width, height, gusset, quantity, substrate, finish,
                             hole_punch="None", corners="Rounded",
                             gusset_detail="K-Seal",
                             cmykovg_colors=DEFAULT_CMYKOVG_COLORS,
-                            white_colors=DEFAULT_WHITE_COLORS):
+                            white_colors=None):
     """
     Calculate the production cost for one Internal (HP 6900) bag spec
     at one quantity tier.
@@ -232,12 +240,21 @@ def calculate_internal_cost(width, height, gusset, quantity, substrate, finish,
         corners: "Rounded" or "Straight"
         gusset_detail: "K-Seal", "Plow Bottom", "Side Gusset", etc.
         cmykovg_colors: Number of CMYKOVG ink colors (default 4)
-        white_colors: Number of white ink colors (default 1)
+        white_colors: Number of white ink colors (None = auto-detect from substrate)
 
     Returns:
         dict with keys: quantity, total_cost, unit_cost, layout, components
         OR dict with "error" key if layout is invalid
     """
+
+    # ── Substrate-aware white ink override ──
+    # WHT MET PET has a built-in opaque white base, so no Premium White ink needed.
+    # When white_colors is None (default), auto-detect based on substrate.
+    if white_colors is None:
+        if substrate in NO_WHITE_INK_SUBSTRATES:
+            white_colors = 0
+        else:
+            white_colors = DEFAULT_WHITE_COLORS
 
     # ── Layout ──
     no_across, no_around, gear_teeth, repeat_in = calc_layout(width, height, gusset)
