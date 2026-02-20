@@ -14,6 +14,19 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 import joblib
 
+from config.settings import (
+    ROSS_CONVERTING_FLAT_RATE,
+    ROSS_ZIPPER_COST_MSI,
+    ROSS_ZIPPER_WIDTH_IN,
+    ROSS_HP200K_CLICK_CMYOVG,
+    ROSS_HP200K_CLICK_WHITE,
+    ROSS_HP200K_PRIMING_MSI,
+    ROSS_HP200K_SETUP_HRS,
+    ROSS_HP200K_RATE_PER_HR,
+    ROSS_HP200K_SPOILAGE_PCT,
+    ROSS_GONDERFLEX_SPOILAGE_TABLE,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -76,6 +89,37 @@ def normalize_substrate(val: str) -> str:
     return "CUSTOM"
 
 
+# ── Ross Cost Structure Helpers ────────────────────────────────────
+# These derive features from Ross's known equipment standards.
+# They approximate Ross's cost *structure* (not actual cost, since
+# material cost and margin are unknown) to give the GBR model
+# physically meaningful signals about price drivers.
+
+def _ross_converting_cost(width: float, has_zipper: bool) -> float:
+    """
+    Estimate Ross per-unit converting cost.
+    Flat $0.055/pouch + zipper material if applicable.
+    Zipper: $5.258772/MSI at 0.95" width.
+    """
+    cost = ROSS_CONVERTING_FLAT_RATE
+    if has_zipper:
+        zipper_msi = width * ROSS_ZIPPER_WIDTH_IN / 1000.0
+        cost += ROSS_ZIPPER_COST_MSI * zipper_msi
+    return cost
+
+
+def _ross_gonderflex_spoilage(length_ft: float) -> float:
+    """
+    Look up Gonderflex spoilage % from the length-based table.
+    Returns fraction (e.g. 0.05 for 5%).
+    """
+    for max_len, spoilage in ROSS_GONDERFLEX_SPOILAGE_TABLE:
+        if length_ft <= max_len:
+            return spoilage
+    # Beyond table: use minimum
+    return ROSS_GONDERFLEX_SPOILAGE_TABLE[-1][1]
+
+
 def prepare_features(df: pd.DataFrame) -> pd.DataFrame:
     """
     Transform raw quote data into ML-ready features.
@@ -132,6 +176,29 @@ def prepare_features(df: pd.DataFrame) -> pd.DataFrame:
                     "CR Zipper": 3, "Presto CR Zipper": 3.5}
     df["zipper_score"] = df["zipper"].map(zipper_score).fillna(0)
 
+    # ── Ross cost-structure features ────────────────────────────────
+    # These encode known relationships from Ross's equipment standards
+    # to give the model physically meaningful signals.
+
+    # Zipper × width interaction: zipper cost scales with bag width
+    has_zipper_bool = df["zipper_score"] > 0
+    df["zipper_width"] = df["width"] * has_zipper_bool.astype(float)
+
+    # Estimated Ross converting cost per unit (flat + zipper material)
+    df["ross_converting_cost"] = df.apply(
+        lambda r: _ross_converting_cost(r["width"], r["zipper_score"] > 0),
+        axis=1,
+    )
+
+    # Ross HP 200K setup cost amortized per unit
+    # Setup = 0.25 hrs × $409/hr = $102.25 fixed cost
+    ross_setup_cost = ROSS_HP200K_SETUP_HRS * ROSS_HP200K_RATE_PER_HR
+    df["ross_setup_per_unit"] = ross_setup_cost / df["quantity"].clip(lower=1)
+
+    # Estimated print area in MSI per unit (for ink/priming cost signals)
+    # MSI = (print_width × height) / 1000 — approximate, ignores repeat
+    df["print_area_msi"] = (df["print_width"] * df["height"]) / 1000.0
+
     return df
 
 
@@ -154,7 +221,12 @@ def build_preprocessor() -> ColumnTransformer:
         )),
     ])
 
-    all_numeric = NUMERIC_FEATURES + ["area_x_logqty", "has_gusset", "zipper_score"]
+    all_numeric = NUMERIC_FEATURES + [
+        "area_x_logqty", "has_gusset", "zipper_score",
+        # Ross cost-structure features
+        "zipper_width", "ross_converting_cost", "ross_setup_per_unit",
+        "print_area_msi",
+    ]
 
     preprocessor = ColumnTransformer(
         transformers=[
@@ -168,7 +240,11 @@ def build_preprocessor() -> ColumnTransformer:
 
 def get_feature_names(preprocessor: ColumnTransformer) -> list[str]:
     """Get human-readable feature names after transformation."""
-    all_numeric = NUMERIC_FEATURES + ["area_x_logqty", "has_gusset", "zipper_score"]
+    all_numeric = NUMERIC_FEATURES + [
+        "area_x_logqty", "has_gusset", "zipper_score",
+        "zipper_width", "ross_converting_cost", "ross_setup_per_unit",
+        "print_area_msi",
+    ]
     return all_numeric + CATEGORICAL_FEATURES
 
 

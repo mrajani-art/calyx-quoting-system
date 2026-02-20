@@ -202,3 +202,44 @@ DAZPAK_ADDER_COLS = ["adder_per_m_imps", "adder_per_msi", "adder_per_ea_imp"]
 # ── Ross Pricing Columns (from PDF structure) ─────────────────────
 # Simple: Quantity, Each (unit price), Total
 ROSS_PRICE_COLS = ["unit_price", "total_price"]
+
+# ── Ross Equipment Standards (from Label Traxx config) ────────────
+# These constants capture Ross's known cost structure drivers
+# to improve ML feature engineering. Material cost and margin unknown.
+
+# HP 200K Film Press (wide-format digital)
+ROSS_HP200K_RATE_PER_HR = 409.00       # $/hr press rate (all color counts)
+ROSS_HP200K_CLICK_CMYOVG = 0.0394     # $/click CMYK+OVG channels
+ROSS_HP200K_CLICK_WHITE = 0.01917     # $/click white ink
+ROSS_HP200K_CLICK_BLACK = 0.01917     # $/click black ink
+ROSS_HP200K_PRIMING_MSI = 0.07        # $/MSI inline priming
+ROSS_HP200K_SETUP_HRS = 0.25          # Job setup make-ready hours
+ROSS_HP200K_SPOILAGE_PCT = 0.008      # Flat 0.8% spoilage
+ROSS_HP200K_MAX_PRINT_WIDTH = 29.5    # inches
+ROSS_HP200K_MAX_STOCK_WIDTH = 30.0    # inches
+
+# 30" Gonderflex Press (flexo)
+ROSS_GONDERFLEX_RATE_PER_HR = 186.00  # $/hr press rate
+ROSS_GONDERFLEX_SPEED_FPM = 180       # ft/min constant
+ROSS_GONDERFLEX_PLATE_CHANGE = 25.00  # $ per plate change
+ROSS_GONDERFLEX_COLOR_CHANGE = 25.00  # $ per color change
+# Spoilage table: (max_length_ft, spoilage_pct)
+ROSS_GONDERFLEX_SPOILAGE_TABLE = [
+    (5_000, 0.08),
+    (10_000, 0.05),
+    (20_000, 0.048),
+    (30_000, 0.042),
+    (40_000, 0.04),
+    (50_000, 0.038),
+    (60_000, 0.032),
+    (70_000, 0.028),
+    (80_000, 0.022),
+    (90_000, 0.018),
+    (100_000, 0.015),
+    (450_000, 0.01),
+]
+
+# Pouch Maker (converting)
+ROSS_CONVERTING_FLAT_RATE = 0.055     # $/pouch flat converting charge
+ROSS_ZIPPER_COST_MSI = 5.258772       # $/MSI zipper material
+ROSS_ZIPPER_WIDTH_IN = 0.95           # inches, zipper web width

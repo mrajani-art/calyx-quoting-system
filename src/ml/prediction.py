@@ -271,6 +271,22 @@ class QuotePredictor:
                 value = "area × volume interaction"
             elif feature == "quantity":
                 value = f"{base_qty:,}"
+            elif feature == "zipper_width":
+                w = float(specs.get("width", 0))
+                has_z = specs.get("zipper", "No Zipper") != "No Zipper"
+                value = f"{w:.1f}\" × {'zipper' if has_z else 'no zipper'}"
+            elif feature == "ross_converting_cost":
+                w = float(specs.get("width", 0))
+                has_z = specs.get("zipper", "No Zipper") != "No Zipper"
+                from src.ml.feature_engineering import _ross_converting_cost
+                value = f"${_ross_converting_cost(w, has_z):.4f}/unit"
+            elif feature == "ross_setup_per_unit":
+                value = f"${102.25 / base_qty:.5f}/unit (setup amortized)"
+            elif feature == "print_area_msi":
+                h = float(specs.get("height", 0))
+                g = float(specs.get("gusset", 0))
+                pw = h * 2 + g
+                value = f"{pw * h / 1000:.4f} MSI"
 
             cost_factors[feature] = {
                 "importance": round(importance * 100, 1),
