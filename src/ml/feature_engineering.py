@@ -183,17 +183,6 @@ def prepare_features(df: pd.DataFrame) -> pd.DataFrame:
     has_zipper_bool = df["zipper_score"] > 0
     df["zipper_width"] = df["width"] * has_zipper_bool.astype(float)
 
-    # Estimated Ross converting cost per unit (flat + zipper material)
-    df["ross_converting_cost"] = df.apply(
-        lambda r: _ross_converting_cost(r["width"], r["zipper_score"] > 0),
-        axis=1,
-    )
-
-    # Ross HP 200K setup cost amortized per unit
-    # Setup = 0.25 hrs × $409/hr = $102.25 fixed cost
-    ross_setup_cost = ROSS_HP200K_SETUP_HRS * ROSS_HP200K_RATE_PER_HR
-    df["ross_setup_per_unit"] = ross_setup_cost / df["quantity"].clip(lower=1)
-
     # Estimated print area in MSI per unit (for ink/priming cost signals)
     # MSI = (print_width × height) / 1000 — approximate, ignores repeat
     df["print_area_msi"] = (df["print_width"] * df["height"]) / 1000.0
@@ -222,9 +211,8 @@ def build_preprocessor() -> ColumnTransformer:
 
     all_numeric = NUMERIC_FEATURES + [
         "area_x_logqty", "has_gusset", "zipper_score",
-        # Ross cost-structure features
-        "zipper_width", "ross_converting_cost", "ross_setup_per_unit",
-        "print_area_msi",
+        # Ross cost-structure features (non-redundant only)
+        "zipper_width", "print_area_msi",
     ]
 
     preprocessor = ColumnTransformer(
@@ -241,8 +229,7 @@ def get_feature_names(preprocessor: ColumnTransformer) -> list[str]:
     """Get human-readable feature names after transformation."""
     all_numeric = NUMERIC_FEATURES + [
         "area_x_logqty", "has_gusset", "zipper_score",
-        "zipper_width", "ross_converting_cost", "ross_setup_per_unit",
-        "print_area_msi",
+        "zipper_width", "print_area_msi",
     ]
     return all_numeric + CATEGORICAL_FEATURES
 

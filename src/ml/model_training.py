@@ -87,6 +87,25 @@ class QuoteModelTrainer:
         valid_mask = df[target_col].notna()
         df = df[valid_mask]
         sample_weights = sample_weights[valid_mask.values]
+
+        # ── Outlier removal: drop extreme prices ──────────────────
+        # Remove rows where log(unit_price) is >3 std devs from mean
+        # for this vendor. These are likely parsing errors or anomalous
+        # quotes that hurt model generalization.
+        prices = df[target_col].values
+        if len(prices) > 20:
+            log_prices = np.log(np.clip(prices, 1e-6, None))
+            mu, sigma = log_prices.mean(), log_prices.std()
+            if sigma > 0:
+                z_scores = np.abs((log_prices - mu) / sigma)
+                inlier_mask = z_scores <= 3.0
+                n_outliers = (~inlier_mask).sum()
+                if n_outliers > 0:
+                    logger.info(f"  Removed {n_outliers} price outliers "
+                                f"(>{3.0}σ in log-space) for {self.vendor}")
+                    df = df[inlier_mask]
+                    sample_weights = sample_weights[inlier_mask]
+
         if len(df) < 10:
             logger.warning(f"Only {len(df)} samples for {self.vendor} — model may be unreliable")
 
