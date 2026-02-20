@@ -122,12 +122,16 @@ class QuoteModelTrainer:
             )
 
         # ── Point prediction model ─────────────────────────────────
-        # Tuned for internal vendor's smaller dataset (498 rows):
-        # more estimators + lower learning rate = better generalization
-        n_est = 500 if self.vendor == "internal" else 300
-        depth = 6 if self.vendor == "internal" else 5
-        lr = 0.03 if self.vendor == "internal" else 0.05
-        min_leaf = 3 if self.vendor == "internal" else 5
+        # Per-vendor hyperparameters tuned for dataset characteristics:
+        # - Internal: more estimators + lower LR for small dataset (97 cost-only)
+        # - Ross: moderate depth + lower LR for log-target stability
+        # - Dazpak: standard settings for mature dataset
+        if self.vendor == "internal":
+            n_est, depth, lr, min_leaf = 500, 6, 0.03, 3
+        elif self.vendor == "ross":
+            n_est, depth, lr, min_leaf = 400, 5, 0.03, 4
+        else:  # dazpak
+            n_est, depth, lr, min_leaf = 300, 5, 0.05, 5
 
         self.model_point = GradientBoostingRegressor(
             n_estimators=n_est,
@@ -280,8 +284,8 @@ def train_all_models(training_df: pd.DataFrame) -> dict:
             logger.warning(f"No data for {vendor} — skipping")
             continue
 
-        # Internal model uses log-target for better fit across wide qty range
-        use_log = (vendor == "internal")
+        # Internal and Ross models use log-target for better fit across qty range
+        use_log = (vendor in ("internal", "ross"))
         trainer = QuoteModelTrainer(vendor, use_log_target=use_log)
         metrics = trainer.train(vendor_df)
         trainer.save()

@@ -194,14 +194,12 @@ def deduplicate_training_data(df: pd.DataFrame) -> pd.DataFrame:
     """
     Remove duplicate price rows caused by re-ingestion of revised quotes.
 
-    Strategy:
-    - For rows WITH an fl_number: group by (fl_number, width, height,
-      gusset, quantity) and keep the row with the latest created_at.
-      This ensures revised estimates supersede older ones.
-    - For rows WITHOUT an fl_number: keep all (no way to detect dupes).
-
-    Also removes exact unit_price duplicates within each group as a
-    secondary safety net.
+    Two-pass deduplication:
+    1. For rows WITH an fl_number: group by (fl_number, quantity) and
+       keep only the most recent row. Different PDFs for the same FL
+       at the same qty represent revisions, not independent data.
+    2. Secondary pass: remove rows with identical (vendor, width, height,
+       gusset, quantity, unit_price) — exact duplicates regardless of FL.
     """
     before_count = len(df)
 
@@ -220,10 +218,9 @@ def deduplicate_training_data(df: pd.DataFrame) -> pd.DataFrame:
         # Normalize fl_number for grouping
         df_with_fl["_fl_norm"] = df_with_fl["fl_number"].str.strip().str.upper()
 
-        # Dedup key: same FL + same dimensions + same quantity = same price point
-        dedup_cols = ["_fl_norm", "width", "height", "gusset", "quantity"]
+        # Pass 1: Same FL + same quantity = same price point (keep latest)
+        dedup_cols = ["_fl_norm", "quantity"]
 
-        # Sort so latest is first, then drop duplicates keeping first
         df_with_fl = (
             df_with_fl
             .sort_values("_created_ts", ascending=False, na_position="last")
@@ -235,11 +232,23 @@ def deduplicate_training_data(df: pd.DataFrame) -> pd.DataFrame:
     df = pd.concat([df_with_fl, df_no_fl], ignore_index=True)
     df = df.drop(columns=["_created_ts"])
 
+    # Pass 2: Remove exact duplicates (same specs + same price)
+    exact_dedup_cols = ["vendor", "width", "height", "gusset", "quantity", "unit_price"]
+    available_cols = [c for c in exact_dedup_cols if c in df.columns]
+    if available_cols:
+        before_pass2 = len(df)
+        df = df.drop_duplicates(subset=available_cols, keep="first")
+        pass2_removed = before_pass2 - len(df)
+    else:
+        pass2_removed = 0
+
     after_count = len(df)
     if before_count != after_count:
         logger.info(
             f"Deduplication: {before_count} → {after_count} rows "
-            f"({before_count - after_count} duplicate price rows removed)"
+            f"({before_count - after_count} removed: "
+            f"{before_count - after_count - pass2_removed} revision dupes, "
+            f"{pass2_removed} exact dupes)"
         )
 
     return df
