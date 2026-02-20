@@ -195,11 +195,12 @@ def deduplicate_training_data(df: pd.DataFrame) -> pd.DataFrame:
     Remove duplicate price rows caused by re-ingestion of revised quotes.
 
     Two-pass deduplication:
-    1. For rows WITH an fl_number: group by (fl_number, quantity) and
-       keep only the most recent row. Different PDFs for the same FL
-       at the same qty represent revisions, not independent data.
+    1. For rows WITH an fl_number: group by (fl_number, width, height,
+       gusset, substrate, quantity) and keep only the most recent row.
+       This preserves legitimate variants (same FL, different bag sizes
+       or substrates) while removing true revision duplicates.
     2. Secondary pass: remove rows with identical (vendor, width, height,
-       gusset, quantity, unit_price) — exact duplicates regardless of FL.
+       gusset, substrate, zipper, quantity, unit_price) — exact duplicates.
     """
     before_count = len(df)
 
@@ -218,13 +219,15 @@ def deduplicate_training_data(df: pd.DataFrame) -> pd.DataFrame:
         # Normalize fl_number for grouping
         df_with_fl["_fl_norm"] = df_with_fl["fl_number"].str.strip().str.upper()
 
-        # Pass 1: Same FL + same quantity = same price point (keep latest)
-        dedup_cols = ["_fl_norm", "quantity"]
+        # Pass 1: Same FL + same bag specs + same quantity = revision dupe
+        # Include dimensions AND substrate to preserve legitimate variants
+        dedup_cols = ["_fl_norm", "width", "height", "gusset", "substrate", "quantity"]
+        available_dedup = [c for c in dedup_cols if c in df_with_fl.columns]
 
         df_with_fl = (
             df_with_fl
             .sort_values("_created_ts", ascending=False, na_position="last")
-            .drop_duplicates(subset=dedup_cols, keep="first")
+            .drop_duplicates(subset=available_dedup, keep="first")
         )
         df_with_fl = df_with_fl.drop(columns=["_fl_norm"])
 
@@ -233,7 +236,8 @@ def deduplicate_training_data(df: pd.DataFrame) -> pd.DataFrame:
     df = df.drop(columns=["_created_ts"])
 
     # Pass 2: Remove exact duplicates (same specs + same price)
-    exact_dedup_cols = ["vendor", "width", "height", "gusset", "quantity", "unit_price"]
+    exact_dedup_cols = ["vendor", "width", "height", "gusset", "substrate",
+                        "zipper", "quantity", "unit_price"]
     available_cols = [c for c in exact_dedup_cols if c in df.columns]
     if available_cols:
         before_pass2 = len(df)
