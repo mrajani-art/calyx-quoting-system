@@ -105,21 +105,30 @@ def create_vendor_section(vendor_data: dict) -> list:
     
     blocks = []
     
+    # Check if log transformation was used
+    use_log = metrics.get('use_log_target', False)
+    
     # Vendor header
+    log_note = " (Log-transformed)" if use_log else ""
     blocks.append({
         "type": "section",
         "text": {
             "type": "mrkdwn",
-            "text": f"*📦 {vendor.upper()} Model*"
+            "text": f"*📦 {vendor.upper()} Model{log_note}*"
         }
     })
     
-    # Metrics
-    mape = metrics.get('test_mape', 0) * 100
-    rmse = metrics.get('test_rmse', 0)
-    r2 = metrics.get('test_r2', 0)
-    cv_mape = metrics.get('cv_mape_mean', 0) * 100
-    cv_std = metrics.get('cv_mape_std', 0) * 100
+    # Metrics - use actual keys from your joblib files
+    mape = metrics.get('mape', 0)  # Already in percentage format (7.45 not 0.0745)
+    rmse = metrics.get('rmse', 0)
+    r2 = metrics.get('r2', 0)
+    coverage_90 = metrics.get('coverage_90', 0)  # 90% CI coverage
+    
+    # Cross-validation - already in percentage
+    cv_mape = metrics.get('cv_mape_mean', 0)
+    cv_std = metrics.get('cv_mape_std', 0)
+    
+    # Sample counts
     n_train = metrics.get('n_train', 0)
     n_test = metrics.get('n_test', 0)
     
@@ -132,6 +141,7 @@ Samples:        {n_train} train / {n_test} test
   MAPE:           {mape:.1f}%
   RMSE:           ${rmse:.5f}
   R²:             {r2:.3f}
+  90% CI Cover:   {coverage_90:.0f}%
   CV MAPE:        {cv_mape:.1f}% ± {cv_std:.1f}%
 ```"""
     
@@ -197,7 +207,7 @@ def create_slack_message(all_metrics: list) -> dict:
     
     # Summary
     total_vendors = len(all_metrics)
-    avg_mape = sum(v['metrics'].get('test_mape', 0) for v in all_metrics) / total_vendors * 100 if total_vendors > 0 else 0
+    avg_mape = sum(v['metrics'].get('mape', 0) for v in all_metrics) / total_vendors if total_vendors > 0 else 0
     
     summary_text = f"""*📊 Overall Summary*
 ```
@@ -223,7 +233,8 @@ Average MAPE:       {avg_mape:.1f}%
 • *MAPE* - Mean Absolute Percentage Error (lower is better, <10% is excellent)
 • *RMSE* - Root Mean Squared Error (prediction accuracy in $)
 • *R²* - Coefficient of determination (higher is better, >0.8 is good)
-• *CV MAPE* - Cross-validated error with standard deviation"""
+• *90% CI Cover* - % of actual values within prediction interval (target: 90%)
+• *CV MAPE* - Cross-validated error in log-space (not directly comparable to MAPE)"""
         }
     })
     
@@ -297,9 +308,11 @@ def main():
     for vendor_data in all_metrics:
         vendor = vendor_data['vendor']
         metrics = vendor_data['metrics']
-        mape = metrics.get('test_mape', 0) * 100
-        rmse = metrics.get('test_rmse', 0)
-        r2 = metrics.get('test_r2', 0)
+        
+        mape = metrics.get('mape', 0)
+        rmse = metrics.get('rmse', 0)
+        r2 = metrics.get('r2', 0)
+        coverage_90 = metrics.get('coverage_90', 0)
         n_train = metrics.get('n_train', 0)
         n_test = metrics.get('n_test', 0)
         
@@ -308,6 +321,7 @@ def main():
         print(f"  MAPE:     {mape:.1f}%")
         print(f"  RMSE:     ${rmse:.5f}")
         print(f"  R²:       {r2:.3f}")
+        print(f"  90% CI:   {coverage_90:.0f}%")
     print("="*60)
     
     # Create Slack message
