@@ -470,7 +470,18 @@ def _render_results(result: dict, margin_pct: int = 35):
             </tr>'''
 
         table_html += '</tbody></table>'
-        st.markdown(table_html, unsafe_allow_html=True)
+        styled_table = f"""<style>
+.comp-table {{ width:100%; border-collapse:collapse; font-size:0.82rem; }}
+.comp-table th {{ text-align:left; padding:0.5rem 0.75rem; font-size:0.65rem; font-weight:600;
+    letter-spacing:0.06em; text-transform:uppercase; color:#6b7280; border-bottom:2px solid #1a1a1a; }}
+.comp-table th.num {{ text-align:right; }}
+.comp-table td {{ padding:0.5rem 0.75rem; border-bottom:1px solid #e5e7eb; vertical-align:middle; }}
+.comp-table td.num {{ text-align:right; font-family:'IBM Plex Mono',monospace; font-size:0.8rem; }}
+.comp-table td.qty {{ font-family:'IBM Plex Mono',monospace; font-weight:600; }}
+.comp-table td.sell {{ text-align:right; font-family:'IBM Plex Mono',monospace; font-weight:600; color:#1a472a; }}
+.comp-table tr.best td {{ background:#ecfdf5; }}
+</style>{table_html}"""
+st.html(styled_table)
 
         # ── Download Estimate PDF ──────────────────────────────────
         try:
