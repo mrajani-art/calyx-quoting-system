@@ -179,6 +179,10 @@ def prepare_features(df: pd.DataFrame) -> pd.DataFrame:
     # These encode known relationships from Ross's equipment standards
     # to give the model physically meaningful signals.
 
+    # Ross stock width: only 26" or 30" — binary, not continuous
+    # This prevents print_width from dominating importance
+    df["ross_stock_width"] = np.where(df["print_width"] > 26, 30.0, 26.0)
+
     # Zipper × width interaction: zipper cost scales with bag width
     has_zipper_bool = df["zipper_score"] > 0
     df["zipper_width"] = df["width"] * has_zipper_bool.astype(float)
@@ -196,10 +200,13 @@ def prepare_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def build_preprocessor() -> ColumnTransformer:
+def build_preprocessor(vendor: str = "") -> ColumnTransformer:
     """
     Build a sklearn ColumnTransformer that handles both numeric
     and ordinal encoding of categoricals.
+
+    For Ross, print_width is replaced with ross_stock_width (binary 26/30)
+    to prevent the continuous print_width from dominating importance.
 
     Note: No StandardScaler — GBR is tree-based so splits are
     invariant to scaling. Removing it avoids unnecessary state
@@ -215,11 +222,21 @@ def build_preprocessor() -> ColumnTransformer:
         unknown_value=-1,
     )
 
-    all_numeric = NUMERIC_FEATURES + [
+    base_numeric = [
+        "width", "height", "gusset",
+        "bag_area_sqin",
+        "quantity", "log_quantity", "inv_quantity",
         "area_x_logqty", "has_gusset", "zipper_score",
         "zipper_width", "print_area_msi",
         "ross_converting_cost",
     ]
+
+    if vendor == "ross":
+        # Ross only uses 26" or 30" stock — binary feature instead
+        all_numeric = base_numeric + ["ross_stock_width"]
+    else:
+        # Other vendors use continuous print_width
+        all_numeric = ["print_width"] + base_numeric
 
     preprocessor = ColumnTransformer(
         transformers=[
@@ -233,12 +250,9 @@ def build_preprocessor() -> ColumnTransformer:
 
 def get_feature_names(preprocessor: ColumnTransformer) -> list[str]:
     """Get human-readable feature names after transformation."""
-    all_numeric = NUMERIC_FEATURES + [
-        "area_x_logqty", "has_gusset", "zipper_score",
-        "zipper_width", "print_area_msi",
-        "ross_converting_cost",
-    ]
-    return all_numeric + CATEGORICAL_FEATURES
+    # Extract numeric feature names from the fitted preprocessor
+    num_features = preprocessor.transformers_[0][2]  # the column list
+    return list(num_features) + CATEGORICAL_FEATURES
 
 
 def save_preprocessor(preprocessor: ColumnTransformer, path: str):

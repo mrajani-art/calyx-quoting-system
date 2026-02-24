@@ -49,7 +49,7 @@ class QuoteModelTrainer:
         """
         self.vendor = vendor
         self.use_log_target = use_log_target
-        self.preprocessor = build_preprocessor()
+        self.preprocessor = build_preprocessor(vendor=vendor)
         self.model_point = None       # Main prediction model (squared error)
         self.model_lower = None       # 10th percentile
         self.model_upper = None       # 90th percentile
