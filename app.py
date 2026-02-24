@@ -413,16 +413,31 @@ def _render_results(result: dict, margin_pct: int = 35):
                 <div class="value">{format_currency(lowest_sell, 5)}</div>
             </div>""", unsafe_allow_html=True)
         with mcols[4]:
-            mape = result.get("model_metrics", {}).get("mape", "—")
-            mape_str = f"{mape:.1f}%" if isinstance(mape, (int, float)) else mape
-            if result.get("is_deterministic"):
-                metric_label = "Calc MAPE"
+            mape = result.get("model_metrics", {}).get("mape", None)
+            is_det = result.get("is_deterministic", False)
+
+            # Calculate confidence rating from MAPE
+            if isinstance(mape, (int, float)):
+                if mape <= 5:
+                    conf_label, conf_color = "Very High", "#166534"
+                elif mape <= 10:
+                    conf_label, conf_color = "High", "#15803d"
+                elif mape <= 15:
+                    conf_label, conf_color = "Moderate", "#a16207"
+                elif mape <= 25:
+                    conf_label, conf_color = "Low", "#c2410c"
+                else:
+                    conf_label, conf_color = "Very Low", "#dc2626"
+                conf_detail = f"{100 - mape:.0f}% avg accuracy"
             else:
-                metric_label = "Model MAPE"
+                conf_label, conf_color = "—", "#6b7280"
+                conf_detail = ""
+
             st.markdown(f"""
             <div class="metric-card">
-                <div class="label">{metric_label}</div>
-                <div class="value">{mape_str}</div>
+                <div class="label">Confidence</div>
+                <div class="value" style="color:{conf_color};">{conf_label}</div>
+                <div class="label" style="font-size:0.6rem;">{conf_detail}</div>
             </div>""", unsafe_allow_html=True)
 
     # Warnings
@@ -668,7 +683,7 @@ if page == "🏷️ Quote Builder":
     st.markdown("""
     <div class="page-header">
         <h1>Packaging Estimate Generator</h1>
-        <p>Calyx Containers — flexible packaging estimates across Dazpak, Ross, and Internal vendors</p>
+        <p>Get instant cost estimates for custom flexible packaging. Enter your bag specs and quantities below — pricing is generated from historical production data and vendor cost models.</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -682,7 +697,7 @@ if page == "🏷️ Quote Builder":
     st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
     # ── Input Form ──────────────────────────────────────────────────
-    col_left, col_right = st.columns([1, 1], gap="large")
+    col_left, col_right = st.columns([1, 1], gap="medium")
 
     with col_left:
         st.markdown('<div class="section-label">Bag Specifications</div>', unsafe_allow_html=True)
@@ -787,8 +802,8 @@ if page == "🏷️ Quote Builder":
         vendor_class_map = {"dazpak": "vendor-dazpak", "ross": "vendor-ross", "internal": "vendor-internal"}
         vendor_label_map = {
             "dazpak": "Dazpak (Flexographic)",
-            "ross": "Ross (Digital >12\")",
-            "internal": "Internal — HP 6900 (Digital ≤12\")",
+            "ross": "Ross (Digital)",
+            "internal": "Internal — HP 6900 (Digital)",
         }
         vendor_class = vendor_class_map.get(routing["vendor"], "vendor-internal")
         vendor_label = vendor_label_map.get(routing["vendor"], routing["vendor"])
@@ -813,7 +828,7 @@ if page == "🏷️ Quote Builder":
                 "Margin %",
                 min_value=0,
                 max_value=100,
-                value=35,
+                value=20,
                 step=5,
                 help="Markup applied on top of cost to get the sell price. Sell Price = Cost ÷ (1 - Margin%/100)",
             )
