@@ -63,6 +63,17 @@ st.markdown("""
         font-family: 'IBM Plex Mono', 'SF Mono', Consolas, monospace;
     }
 
+    /* ── Tighten form elements ───────────────────────── */
+    .stNumberInput, .stSelectbox, .stTextInput {
+        max-width: 100%;
+    }
+    [data-testid="stNumberInput"] {
+        max-width: 180px;
+    }
+    div[data-testid="column"] {
+        padding: 0 0.25rem;
+    }
+
     /* ── Page Header ────────────────────────────────── */
     .page-header {
         padding: 1.25rem 0 1rem;
@@ -383,7 +394,7 @@ def _render_results(result: dict, margin_pct: int = 35):
     # Header metrics
     preds = result["predictions"]
     if preds:
-        mcols = st.columns(5)
+        mcols = st.columns(3)
         with mcols[0]:
             vendor_label = {"dazpak": "Dazpak", "ross": "Ross", "internal": "Internal"}.get(result["vendor"], result["vendor"])
             vendor_class = {"dazpak": "vendor-dazpak", "ross": "vendor-ross", "internal": "vendor-internal"}.get(result["vendor"], "")
@@ -399,24 +410,8 @@ def _render_results(result: dict, margin_pct: int = 35):
                 <div class="value" style="font-size:1rem; font-family:'Instrument Sans',sans-serif;">{result['print_method'].title()}</div>
             </div>""", unsafe_allow_html=True)
         with mcols[2]:
-            lowest_cost = min(p["unit_price"] for p in preds)
-            st.markdown(f"""
-            <div class="metric-card">
-                <div class="label">Best Cost</div>
-                <div class="value">{format_currency(lowest_cost, 5)}</div>
-            </div>""", unsafe_allow_html=True)
-        with mcols[3]:
-            lowest_sell = lowest_cost * margin_multiplier
-            st.markdown(f"""
-            <div class="metric-card">
-                <div class="label">Best Sell Price</div>
-                <div class="value">{format_currency(lowest_sell, 5)}</div>
-            </div>""", unsafe_allow_html=True)
-        with mcols[4]:
             mape = result.get("model_metrics", {}).get("mape", None)
-            is_det = result.get("is_deterministic", False)
 
-            # Calculate confidence rating from MAPE
             if isinstance(mape, (int, float)):
                 if mape <= 5:
                     conf_label, conf_color = "Very High", "#166534"
@@ -688,7 +683,7 @@ if page == "🏷️ Quote Builder":
     """, unsafe_allow_html=True)
 
     # ── Customer & Rep ──────────────────────────────────────────────
-    cust_cols = st.columns([2, 1])
+    cust_cols = st.columns([3, 2])
     with cust_cols[0]:
         customer_name = st.text_input("Customer Name", value="", placeholder="Enter customer name")
     with cust_cols[1]:

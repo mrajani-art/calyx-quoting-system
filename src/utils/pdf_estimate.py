@@ -27,9 +27,10 @@ LOGO_PATH = Path(__file__).resolve().parent.parent.parent / "assets" / "calyx_lo
 
 
 def _generate_estimate_number() -> str:
-    """Generate a unique estimate number: EST-YYYYMMDD-XXXX."""
-    short_id = uuid.uuid4().hex[:4].upper()
-    return f"EST-{datetime.now().strftime('%Y%m%d')}-{short_id}"
+    """Generate a unique estimate number: EST-YYYYMMDD-HHMMSS-XX."""
+    now = datetime.now()
+    short_id = uuid.uuid4().hex[:2].upper()
+    return f"EST-{now.strftime('%Y%m%d')}-{now.strftime('%H%M%S')}-{short_id}"
 
 
 def generate_estimate_pdf(

@@ -77,7 +77,6 @@ SUBSTRATE_OPTIONS = [
     "CLR PET (Clear)",
     "WHT MET PET (White Metallic)",
     "HB CLR PET (High Barrier Clear)",
-    "Custom",
 ]
 
 # Map UI labels → canonical values used in ML features
@@ -121,7 +120,7 @@ GUSSET_OPTIONS = [
     "Plow Bottom",
     "N/A",
 ]
-GUSSET_UI_OPTIONS = ["Flat Bottom / Side Gusset", "K Seal", "K Seal & Skirt Seal", "Plow Bottom", "None"]
+GUSSET_UI_OPTIONS = ["K Seal & Skirt Seal", "Plow Bottom", "None"]
 
 # Column K: Zipper
 ZIPPER_OPTIONS = [
