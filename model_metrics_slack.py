@@ -1,6 +1,7 @@
 """
 Daily Model Training Statistics from Saved Metrics
 Reads metrics from models/*.joblib files and sends to Slack
+Tracks trends vs previous training run
 """
 
 import joblib
@@ -9,6 +10,69 @@ import json
 import requests
 from datetime import datetime
 from pathlib import Path
+
+# ══════════════════════════════════════════════════════════════════════════════
+# HISTORY TRACKING
+# ══════════════════════════════════════════════════════════════════════════════
+
+HISTORY_FILE = Path("models/metrics_history.json")
+
+def load_previous_metrics() -> dict:
+    """Load metrics from previous run"""
+    if HISTORY_FILE.exists():
+        try:
+            with open(HISTORY_FILE, 'r') as f:
+                return json.load(f)
+        except:
+            return {}
+    return {}
+
+def save_current_metrics(all_metrics: list):
+    """Save current metrics for next comparison"""
+    history = {
+        'timestamp': datetime.now().isoformat(),
+        'vendors': {}
+    }
+    
+    for vendor_data in all_metrics:
+        vendor = vendor_data['vendor']
+        metrics = vendor_data['metrics']
+        
+        history['vendors'][vendor] = {
+            'mape': metrics.get('mape', 0),
+            'rmse': metrics.get('rmse', 0),
+            'r2': metrics.get('r2', 0),
+            'coverage_90': metrics.get('coverage_90', 0),
+            'n_train': metrics.get('n_train', 0),
+            'n_test': metrics.get('n_test', 0)
+        }
+    
+    with open(HISTORY_FILE, 'w') as f:
+        json.dump(history, f, indent=2)
+
+def get_trend_indicator(current: float, previous: float, lower_is_better: bool = True) -> str:
+    """Get trend indicator with arrow"""
+    if previous == 0 or previous is None:
+        return "➖ N/A"
+    
+    diff = current - previous
+    pct_change = (diff / abs(previous)) * 100 if previous != 0 else 0
+    
+    if abs(pct_change) < 0.5:  # Less than 0.5% change = stable
+        return f"➡️ {pct_change:+.1f}%"
+    
+    if lower_is_better:
+        # For MAPE, RMSE - lower is better
+        if diff < 0:
+            return f"🟢↓ {pct_change:.1f}%"  # Improved (decreased)
+        else:
+            return f"🔴↑ {pct_change:+.1f}%"  # Degraded (increased)
+    else:
+        # For R², coverage - higher is better
+        if diff > 0:
+            return f"🟢↑ {pct_change:+.1f}%"  # Improved (increased)
+        else:
+            return f"🔴↓ {pct_change:.1f}%"  # Degraded (decreased)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # LOAD MODEL METRICS
@@ -95,13 +159,14 @@ def get_quality_indicator(mape: float) -> str:
     else:
         return "🔴 Needs Improvement"
 
-def create_vendor_section(vendor_data: dict) -> list:
-    """Create Slack blocks for a vendor"""
+def create_vendor_section(vendor_data: dict, previous_history: dict) -> list:
+    """Create Slack blocks for a vendor with trend indicators"""
     
     vendor = vendor_data['vendor']
     metrics = vendor_data['metrics']
-    importances = vendor_data['importances']
-    features = vendor_data['features']
+    
+    # Get previous metrics if available
+    prev = previous_history.get('vendors', {}).get(vendor, {})
     
     blocks = []
     
@@ -118,22 +183,26 @@ def create_vendor_section(vendor_data: dict) -> list:
         }
     })
     
-    # Metrics - use actual keys from your joblib files
-    mape = metrics.get('mape', 0)  # Already in percentage format (7.45 not 0.0745)
+    # Current metrics
+    mape = metrics.get('mape', 0)
     rmse = metrics.get('rmse', 0)
     r2 = metrics.get('r2', 0)
-    coverage_90 = metrics.get('coverage_90', 0)  # 90% CI coverage
-    
-    # Cross-validation - already in percentage
-    cv_mape = metrics.get('cv_mape_mean', 0)
-    cv_std = metrics.get('cv_mape_std', 0)
-    
-    # Sample counts
+    coverage_90 = metrics.get('coverage_90', 0)
     n_train = metrics.get('n_train', 0)
     n_test = metrics.get('n_test', 0)
     
+    # Previous metrics
+    prev_mape = prev.get('mape', 0)
+    prev_rmse = prev.get('rmse', 0)
+    prev_r2 = prev.get('r2', 0)
+    prev_coverage = prev.get('coverage_90', 0)
+    prev_n_train = prev.get('n_train', 0)
+    prev_n_test = prev.get('n_test', 0)
+    
+    # Quality indicator
     quality = get_quality_indicator(mape)
     
+    # Metrics with current values
     metrics_text = f"""*Quality:* {quality}
 
 ```
@@ -142,7 +211,6 @@ Samples:        {n_train} train / {n_test} test
   RMSE:           ${rmse:.5f}
   R²:             {r2:.3f}
   90% CI Cover:   {coverage_90:.0f}%
-  CV MAPE:        {cv_mape:.1f}% ± {cv_std:.1f}%
 ```"""
     
     blocks.append({
@@ -153,24 +221,49 @@ Samples:        {n_train} train / {n_test} test
         }
     })
     
-    # Feature importance (top 5)
-    if importances and features:
-        # Sort features by importance
-        feature_imp = [(feat, importances.get(feat, 0)) for feat in features]
-        feature_imp.sort(key=lambda x: x[1], reverse=True)
-        top_5 = feature_imp[:5]
+    # Trend indicators vs previous run
+    if prev:  # Only show trends if we have previous data
+        mape_trend = get_trend_indicator(mape, prev_mape, lower_is_better=True)
+        rmse_trend = get_trend_indicator(rmse, prev_rmse, lower_is_better=True)
+        r2_trend = get_trend_indicator(r2, prev_r2, lower_is_better=False)
         
-        feature_text = "*🔑 Top 5 Features*\n```\n"
-        for feat, imp in top_5:
-            bar = "█" * int(imp * 50)
-            feature_text += f"{feat:<20} {bar} {imp:.3f}\n"
-        feature_text += "```"
+        # Special handling for coverage - closer to 90% is better
+        coverage_diff = abs(90 - coverage_90) - abs(90 - prev_coverage)
+        if abs(coverage_diff) < 1:
+            coverage_trend = "➡️ Stable"
+        elif coverage_diff < 0:
+            coverage_trend = f"🟢 Closer to 90% ({coverage_90:.0f}% vs {prev_coverage:.0f}%)"
+        else:
+            coverage_trend = f"🔴 Further from 90% ({coverage_90:.0f}% vs {prev_coverage:.0f}%)"
+        
+        sample_change = (n_train + n_test) - (prev_n_train + prev_n_test)
+        if sample_change > 0:
+            sample_trend = f"🟢 +{sample_change} samples"
+        elif sample_change < 0:
+            sample_trend = f"🔴 {sample_change} samples"
+        else:
+            sample_trend = "➡️ No change"
+        
+        trend_text = f"""*📈 Trends vs Previous Run*
+• MAPE:     {mape_trend}
+• RMSE:     {rmse_trend}
+• R²:       {r2_trend}
+• 90% CI:   {coverage_trend}
+• Samples:  {sample_trend}"""
         
         blocks.append({
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": feature_text
+                "text": trend_text
+            }
+        })
+    else:
+        blocks.append({
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*📈 Trends*\nℹ️ No previous data for comparison"
             }
         })
     
@@ -178,8 +271,8 @@ Samples:        {n_train} train / {n_test} test
     
     return blocks
 
-def create_slack_message(all_metrics: list) -> dict:
-    """Create formatted Slack message"""
+def create_slack_message(all_metrics: list, previous_history: dict) -> dict:
+    """Create formatted Slack message with trend indicators"""
     
     blocks = [
         {
@@ -200,9 +293,9 @@ def create_slack_message(all_metrics: list) -> dict:
         {"type": "divider"}
     ]
     
-    # Add section for each vendor
+    # Add section for each vendor with trends
     for vendor_data in all_metrics:
-        vendor_blocks = create_vendor_section(vendor_data)
+        vendor_blocks = create_vendor_section(vendor_data, previous_history)
         blocks.extend(vendor_blocks)
     
     # Summary
@@ -291,6 +384,15 @@ def main():
     """Main execution"""
     print("🚀 Starting model metrics reporting...")
     
+    # Load previous metrics for comparison
+    print("📂 Loading previous metrics history...")
+    previous_history = load_previous_metrics()
+    if previous_history:
+        prev_timestamp = previous_history.get('timestamp', 'Unknown')
+        print(f"✅ Found previous run from: {prev_timestamp}")
+    else:
+        print("ℹ️  No previous history found - this is the first run")
+    
     # Load all vendor metrics
     print("📥 Loading model metrics from models/ directory...")
     all_metrics = load_all_metrics()
@@ -324,15 +426,18 @@ def main():
         print(f"  90% CI:   {coverage_90:.0f}%")
     print("="*60)
     
-    # Create Slack message
-    print("\n💬 Formatting Slack message...")
-    message = create_slack_message(all_metrics)
+    # Create Slack message with trend indicators
+    print("\n💬 Formatting Slack message with trend indicators...")
+    message = create_slack_message(all_metrics, previous_history)
     
     # Send to Slack
     print("📤 Sending to Slack...")
     success = send_to_slack(message)
     
     if success:
+        # Save current metrics for next comparison
+        print("💾 Saving current metrics for next run...")
+        save_current_metrics(all_metrics)
         print("🎉 Model metrics report sent successfully!")
     else:
         print("⚠️ Failed to send report to Slack")
