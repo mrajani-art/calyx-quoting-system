@@ -23,6 +23,18 @@ except Exception:
 BASE_DIR = Path(__file__).resolve().parent.parent
 MODEL_DIR = BASE_DIR / os.getenv("MODEL_DIR", "models")
 MODEL_DIR.mkdir(exist_ok=True)
+ASSETS_DIR = BASE_DIR / "assets"
+
+# ── Sales Reps ──────────────────────────────────────────────────────
+CALYX_REPS = [
+    "Lance Mitton",
+    "Brad Sherman",
+    "Jake Lynch",
+    "Dave Borkowski",
+    "Kyle Bissell",
+    "Alex Gonzalez",
+    "Owen Labombard",
+]
 
 # ── Supabase ────────────────────────────────────────────────────────
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")

@@ -123,6 +123,46 @@ CREATE TABLE IF NOT EXISTS generated_quotes (
     cost_factors    JSONB
 );
 
+-- Generated estimates (PDF output audit trail + data store)
+CREATE TABLE IF NOT EXISTS estimates (
+    id                  UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    created_at          TIMESTAMPTZ DEFAULT now(),
+    estimate_number     TEXT NOT NULL UNIQUE,
+    customer_name       TEXT NOT NULL,
+    calyx_rep           TEXT,
+
+    -- Bag specs
+    width               NUMERIC(8,3),
+    height              NUMERIC(8,3),
+    gusset              NUMERIC(8,3) DEFAULT 0,
+    print_width         NUMERIC(8,3),
+    substrate           TEXT,
+    finish              TEXT,
+    embellishment       TEXT DEFAULT 'None',
+    fill_style          TEXT,
+    seal_type           TEXT,
+    gusset_type         TEXT,
+    zipper              TEXT,
+    tear_notch          TEXT,
+    hole_punch          TEXT,
+    corner_treatment    TEXT,
+    print_method        TEXT,
+
+    -- Routing
+    vendor_routed       TEXT,
+    margin_pct          INTEGER,
+
+    -- Pricing tiers (JSONB array of {quantity, unit_cost, unit_sell, total_sell})
+    pricing_tiers       JSONB NOT NULL,
+
+    -- Component costs if deterministic (JSONB)
+    component_costs     JSONB
+);
+
+CREATE INDEX IF NOT EXISTS idx_est_number ON estimates(estimate_number);
+CREATE INDEX IF NOT EXISTS idx_est_customer ON estimates(customer_name);
+CREATE INDEX IF NOT EXISTS idx_est_created ON estimates(created_at DESC);
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_quotes_vendor ON quotes(vendor);
 CREATE INDEX IF NOT EXISTS idx_quotes_fl ON quotes(fl_number);
@@ -305,3 +345,34 @@ def fetch_recent_predictions(limit: int = 50) -> pd.DataFrame:
     except Exception as e:
         logger.error(f"Fetch predictions failed: {e}")
         return pd.DataFrame()
+
+
+def save_estimate(estimate_data: dict) -> Optional[str]:
+    """
+    Save a generated estimate to the estimates table.
+
+    estimate_data should include:
+        estimate_number, customer_name, calyx_rep,
+        width, height, gusset, print_width,
+        substrate, finish, embellishment, fill_style, seal_type,
+        gusset_type, zipper, tear_notch, hole_punch, corner_treatment,
+        print_method, vendor_routed, margin_pct,
+        pricing_tiers (list of dicts), component_costs (optional)
+    """
+    client = get_client()
+    try:
+        # Convert lists/dicts to JSON-compatible format
+        import json
+        data = dict(estimate_data)
+        if "pricing_tiers" in data and isinstance(data["pricing_tiers"], list):
+            data["pricing_tiers"] = json.dumps(data["pricing_tiers"])
+        if "component_costs" in data and isinstance(data["component_costs"], list):
+            data["component_costs"] = json.dumps(data["component_costs"])
+
+        res = client.table("estimates").insert(data).execute()
+        est_id = res.data[0]["id"] if res.data else None
+        logger.info(f"Saved estimate {data.get('estimate_number')} → {est_id}")
+        return est_id
+    except Exception as e:
+        logger.error(f"Save estimate failed: {e}")
+        return None
