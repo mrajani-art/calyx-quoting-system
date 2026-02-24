@@ -64,14 +64,13 @@ st.markdown("""
     }
 
     /* ── Tighten form elements ───────────────────────── */
-    .stNumberInput, .stSelectbox, .stTextInput {
-        max-width: 100%;
+    .stMainBlockContainer {
+        max-width: 960px;
+        padding-left: 2rem;
+        padding-right: 2rem;
     }
-    [data-testid="stNumberInput"] {
-        max-width: 180px;
-    }
-    div[data-testid="column"] {
-        padding: 0 0.25rem;
+    [data-testid="stNumberInput"] > div {
+        max-width: 160px;
     }
 
     /* ── Page Header ────────────────────────────────── */
@@ -780,15 +779,17 @@ if page == "🏷️ Quote Builder":
                 i = row * 4 + col
                 with row_cols[col]:
                     default = suggested[i] if i < len(suggested) else 0
-                    q = st.number_input(
+                    default_str = f"{default:,}" if default > 0 else ""
+                    raw = st.text_input(
                         f"Tier {i+1}",
-                        min_value=0,
-                        value=default,
-                        step=1000,
+                        value=default_str,
                         key=f"qty_{i}",
+                        placeholder="0",
                     )
-                    if q > 0:
-                        quantities.append(q)
+                    # Parse: strip commas, spaces
+                    cleaned = raw.replace(",", "").replace(" ", "").strip()
+                    if cleaned.isdigit() and int(cleaned) > 0:
+                        quantities.append(int(cleaned))
 
         st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
