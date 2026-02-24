@@ -3,5 +3,4 @@ config/google_service_account.json
 
 # Data & models
 data/
-models/
 __pycache__/
