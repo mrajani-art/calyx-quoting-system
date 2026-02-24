@@ -485,6 +485,7 @@ def _render_results(result: dict, margin_pct: int = 35):
                 customer_name=cust,
                 calyx_rep=rep,
                 dimensions=dims,
+                print_method=specs_data.get("print_method", "Digital"),
                 substrate=specs_data.get("substrate", ""),
                 finish=specs_data.get("finish", ""),
                 colors="CMYK",

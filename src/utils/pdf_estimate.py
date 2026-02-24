@@ -36,6 +36,7 @@ def generate_estimate_pdf(
     customer_name: str,
     calyx_rep: str,
     dimensions: str,
+    print_method: str,
     substrate: str,
     finish: str,
     colors: str,
@@ -123,25 +124,31 @@ def generate_estimate_pdf(
     c.line(ml, y, mr, y)
     y -= 22
 
-    # ── Estimate number + dimensions ───────────────────────────
+    # ── Print Method Header ───────────────────────────────────
+    method_label = "Flexographic" if print_method.lower() == "flexographic" else "Digital"
+    c.setFont("Helvetica-Bold", 12)
+    c.setFillColor(CHARCOAL)
+    c.drawString(ml, y, method_label)
+    y -= 18
+
+    # ── Estimate info line ─────────────────────────────────────
     c.setFont("Helvetica-Bold", 8)
     c.setFillColor(MID_GREY)
     c.drawString(ml, y, "Estimate:")
     c.setFont("Helvetica", 9)
     c.setFillColor(CHARCOAL)
     c.drawString(ml + 55, y, estimate_number)
-    y -= 14
 
     c.setFont("Helvetica-Bold", 8)
     c.setFillColor(MID_GREY)
-    c.drawString(ml, y, "Product Dimensions:")
+    c.drawString(ml + 260, y, "Product Dimensions:")
     c.setFont("Helvetica", 9)
     c.setFillColor(CHARCOAL)
-    c.drawString(ml + 105, y, dimensions)
-    y -= 24
+    c.drawString(ml + 365, y, dimensions)
+    y -= 22
 
-    # ── Specs Grid (2 columns) ─────────────────────────────────
-    left_specs = [
+    # ── Specs Grid (balanced 2 columns, 6 left / 5 right) ─────
+    all_specs = [
         ("Substrate", substrate),
         ("Finish", finish),
         ("Colors", colors),
@@ -149,13 +156,14 @@ def generate_estimate_pdf(
         ("Fill Style", fill_style),
         ("Seal Type", seal_type),
         ("Zipper", zipper),
-    ]
-    right_specs = [
         ("Tear Notch", tear_notch),
         ("Hole Punch", hole_punch),
         ("Gusset Detail", gusset_detail),
         ("Corners", corners),
     ]
+    mid = (len(all_specs) + 1) // 2  # 6 left, 5 right
+    left_specs = all_specs[:mid]
+    right_specs = all_specs[mid:]
 
     spec_y = y
     for label, value in left_specs:
@@ -180,55 +188,61 @@ def generate_estimate_pdf(
 
     y = min(spec_y, spec_y2) - 20
 
-    # ── Item Summary Table ─────────────────────────────────────
-    c.setFillColor(TABLE_HEADER_BG)
-    c.rect(ml, y - 4, content_w, 16, fill=1, stroke=0)
-    c.setFillColor(CHARCOAL)
-    c.setFont("Helvetica-Bold", 9)
-    c.drawString(ml + 6, y, "Item Summary")
-    y -= 22
+    # ── Item Summary Table (chunked, 6 tiers per section) ──────
+    TIERS_PER_SECTION = 6
+    chunks = [pricing[i:i + TIERS_PER_SECTION] for i in range(0, len(pricing), TIERS_PER_SECTION)]
 
-    num_cols = len(pricing)
-    label_col_w = 100
-    data_area_w = content_w - label_col_w
-    col_w = data_area_w / max(num_cols, 1)
+    for chunk_idx, chunk in enumerate(chunks):
+        # Section header (only on first chunk)
+        if chunk_idx == 0:
+            c.setFillColor(TABLE_HEADER_BG)
+            c.rect(ml, y - 4, content_w, 16, fill=1, stroke=0)
+            c.setFillColor(CHARCOAL)
+            c.setFont("Helvetica-Bold", 9)
+            c.drawString(ml + 6, y, "Item Summary")
+            y -= 22
 
-    # Quantity header row
-    c.setFont("Helvetica-Bold", 8.5)
-    c.setFillColor(CHARCOAL)
-    for i, p in enumerate(pricing):
-        cx = ml + label_col_w + col_w * i + col_w / 2
-        c.drawCentredString(cx, y, f"{p['quantity']:,}")
+        num_cols = len(chunk)
+        label_col_w = 100
+        data_area_w = content_w - label_col_w
+        col_w = data_area_w / max(num_cols, 1)
 
-    y -= 4
-    c.setStrokeColor(LIGHT_GREY)
-    c.setLineWidth(0.5)
-    c.line(ml, y, mr, y)
-    y -= 14
+        # Quantity header row
+        c.setFont("Helvetica-Bold", 8.5)
+        c.setFillColor(CHARCOAL)
+        for i, p in enumerate(chunk):
+            cx = ml + label_col_w + col_w * i + col_w / 2
+            c.drawCentredString(cx, y, f"{p['quantity']:,}")
 
-    # Price Per Unit
-    c.setFont("Helvetica-Bold", 8.5)
-    c.setFillColor(DARK_GREY)
-    c.drawString(ml + 6, y, "Price Per Unit")
-    c.setFont("Helvetica", 8.5)
-    c.setFillColor(CHARCOAL)
-    for i, p in enumerate(pricing):
-        val = p["unit_price"]
-        price_str = f"${val:,.4f}" if val < 1 else f"${val:,.2f}"
-        cx = ml + label_col_w + col_w * i + col_w / 2
-        c.drawCentredString(cx, y, price_str)
-    y -= 16
+        y -= 4
+        c.setStrokeColor(LIGHT_GREY)
+        c.setLineWidth(0.5)
+        c.line(ml, y, mr, y)
+        y -= 14
 
-    # Total Price
-    c.setFont("Helvetica-Bold", 8.5)
-    c.setFillColor(DARK_GREY)
-    c.drawString(ml + 6, y, "Total Price")
-    c.setFont("Helvetica", 8.5)
-    c.setFillColor(CHARCOAL)
-    for i, p in enumerate(pricing):
-        cx = ml + label_col_w + col_w * i + col_w / 2
-        c.drawCentredString(cx, y, f"${p['total_price']:,.2f}")
-    y -= 30
+        # Price Per Unit
+        c.setFont("Helvetica-Bold", 8.5)
+        c.setFillColor(DARK_GREY)
+        c.drawString(ml + 6, y, "Price Per Unit")
+        c.setFont("Helvetica", 8.5)
+        c.setFillColor(CHARCOAL)
+        for i, p in enumerate(chunk):
+            val = p["unit_price"]
+            price_str = f"${val:,.4f}" if val < 1 else f"${val:,.2f}"
+            cx = ml + label_col_w + col_w * i + col_w / 2
+            c.drawCentredString(cx, y, price_str)
+        y -= 16
+
+        # Total Price
+        c.setFont("Helvetica-Bold", 8.5)
+        c.setFillColor(DARK_GREY)
+        c.drawString(ml + 6, y, "Total Price")
+        c.setFont("Helvetica", 8.5)
+        c.setFillColor(CHARCOAL)
+        for i, p in enumerate(chunk):
+            cx = ml + label_col_w + col_w * i + col_w / 2
+            c.drawCentredString(cx, y, f"${p['total_price']:,.2f}")
+        y -= 24
 
     # ── Terms & Conditions ─────────────────────────────────────
     c.setStrokeColor(LIGHT_GREY)
