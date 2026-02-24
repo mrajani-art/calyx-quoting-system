@@ -30,6 +30,15 @@ jobs:
         run: |
           python model_metrics_slack.py
       
+      - name: Commit metrics history
+        if: success()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add models/metrics_history.json
+          git diff --quiet && git diff --staged --quiet || git commit -m "Update metrics history [skip ci]"
+          git push
+      
       - name: Report completion
         if: always()
         run: |
