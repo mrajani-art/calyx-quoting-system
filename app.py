@@ -261,13 +261,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ── Sandbox Banner ──────────────────────────────────────────────────
-st.markdown("""
-<div style="background:#32CD32;color:#000;text-align:center;padding:0.5rem;font-weight:700;
-    font-size:0.85rem;letter-spacing:0.1em;text-transform:uppercase;position:sticky;top:0;z-index:999;">
-    🧪 SANDBOX — Testing Branch
-</div>
-""", unsafe_allow_html=True)
 
 # ── Session State Init ──────────────────────────────────────────────
 if "predictor" not in st.session_state:
