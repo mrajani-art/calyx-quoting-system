@@ -694,11 +694,14 @@ if page == "🏷️ Quote Builder":
     """, unsafe_allow_html=True)
 
     # ── Customer & Rep ──────────────────────────────────────────────
-    cust_cols = st.columns([3, 2])
+    cust_cols = st.columns([3, 2, 2])
     with cust_cols[0]:
         customer_name = st.text_input("Customer Name", value="", placeholder="Enter customer name")
     with cust_cols[1]:
         calyx_rep = st.selectbox("Calyx Rep", CALYX_REPS)
+    with cust_cols[2]:
+        print_method = st.selectbox("Print Method", PRINT_METHODS,
+                                    help="Flexographic → Dazpak | Digital: ≤12\" → Internal, >12\" → Ross")
 
     st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
@@ -731,10 +734,6 @@ if page == "🏷️ Quote Builder":
         st.caption(f"Print Width: **{pw:.2f}\"** (H×2 + G)  {pw_color} {pw_label}")
 
         st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
-
-        # Print method
-        print_method = st.selectbox("Print Method", PRINT_METHODS,
-                                    help="Flexographic → Dazpak | Digital: ≤12\" → Internal, >12\" → Ross")
 
         # Material & finish
         mat_cols = st.columns(2)
