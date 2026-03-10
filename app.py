@@ -631,39 +631,76 @@ def _render_results(result: dict, margin_pct: int = 35):
             st.markdown('<div class="results-header">Unit Price vs Quantity</div>', unsafe_allow_html=True)
             fig = go.Figure()
             qtys = [p["quantity"] for p in preds]
-            costs = [p["unit_price"] for p in preds]
-            sells = [p["unit_price"] * margin_multiplier for p in preds]
 
-            if not is_det:
-                # Confidence band (only for ML models)
-                lowers = [p["lower_bound"] for p in preds]
-                uppers = [p["upper_bound"] for p in preds]
+            if is_tedpack:
+                # TedPack: show both Air and Ocean lines
+                air_costs = [p.get("air_unit_price") or 0 for p in preds]
+                ocean_costs = [p.get("ocean_unit_price") or 0 for p in preds]
+                air_sells = [c * margin_multiplier for c in air_costs]
+                ocean_sells = [c * margin_multiplier for c in ocean_costs]
                 fig.add_trace(go.Scatter(
-                    x=qtys + qtys[::-1],
-                    y=uppers + lowers[::-1],
-                    fill="toself",
-                    fillcolor="rgba(45, 106, 79, 0.08)",
-                    line=dict(color="rgba(0,0,0,0)"),
-                    name="90% CI (Cost)",
-                    showlegend=True,
+                    x=qtys, y=air_costs,
+                    mode="lines+markers",
+                    line=dict(color="#9e9e9e", width=2, dash="dot"),
+                    marker=dict(size=7, color="#9e9e9e"),
+                    name="Air Cost",
+                ))
+                fig.add_trace(go.Scatter(
+                    x=qtys, y=air_sells,
+                    mode="lines+markers",
+                    line=dict(color="#854d0e", width=3),
+                    marker=dict(size=10, color="#854d0e"),
+                    name=f"Air Sell ({margin_pct}%)",
+                ))
+                fig.add_trace(go.Scatter(
+                    x=qtys, y=ocean_costs,
+                    mode="lines+markers",
+                    line=dict(color="#d1d5db", width=2, dash="dot"),
+                    marker=dict(size=7, color="#d1d5db"),
+                    name="Ocean Cost",
+                ))
+                fig.add_trace(go.Scatter(
+                    x=qtys, y=ocean_sells,
+                    mode="lines+markers",
+                    line=dict(color="#2d6a4f", width=3),
+                    marker=dict(size=10, color="#1a472a"),
+                    name=f"Ocean Sell ({margin_pct}%)",
+                ))
+            else:
+                costs = [p["unit_price"] for p in preds]
+                sells = [p["unit_price"] * margin_multiplier for p in preds]
+
+                if not is_det:
+                    # Confidence band (only for ML models)
+                    lowers = [p["lower_bound"] for p in preds]
+                    uppers = [p["upper_bound"] for p in preds]
+                    fig.add_trace(go.Scatter(
+                        x=qtys + qtys[::-1],
+                        y=uppers + lowers[::-1],
+                        fill="toself",
+                        fillcolor="rgba(45, 106, 79, 0.08)",
+                        line=dict(color="rgba(0,0,0,0)"),
+                        name="90% CI (Cost)",
+                        showlegend=True,
+                    ))
+
+                # Cost line
+                fig.add_trace(go.Scatter(
+                    x=qtys, y=costs,
+                    mode="lines+markers",
+                    line=dict(color="#9e9e9e", width=2, dash="dot"),
+                    marker=dict(size=7, color="#9e9e9e"),
+                    name="Cost",
+                ))
+                # Sell price line
+                fig.add_trace(go.Scatter(
+                    x=qtys, y=sells,
+                    mode="lines+markers",
+                    line=dict(color="#2d6a4f", width=3),
+                    marker=dict(size=10, color="#1a472a"),
+                    name=f"Sell Price ({margin_pct}% margin)",
                 ))
 
-            # Cost line
-            fig.add_trace(go.Scatter(
-                x=qtys, y=costs,
-                mode="lines+markers",
-                line=dict(color="#9e9e9e", width=2, dash="dot"),
-                marker=dict(size=7, color="#9e9e9e"),
-                name="Cost",
-            ))
-            # Sell price line
-            fig.add_trace(go.Scatter(
-                x=qtys, y=sells,
-                mode="lines+markers",
-                line=dict(color="#2d6a4f", width=3),
-                marker=dict(size=10, color="#1a472a"),
-                name=f"Sell Price ({margin_pct}% margin)",
-            ))
             fig.update_layout(
                 xaxis_title="Quantity",
                 yaxis_title="Unit Price ($)",
