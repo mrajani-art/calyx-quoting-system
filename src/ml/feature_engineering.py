@@ -77,7 +77,7 @@ def normalize_substrate(val: str) -> str:
     if not isinstance(val, str):
         return "CUSTOM"
     v = val.strip().upper().replace(' ', '_')
-    if 'HB' in v or 'HIGH_BARRIER' in v:
+    if 'HB' in v or 'HIGH_BARRIER' in v or 'ALOX' in v:
         return "HB_CLR_PET"
     if 'WHT' in v or 'WHITE' in v:
         return "WHT_MET_PET"
@@ -235,7 +235,7 @@ def build_preprocessor(vendor: str = "") -> ColumnTransformer:
         # Ross only uses 26" or 30" stock — binary feature instead
         all_numeric = base_numeric + ["ross_stock_width"]
     else:
-        # Other vendors use continuous print_width
+        # Dazpak, TedPack, and others use continuous print_width
         all_numeric = ["print_width"] + base_numeric
 
     preprocessor = ColumnTransformer(

@@ -32,8 +32,8 @@ CREATE TABLE IF NOT EXISTS quotes (
     created_at      TIMESTAMPTZ DEFAULT now(),
 
     -- Source tracking
-    vendor          TEXT NOT NULL CHECK (vendor IN ('dazpak','ross','internal')),
-    print_method    TEXT NOT NULL CHECK (print_method IN ('digital','flexographic')),
+    vendor          TEXT NOT NULL CHECK (vendor IN ('dazpak','ross','internal','tedpack')),
+    print_method    TEXT NOT NULL CHECK (print_method IN ('digital','flexographic','gravure')),
     fl_number       TEXT,                 -- e.g. FL-DL-1495, FL-CQ-0855
     quote_number    TEXT,                 -- Dazpak Quote # or Ross Estimate No.
     quote_date      DATE,
@@ -94,7 +94,12 @@ CREATE TABLE IF NOT EXISTS quote_prices (
     -- Adder for each additional SKU
     adder_per_m_imps   NUMERIC(12,4),
     adder_per_msi      NUMERIC(10,4),
-    adder_per_ea_imp   NUMERIC(10,4)
+    adder_per_ea_imp   NUMERIC(10,4),
+
+    -- TedPack-specific pricing (DDP = Delivered Duty Paid)
+    ddp_air_price      NUMERIC(10,5),   -- DDP Air $/pc
+    ddp_ocean_price    NUMERIC(10,5),   -- DDP Ocean $/pc
+    fob_factory_price  NUMERIC(10,5)    -- FOB Factory $/pc
 );
 
 -- ML model registry

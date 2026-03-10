@@ -55,10 +55,12 @@ DAZPAK_MIN_ORDER_QTY = 35_000
 ROSS_MIN_PRINT_WIDTH_INCHES = 12.0
 # Internal: Digital (HP 6900), web width < 12" (Height × 2 + Gusset)
 INTERNAL_MAX_WEB_WIDTH = 12.0
+# TedPack: Gravure (overseas), MOQ ~2,500 per SKU
+TEDPACK_MIN_ORDER_QTY = 2_500
 
 # ── Specification Options (from actual spreadsheet data) ───────────
 # Column A: Vendor
-VENDORS = ["Dazpak", "Ross", "Internal"]
+VENDORS = ["Dazpak", "Ross", "Internal", "TedPack"]
 
 # Column E: Substrate — observed values from spreadsheet
 SUBSTRATE_TYPES = [
@@ -147,7 +149,7 @@ CORNER_OPTIONS = ["Straight", "Rounded", "Round"]
 CORNER_UI_OPTIONS = ["Straight", "Rounded"]
 
 # Print method mapped from vendor
-PRINT_METHODS = ["Digital", "Flexographic"]
+PRINT_METHODS = ["Digital", "Flexographic", "Gravure"]
 
 # ── Dazpak Material Layers (from PDF) ──────────────────────────────
 # Material structure: thickness + material layers with adhesive between
@@ -178,6 +180,8 @@ DAZPAK_DEFAULT_TIERS = [35_000, 50_000, 100_000, 150_000, 200_000, 250_000, 500_
 # Digital default tiers (Ross + Internal share the same defaults)
 ROSS_DEFAULT_TIERS = [5_000, 10_000, 15_000, 25_000, 50_000, 75_000, 100_000, 125_000, 150_000, 175_000, 200_000, 250_000]
 INTERNAL_DEFAULT_TIERS = [5_000, 10_000, 15_000, 25_000, 50_000, 75_000, 100_000, 125_000, 150_000, 175_000, 200_000, 250_000]
+# TedPack typical tiers (from quotes): 10K-500K
+TEDPACK_DEFAULT_TIERS = [10_000, 25_000, 50_000, 100_000, 250_000, 500_000]
 # User-configurable tiers (fallback)
 DEFAULT_QTY_TIERS = [5_000, 10_000, 15_000, 25_000, 50_000, 75_000, 100_000, 125_000, 150_000, 175_000, 200_000, 250_000]
 
@@ -187,6 +191,16 @@ TEST_SIZE = 0.2
 CV_FOLDS = 5
 CONFIDENCE_LOWER = 0.10
 CONFIDENCE_UPPER = 0.90
+
+# TedPack uses wider CI bounds for better coverage (overseas pricing variance)
+TEDPACK_CONFIDENCE_LOWER = 0.05
+TEDPACK_CONFIDENCE_UPPER = 0.95
+# Conservative bias: blend point prediction toward upper bound so quoted cost leans higher
+TEDPACK_CONSERVATIVE_BLEND = 0.15  # adjusted = point * 0.85 + upper * 0.15
+# Tighter outlier threshold for TedPack (fewer anomalous overseas quotes)
+TEDPACK_OUTLIER_SIGMA = 2.5
+# Minimum CI half-width as fraction of point estimate (floor)
+TEDPACK_MIN_CI_HALF_WIDTH = 0.12  # ±12% minimum spread
 
 # ── Recency Weighting ─────────────────────────────────────────────
 # Recent quotes get heavier weight during training so the model
@@ -212,6 +226,10 @@ DAZPAK_ADDER_COLS = ["adder_per_m_imps", "adder_per_msi", "adder_per_ea_imp"]
 # ── Ross Pricing Columns (from PDF structure) ─────────────────────
 # Simple: Quantity, Each (unit price), Total
 ROSS_PRICE_COLS = ["unit_price", "total_price"]
+
+# ── TedPack Pricing Columns ──────────────────────────────────────
+# DDP = Delivered Duty Paid (landed cost to UT warehouse)
+TEDPACK_PRICE_COLS = ["ddp_air_price", "ddp_ocean_price"]
 
 # ── Ross Equipment Standards (from Label Traxx config) ────────────
 # These constants capture Ross's known cost structure drivers
