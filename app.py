@@ -30,7 +30,7 @@ from config.settings import (
     TEAR_NOTCH_UI_OPTIONS, HOLE_PUNCH_UI_OPTIONS,
     CORNER_UI_OPTIONS, PRINT_METHODS,
     DEFAULT_QTY_TIERS, DAZPAK_DEFAULT_TIERS, ROSS_DEFAULT_TIERS,
-    INTERNAL_DEFAULT_TIERS, INTERNAL_MAX_WEB_WIDTH,
+    INTERNAL_DEFAULT_TIERS, TEDPACK_DEFAULT_TIERS, INTERNAL_MAX_WEB_WIDTH,
     DAZPAK_MIN_ORDER_QTY, ROSS_MIN_PRINT_WIDTH_INCHES,
     MODEL_DIR, ASSETS_DIR, CALYX_REPS,
 )
@@ -144,6 +144,9 @@ st.markdown("""
     }
     .vendor-internal {
         background: #faf5ff; color: #6b21a8; border: 1px solid #e9d5ff;
+    }
+    .vendor-tedpack {
+        background: #fefce8; color: #854d0e; border: 1px solid #fde68a;
     }
 
     /* ── Routing Box ────────────────────────────────── */
@@ -310,6 +313,9 @@ with st.sidebar:
 
     **Internal** — HP 6900 (≤12" web)
     In-house digital · Tiers: 500–50K
+
+    **TedPack** — Gravure (overseas)
+    DDP Air/Ocean · Tiers: 10K–500K
     """)
 
 
@@ -395,8 +401,8 @@ def _render_results(result: dict, margin_pct: int = 35):
     if preds:
         mcols = st.columns(3)
         with mcols[0]:
-            vendor_label = {"dazpak": "Dazpak", "ross": "Ross", "internal": "Internal"}.get(result["vendor"], result["vendor"])
-            vendor_class = {"dazpak": "vendor-dazpak", "ross": "vendor-ross", "internal": "vendor-internal"}.get(result["vendor"], "")
+            vendor_label = {"dazpak": "Dazpak", "ross": "Ross", "internal": "Internal", "tedpack": "TedPack"}.get(result["vendor"], result["vendor"])
+            vendor_class = {"dazpak": "vendor-dazpak", "ross": "vendor-ross", "internal": "vendor-internal", "tedpack": "vendor-tedpack"}.get(result["vendor"], "")
             st.markdown(f"""
             <div class="metric-card">
                 <div class="label">Vendor</div>
@@ -409,7 +415,13 @@ def _render_results(result: dict, margin_pct: int = 35):
                 <div class="value" style="font-size:1rem; font-family:'Instrument Sans',sans-serif;">{result['print_method'].title()}</div>
             </div>""", unsafe_allow_html=True)
         with mcols[2]:
-            mape = result.get("model_metrics", {}).get("mape", None)
+            mm = result.get("model_metrics", {})
+            # TedPack has nested metrics per sub-model; average the MAPEs
+            if result.get("vendor") == "tedpack" and isinstance(mm, dict) and "tedpack_air" in mm:
+                mapes = [m.get("mape") for m in mm.values() if isinstance(m, dict) and m.get("mape") is not None]
+                mape = sum(mapes) / len(mapes) if mapes else None
+            else:
+                mape = mm.get("mape", None)
 
             if isinstance(mape, (int, float)):
                 if mape <= 5:
@@ -439,8 +451,47 @@ def _render_results(result: dict, margin_pct: int = 35):
         st.warning(w)
 
     # Pricing table with both cost and sell columns
-    st.markdown('<div class="results-header">Pricing by Quantity Tier</div>', unsafe_allow_html=True)
-    if preds:
+    is_tedpack = result.get("vendor") == "tedpack"
+
+    if is_tedpack and preds:
+        # ── TedPack dual pricing: Air & Ocean side by side ────────
+        st.markdown('<div class="results-header">Pricing by Quantity Tier — DDP Air vs Ocean</div>', unsafe_allow_html=True)
+
+        lead_times = result.get("lead_times", {})
+        if lead_times:
+            st.caption(f"Lead times: Air {lead_times.get('air', '~35 days')} · Ocean {lead_times.get('ocean', '~55 days')}")
+
+        table_html = '<table class="comp-table"><thead><tr>'
+        table_html += '<th>Quantity</th>'
+        table_html += '<th class="num">Air Cost</th><th class="num">Air Sell</th>'
+        table_html += '<th class="num">Ocean Cost</th><th class="num">Ocean Sell</th>'
+        table_html += '<th class="num">Air Total</th><th class="num">Ocean Total</th>'
+        table_html += '</tr></thead><tbody>'
+
+        for p in preds:
+            air_cost = p.get("air_unit_price")
+            ocean_cost = p.get("ocean_unit_price")
+            air_sell = air_cost * margin_multiplier if air_cost else None
+            ocean_sell = ocean_cost * margin_multiplier if ocean_cost else None
+            air_total = format_currency(air_sell * p["quantity"], 2) if air_sell else "—"
+            ocean_total = format_currency(ocean_sell * p["quantity"], 2) if ocean_sell else "—"
+
+            table_html += f'''<tr>
+                <td class="qty">{p["quantity"]:,}</td>
+                <td class="num">{format_currency(air_cost, 5) if air_cost else "—"}</td>
+                <td class="sell">{format_currency(air_sell, 5) if air_sell else "—"}</td>
+                <td class="num">{format_currency(ocean_cost, 5) if ocean_cost else "—"}</td>
+                <td class="sell">{format_currency(ocean_sell, 5) if ocean_sell else "—"}</td>
+                <td class="num">{air_total}</td>
+                <td class="num">{ocean_total}</td>
+            </tr>'''
+
+        table_html += '</tbody></table>'
+        st.markdown(table_html, unsafe_allow_html=True)
+
+    elif preds:
+        # ── Standard single-vendor pricing table ──────────────────
+        st.markdown('<div class="results-header">Pricing by Quantity Tier</div>', unsafe_allow_html=True)
         import pandas as pd
         is_det = result.get("is_deterministic", False)
         lowest_qty_cost = min(preds, key=lambda p: p["unit_price"])
@@ -483,7 +534,12 @@ def _render_results(result: dict, margin_pct: int = 35):
 
             pdf_pricing = []
             for p in preds:
-                sell = p["unit_price"] * margin_multiplier
+                # TedPack: use ocean price for PDF estimate (lower DDP cost)
+                if is_tedpack:
+                    base = p.get("ocean_unit_price") or p.get("air_unit_price") or 0
+                else:
+                    base = p["unit_price"]
+                sell = base * margin_multiplier
                 pdf_pricing.append({
                     "quantity": p["quantity"],
                     "unit_price": sell,
@@ -722,7 +778,7 @@ if page == "🏷️ Quote Builder":
 
         # Print method
         print_method = st.selectbox("Print Method", PRINT_METHODS,
-                                    help="Flexographic → Dazpak | Digital: ≤12\" → Internal, >12\" → Ross")
+                                    help="Flexographic → Dazpak | Digital: ≤12\" → Internal, >12\" → Ross | Gravure → TedPack")
 
         # Material & finish
         mat_cols = st.columns(2)
@@ -761,7 +817,9 @@ if page == "🏷️ Quote Builder":
         st.caption("Up to 12 tiers — leave blank or 0 to skip")
 
         # Auto-suggest tiers based on vendor routing
-        if print_method == "Flexographic":
+        if print_method == "Gravure":
+            suggested = TEDPACK_DEFAULT_TIERS[:]
+        elif print_method == "Flexographic":
             suggested = DAZPAK_DEFAULT_TIERS[:]
         elif pw <= 12:
             suggested = INTERNAL_DEFAULT_TIERS[:]
@@ -795,11 +853,12 @@ if page == "🏷️ Quote Builder":
 
         # ── Vendor Routing Preview ──────────────────────────────────
         routing = route_vendor(print_method, height, gusset, quantities)
-        vendor_class_map = {"dazpak": "vendor-dazpak", "ross": "vendor-ross", "internal": "vendor-internal"}
+        vendor_class_map = {"dazpak": "vendor-dazpak", "ross": "vendor-ross", "internal": "vendor-internal", "tedpack": "vendor-tedpack"}
         vendor_label_map = {
             "dazpak": "Dazpak (Flexographic)",
             "ross": "Ross (Digital)",
             "internal": "Internal — HP 6900 (Digital)",
+            "tedpack": "TedPack (Gravure)",
         }
         vendor_class = vendor_class_map.get(routing["vendor"], "vendor-internal")
         vendor_label = vendor_label_map.get(routing["vendor"], routing["vendor"])
@@ -953,7 +1012,7 @@ elif page == "📊 Analytics":
                 fig = px.histogram(
                     data, x="unit_price", color="vendor",
                     barmode="overlay", nbins=40,
-                    color_discrete_map={"dazpak": "#166534", "ross": "#1e40af", "internal": "#6b21a8"},
+                    color_discrete_map={"dazpak": "#166534", "ross": "#1e40af", "internal": "#6b21a8", "tedpack_air": "#854d0e", "tedpack_ocean": "#b45309"},
                 )
                 fig.update_layout(template="plotly_white", height=400)
                 st.plotly_chart(fig, use_container_width=True)
@@ -964,7 +1023,7 @@ elif page == "📊 Analytics":
                     data, x="quantity", y="unit_price",
                     color="vendor" if "vendor" in data.columns else None,
                     size="bag_area_sqin" if "bag_area_sqin" in data.columns else None,
-                    color_discrete_map={"dazpak": "#166534", "ross": "#1e40af", "internal": "#6b21a8"},
+                    color_discrete_map={"dazpak": "#166534", "ross": "#1e40af", "internal": "#6b21a8", "tedpack_air": "#854d0e", "tedpack_ocean": "#b45309"},
                     labels={"quantity": "Order Quantity", "unit_price": "Unit Price ($)"},
                     log_x=True,
                 )
@@ -976,7 +1035,7 @@ elif page == "📊 Analytics":
                 fig = px.box(
                     data, x="substrate", y="unit_price",
                     color="vendor" if "vendor" in data.columns else None,
-                    color_discrete_map={"dazpak": "#166534", "ross": "#1e40af", "internal": "#6b21a8"},
+                    color_discrete_map={"dazpak": "#166534", "ross": "#1e40af", "internal": "#6b21a8", "tedpack_air": "#854d0e", "tedpack_ocean": "#b45309"},
                 )
                 fig.update_layout(template="plotly_white", height=400)
                 st.plotly_chart(fig, use_container_width=True)
@@ -1009,9 +1068,11 @@ elif page == "⚙️ Model Manager":
         - **Dazpak** (Flexographic) — predicts Price/Ea Impression
         - **Ross** (Digital >12") — predicts unit price per bag
         - **Internal** (Digital ≤12" / HP 6900) — predicts unit cost per bag (log-target)
+        - **TedPack Air** (Gravure) — predicts DDP Air unit price (log-target)
+        - **TedPack Ocean** (Gravure) — predicts DDP Ocean unit price (log-target)
 
         Each model includes:
-        - Point prediction (squared error loss)
+        - Point prediction (squared error loss or huber)
         - Lower/upper confidence bounds (10th/90th quantile regression)
         - Cross-validated performance metrics
         - **Recency weighting** — quotes from the last 90 days get 3× training weight
@@ -1050,7 +1111,7 @@ elif page == "⚙️ Model Manager":
     with tab_metrics:
         st.markdown("### Current Model Performance")
 
-        for vendor in ["dazpak", "ross"]:
+        for vendor in ["dazpak", "ross", "tedpack_air", "tedpack_ocean"]:
             try:
                 import joblib
                 metrics = joblib.load(MODEL_DIR / f"{vendor}_metrics.joblib")

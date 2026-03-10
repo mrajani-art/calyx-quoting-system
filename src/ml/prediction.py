@@ -13,8 +13,9 @@ import pandas as pd
 
 from config.settings import (
     DAZPAK_MIN_ORDER_QTY, ROSS_MIN_PRINT_WIDTH_INCHES,
-    INTERNAL_MAX_WEB_WIDTH,
+    INTERNAL_MAX_WEB_WIDTH, TEDPACK_MIN_ORDER_QTY,
     DEFAULT_QTY_TIERS, DAZPAK_DEFAULT_TIERS, ROSS_DEFAULT_TIERS,
+    TEDPACK_CONSERVATIVE_BLEND, TEDPACK_MIN_CI_HALF_WIDTH,
 )
 from src.ml.feature_engineering import prepare_features
 from src.ml.model_training import QuoteModelTrainer
@@ -32,7 +33,7 @@ class QuotePredictor:
 
     def load_models(self):
         """Load trained models for both vendors."""
-        for vendor in ["dazpak", "ross", "internal"]:
+        for vendor in ["dazpak", "ross", "internal", "tedpack_air", "tedpack_ocean"]:
             try:
                 self.models[vendor] = QuoteModelTrainer.load(vendor)
                 logger.info(f"Loaded {vendor} model")
@@ -103,6 +104,11 @@ class QuotePredictor:
             result["routing_reason"] = routing_reason
             return result
 
+        # ── TedPack: dual Air/Ocean ML models ─────────────────────
+        if vendor == "tedpack":
+            return self._predict_tedpack(specs, quantity_tiers, print_width,
+                                         width, height, routing_reason, warnings)
+
         # ── Dazpak / Ross: use ML model ──────────────────────────
         if vendor not in self.models:
             return {
@@ -147,6 +153,74 @@ class QuotePredictor:
             "warnings": warnings,
         }
 
+    def _predict_tedpack(self, specs: dict, quantity_tiers: list[int],
+                         print_width: float, width: float, height: float,
+                         routing_reason: str, warnings: list[str]) -> dict:
+        """
+        Generate dual Air/Ocean predictions for TedPack.
+        Returns both shipping method predictions side by side.
+        """
+        missing_models = []
+        for sub in ("tedpack_air", "tedpack_ocean"):
+            if sub not in self.models:
+                missing_models.append(sub)
+
+        if len(missing_models) == 2:
+            return {
+                "vendor": "tedpack",
+                "print_method": "gravure",
+                "routing_reason": routing_reason,
+                "predictions": [],
+                "cost_factors": {},
+                "model_metrics": {},
+                "warnings": warnings + ["No trained TedPack models available"],
+                "error": "TedPack models not found. Train models first.",
+            }
+
+        predictions = []
+        for qty in quantity_tiers:
+            row = {**specs, "quantity": qty}
+            tier = {"quantity": qty}
+
+            for sub, label in [("tedpack_air", "air"), ("tedpack_ocean", "ocean")]:
+                if sub in self.models:
+                    pred = self._predict_single(self.models[sub], row, is_tedpack=True)
+                    tier[f"{label}_unit_price"] = round(pred["point"], 5)
+                    tier[f"{label}_total_price"] = round(pred["point"] * qty, 2)
+                    tier[f"{label}_lower_bound"] = round(pred["lower"], 5)
+                    tier[f"{label}_upper_bound"] = round(pred["upper"], 5)
+                    tier[f"{label}_confidence_range"] = round(pred["upper"] - pred["lower"], 5)
+                else:
+                    tier[f"{label}_unit_price"] = None
+                    tier[f"{label}_total_price"] = None
+
+            predictions.append(tier)
+
+        # Cost factors from whichever model is available (prefer air)
+        cost_model_key = "tedpack_air" if "tedpack_air" in self.models else "tedpack_ocean"
+        cost_factors = self._compute_cost_factors(
+            self.models[cost_model_key], specs, quantity_tiers[0]
+        )
+
+        # Collect metrics from both models
+        model_metrics = {}
+        for sub in ("tedpack_air", "tedpack_ocean"):
+            if sub in self.models:
+                model_metrics[sub] = self.models[sub].metrics
+
+        return {
+            "vendor": "tedpack",
+            "print_method": "gravure",
+            "routing_reason": routing_reason,
+            "print_width": round(print_width, 3),
+            "bag_area": round(width * height, 3),
+            "predictions": predictions,
+            "cost_factors": cost_factors,
+            "model_metrics": model_metrics,
+            "warnings": warnings + [m for m in missing_models],
+            "lead_times": {"air": "~35 days", "ocean": "~55 days"},
+        }
+
     def _route_vendor(self, print_method: str, print_width: float,
                       qtys: list[int]) -> tuple[str, str]:
         """
@@ -160,6 +234,9 @@ class QuotePredictor:
         3. Auto-routing based on quantity and print width
         """
         max_qty = max(qtys) if qtys else 0
+
+        if print_method.lower() == "gravure":
+            return "tedpack", "Print method: Gravure → TedPack"
 
         if print_method.lower() == "flexographic":
             return "dazpak", "Print method: Flexographic → Dazpak"
@@ -212,9 +289,18 @@ class QuotePredictor:
                     f"Consider routing to Ross instead."
                 )
 
+        if vendor == "tedpack":
+            below_moq = [q for q in qtys if q < TEDPACK_MIN_ORDER_QTY]
+            if below_moq:
+                warnings.append(
+                    f"⚠ TedPack lowest observed MOQ is {TEDPACK_MIN_ORDER_QTY:,} units. "
+                    f"Quantities {below_moq} may not be accepted."
+                )
+
         return warnings
 
-    def _predict_single(self, model: QuoteModelTrainer, row: dict) -> dict:
+    def _predict_single(self, model: QuoteModelTrainer, row: dict,
+                         is_tedpack: bool = False) -> dict:
         """Predict price for a single spec+quantity combination."""
         df = pd.DataFrame([row])
         df = prepare_features(df)
@@ -240,6 +326,20 @@ class QuotePredictor:
         upper = max(upper, point)
         if lower > point:
             lower = point * 0.85
+
+        # TedPack adjustments: conservative bias + minimum CI width
+        if is_tedpack:
+            # Blend point toward upper bound so quoted cost leans higher
+            blend = TEDPACK_CONSERVATIVE_BLEND
+            point = point * (1 - blend) + upper * blend
+
+            # Enforce minimum CI half-width (±12% of point estimate)
+            min_half = point * TEDPACK_MIN_CI_HALF_WIDTH
+            if (point - lower) < min_half:
+                lower = point - min_half
+            if (upper - point) < min_half:
+                upper = point + min_half
+            lower = max(lower, 0.001)
 
         return {"point": point, "lower": lower, "upper": upper}
 

@@ -26,6 +26,8 @@ from sklearn.metrics import (
 from config.settings import (
     MODEL_DIR, RANDOM_STATE, TEST_SIZE, CV_FOLDS,
     CONFIDENCE_LOWER, CONFIDENCE_UPPER,
+    TEDPACK_CONFIDENCE_LOWER, TEDPACK_CONFIDENCE_UPPER,
+    TEDPACK_OUTLIER_SIGMA,
     RECENCY_RECENT_DAYS, RECENCY_RECENT_WEIGHT,
     RECENCY_DECAY_HALF_LIFE, RECENCY_MIN_WEIGHT,
 )
@@ -89,22 +91,42 @@ class QuoteModelTrainer:
         sample_weights = sample_weights[valid_mask.values]
 
         # ── Outlier removal: drop extreme prices ──────────────────
-        # Remove rows where log(unit_price) is >3 std devs from mean
-        # for this vendor. These are likely parsing errors or anomalous
-        # quotes that hurt model generalization.
+        # Remove rows where log(unit_price) exceeds σ threshold from mean.
+        # TedPack uses tighter threshold (2.5σ) due to overseas pricing variance.
         prices = df[target_col].values
         if len(prices) > 20:
+            sigma_threshold = (TEDPACK_OUTLIER_SIGMA
+                               if self.vendor.startswith("tedpack")
+                               else 3.0)
             log_prices = np.log(np.clip(prices, 1e-6, None))
             mu, sigma = log_prices.mean(), log_prices.std()
             if sigma > 0:
                 z_scores = np.abs((log_prices - mu) / sigma)
-                inlier_mask = z_scores <= 3.0
+                inlier_mask = z_scores <= sigma_threshold
                 n_outliers = (~inlier_mask).sum()
                 if n_outliers > 0:
                     logger.info(f"  Removed {n_outliers} price outliers "
-                                f"(>{3.0}σ in log-space) for {self.vendor}")
+                                f"(>{sigma_threshold}σ in log-space) for {self.vendor}")
                     df = df[inlier_mask]
                     sample_weights = sample_weights[inlier_mask]
+
+        # ── TedPack secondary filter: price-per-sqin IQR ────────
+        # Catches anomalous quotes where the price is wildly off for
+        # the bag size (e.g. tiny bags quoted at premium prices).
+        if self.vendor.startswith("tedpack") and len(df) > 20:
+            if "width" in df.columns and "height" in df.columns:
+                area = (df["width"] * df["height"]).clip(lower=1)
+                psi = df[target_col] / area
+                q1, q3 = psi.quantile(0.25), psi.quantile(0.75)
+                iqr = q3 - q1
+                if iqr > 0:
+                    psi_mask = (psi >= q1 - 2.5 * iqr) & (psi <= q3 + 2.5 * iqr)
+                    n_psi_outliers = (~psi_mask).sum()
+                    if n_psi_outliers > 0:
+                        logger.info(f"  Removed {n_psi_outliers} price-per-sqin outliers "
+                                    f"(IQR method) for {self.vendor}")
+                        df = df[psi_mask]
+                        sample_weights = sample_weights[psi_mask.values]
 
         if len(df) < 10:
             logger.warning(f"Only {len(df)} samples for {self.vendor} — model may be unreliable")
@@ -149,6 +171,8 @@ class QuoteModelTrainer:
             n_est, depth, lr, min_leaf = 500, 6, 0.03, 3
         elif self.vendor == "ross":
             n_est, depth, lr, min_leaf = 500, 6, 0.02, 3
+        elif self.vendor in ("tedpack_air", "tedpack_ocean"):
+            n_est, depth, lr, min_leaf = 400, 5, 0.03, 4
         else:  # dazpak
             n_est, depth, lr, min_leaf = 300, 5, 0.05, 5
 
@@ -158,12 +182,20 @@ class QuoteModelTrainer:
             learning_rate=lr,
             subsample=0.8,
             min_samples_leaf=min_leaf,
-            loss="huber" if self.vendor == "ross" else "squared_error",
+            loss="huber" if self.vendor in ("ross", "tedpack_air", "tedpack_ocean") else "squared_error",
             random_state=RANDOM_STATE,
         )
         self.model_point.fit(X_train, y_train, sample_weight=w_train)
 
         # ── Confidence interval models (quantile regression) ───────
+        # TedPack uses wider quantile bounds (5th/95th) for better coverage
+        if self.vendor.startswith("tedpack"):
+            ci_lower_alpha = TEDPACK_CONFIDENCE_LOWER
+            ci_upper_alpha = TEDPACK_CONFIDENCE_UPPER
+        else:
+            ci_lower_alpha = CONFIDENCE_LOWER
+            ci_upper_alpha = CONFIDENCE_UPPER
+
         self.model_lower = GradientBoostingRegressor(
             n_estimators=min(n_est, 300),
             max_depth=min(depth, 4),
@@ -171,7 +203,7 @@ class QuoteModelTrainer:
             subsample=0.8,
             min_samples_leaf=min_leaf,
             loss="quantile",
-            alpha=CONFIDENCE_LOWER,
+            alpha=ci_lower_alpha,
             random_state=RANDOM_STATE,
         )
         self.model_lower.fit(X_train, y_train, sample_weight=w_train)
@@ -183,7 +215,7 @@ class QuoteModelTrainer:
             subsample=0.8,
             min_samples_leaf=min_leaf,
             loss="quantile",
-            alpha=CONFIDENCE_UPPER,
+            alpha=ci_upper_alpha,
             random_state=RANDOM_STATE,
         )
         self.model_upper.fit(X_train, y_train, sample_weight=w_train)
@@ -297,14 +329,14 @@ def train_all_models(training_df: pd.DataFrame) -> dict:
     """
     results = {}
 
-    for vendor in ["dazpak", "ross"]:
+    for vendor in ["dazpak", "ross", "tedpack_air", "tedpack_ocean"]:
         vendor_df = training_df[training_df["vendor"] == vendor].copy()
         if len(vendor_df) == 0:
             logger.warning(f"No data for {vendor} — skipping")
             continue
 
-        # Internal and Ross models use log-target for better fit across qty range
-        use_log = (vendor in ("internal", "ross"))
+        # Ross and TedPack models use log-target for better fit across wide price/qty ranges
+        use_log = (vendor in ("internal", "ross", "tedpack_air", "tedpack_ocean"))
         trainer = QuoteModelTrainer(vendor, use_log_target=use_log)
         metrics = trainer.train(vendor_df)
         trainer.save()
