@@ -521,7 +521,19 @@ def _render_results(result: dict, margin_pct: int = 35):
             </tr>'''
 
         table_html += '</tbody></table>'
-        st.markdown(table_html, unsafe_allow_html=True)
+        # Use st.html() — st.markdown(unsafe_allow_html) strips <table> in newer Streamlit
+        styled_table = f"""<style>
+        .comp-table {{ width:100%; border-collapse:collapse; font-size:0.82rem; }}
+        .comp-table th {{ text-align:left; padding:0.5rem 0.75rem; font-size:0.65rem; font-weight:600;
+            letter-spacing:0.06em; text-transform:uppercase; color:#6b7280; border-bottom:2px solid #1a1a1a; }}
+        .comp-table th.num {{ text-align:right; }}
+        .comp-table td {{ padding:0.5rem 0.75rem; border-bottom:1px solid #e5e7eb; vertical-align:middle; }}
+        .comp-table td.num {{ text-align:right; font-family:'IBM Plex Mono',monospace; font-size:0.8rem; }}
+        .comp-table td.qty {{ font-family:'IBM Plex Mono',monospace; font-weight:600; }}
+        .comp-table td.sell {{ text-align:right; font-family:'IBM Plex Mono',monospace; font-weight:600; color:#1a472a; }}
+        .comp-table tr.best td {{ background:#ecfdf5; }}
+        </style>{table_html}"""
+        st.html(styled_table)
 
         # ── Download Estimate PDF ──────────────────────────────────
         try:
@@ -738,11 +750,14 @@ if page == "🏷️ Quote Builder":
     """, unsafe_allow_html=True)
 
     # ── Customer & Rep ──────────────────────────────────────────────
-    cust_cols = st.columns([3, 2])
+    cust_cols = st.columns([3, 2, 2])
     with cust_cols[0]:
         customer_name = st.text_input("Customer Name", value="", placeholder="Enter customer name")
     with cust_cols[1]:
         calyx_rep = st.selectbox("Calyx Rep", CALYX_REPS)
+    with cust_cols[2]:
+        print_method = st.selectbox("Print Method", PRINT_METHODS,
+                                    help="Flexographic → Dazpak | Digital: ≤12\" → Internal, >12\" → Ross | Gravure → TedPack")
 
     st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
@@ -775,10 +790,6 @@ if page == "🏷️ Quote Builder":
         st.caption(f"Print Width: **{pw:.2f}\"** (H×2 + G)  {pw_color} {pw_label}")
 
         st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
-
-        # Print method
-        print_method = st.selectbox("Print Method", PRINT_METHODS,
-                                    help="Flexographic → Dazpak | Digital: ≤12\" → Internal, >12\" → Ross | Gravure → TedPack")
 
         # Material & finish
         mat_cols = st.columns(2)

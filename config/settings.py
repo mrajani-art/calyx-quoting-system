@@ -175,16 +175,15 @@ ROSS_MATERIAL_STOCKS = {
 }
 
 # ── Default Quantity Tiers ──────────────────────────────────────────
-# Dazpak typical tiers (from PDF): 75K, 100K, 200K, 350K, 500K
-DAZPAK_DEFAULT_TIERS = [75_000, 100_000, 200_000, 350_000, 500_000]
-# Ross typical tiers (from PDF): 4K, 5K, 6K, 10K
-ROSS_DEFAULT_TIERS = [4_000, 5_000, 6_000, 10_000]
-# Internal typical tiers (from Cerm data): 500-250K range
-INTERNAL_DEFAULT_TIERS = [500, 1_000, 5_000, 10_000, 25_000, 50_000]
+# Flexographic (Dazpak) default tiers
+DAZPAK_DEFAULT_TIERS = [35_000, 50_000, 100_000, 150_000, 200_000, 250_000, 500_000, 750_000, 1_000_000, 1_250_000, 1_500_000, 2_000_000]
+# Digital default tiers (Ross + Internal share the same defaults)
+ROSS_DEFAULT_TIERS = [5_000, 10_000, 15_000, 25_000, 50_000, 75_000, 100_000, 125_000, 150_000, 175_000, 200_000, 250_000]
+INTERNAL_DEFAULT_TIERS = [5_000, 10_000, 15_000, 25_000, 50_000, 75_000, 100_000, 125_000, 150_000, 175_000, 200_000, 250_000]
 # TedPack typical tiers (from quotes): 10K-500K
 TEDPACK_DEFAULT_TIERS = [10_000, 25_000, 50_000, 100_000, 250_000, 500_000]
-# User-configurable tiers (6 tiers)
-DEFAULT_QTY_TIERS = [1_000, 5_000, 10_000, 25_000, 50_000, 100_000]
+# User-configurable tiers (fallback)
+DEFAULT_QTY_TIERS = [5_000, 10_000, 15_000, 25_000, 50_000, 75_000, 100_000, 125_000, 150_000, 175_000, 200_000, 250_000]
 
 # ── ML Configuration ───────────────────────────────────────────────
 RANDOM_STATE = 42
