@@ -835,29 +835,29 @@ if page == "🏷️ Quote Builder":
         with mat_cols[1]:
             finish = st.selectbox("Finish", FINISH_UI_OPTIONS)
 
-        # Bag features row 1
-        feat_cols1 = st.columns(3)
-        with feat_cols1[0]:
-            fill_style = st.selectbox("Fill Style", FILL_STYLE_OPTIONS)
-        with feat_cols1[1]:
+        # Bag features — 2-column rows to prevent label truncation
+        feat_row1 = st.columns(2)
+        with feat_row1[0]:
             seal_type = st.selectbox("Seal Type", SEAL_TYPE_UI_OPTIONS)
-        with feat_cols1[2]:
+        with feat_row1[1]:
             gusset_type = st.selectbox("Gusset Type", GUSSET_UI_OPTIONS)
 
-        # Bag features row 2
-        feat_cols2 = st.columns(3)
-        with feat_cols2[0]:
+        feat_row2 = st.columns(2)
+        with feat_row2[0]:
+            fill_style = st.selectbox("Fill Style", FILL_STYLE_OPTIONS)
+        with feat_row2[1]:
             zipper = st.selectbox("Zipper", ZIPPER_UI_OPTIONS)
-        with feat_cols2[1]:
+
+        feat_row3 = st.columns(2)
+        with feat_row3[0]:
             tear_notch = st.selectbox("Tear Notch", TEAR_NOTCH_UI_OPTIONS)
-        with feat_cols2[2]:
+        with feat_row3[1]:
             corner = st.selectbox("Corners", CORNER_UI_OPTIONS)
 
-        # Remaining features
-        feat_cols3 = st.columns(2)
-        with feat_cols3[0]:
+        feat_row4 = st.columns(2)
+        with feat_row4[0]:
             hole_punch = st.selectbox("Hole Punch", HOLE_PUNCH_UI_OPTIONS)
-        with feat_cols3[1]:
+        with feat_row4[1]:
             if print_method == "Gravure":
                 embellishment_options = EMBELLISHMENT_UI_OPTIONS_GRAVURE
             else:
