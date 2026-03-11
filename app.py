@@ -24,7 +24,7 @@ from datetime import datetime
 
 from config.settings import (
     SUBSTRATE_OPTIONS, SUBSTRATE_CANONICAL,
-    FINISH_UI_OPTIONS, EMBELLISHMENT_UI_OPTIONS,
+    FINISH_UI_OPTIONS, EMBELLISHMENT_UI_OPTIONS_GRAVURE, EMBELLISHMENT_UI_OPTIONS_DEFAULT,
     FILL_STYLE_OPTIONS, SEAL_TYPE_UI_OPTIONS,
     GUSSET_UI_OPTIONS, ZIPPER_UI_OPTIONS,
     TEAR_NOTCH_UI_OPTIONS, HOLE_PUNCH_UI_OPTIONS,
@@ -858,7 +858,11 @@ if page == "🏷️ Quote Builder":
         with feat_cols3[0]:
             hole_punch = st.selectbox("Hole Punch", HOLE_PUNCH_UI_OPTIONS)
         with feat_cols3[1]:
-            embellishment = st.selectbox("Embellishment", EMBELLISHMENT_UI_OPTIONS)
+            if print_method == "Gravure":
+                embellishment_options = EMBELLISHMENT_UI_OPTIONS_GRAVURE
+            else:
+                embellishment_options = EMBELLISHMENT_UI_OPTIONS_DEFAULT
+            embellishment = st.selectbox("Embellishment", embellishment_options)
 
     with col_right:
         st.markdown('<div class="section-label">Quantity Tiers</div>', unsafe_allow_html=True)

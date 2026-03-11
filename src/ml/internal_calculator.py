@@ -140,6 +140,17 @@ POUCHER_UDO = {
     "Non-Calyx Dieline":  {"mr": 0.00, "setup_ft": 200, "speed_chg": 0.0,   "spoilage_chg": 0.0},
 }
 
+# ── Embellishment costs (per bag, estimated from historical quotes) ──
+EMBELLISHMENT_COSTS = {
+    "Hot Stamp (Gold)":  0.015,  # $/bag
+    "Hot Stamp (Silver)": 0.015,
+    "Embossing":         0.010,
+    "Foil":              0.015,  # Consolidated UI name — same as Hot Stamp
+    "Spot UV":           0.012,
+    "None":              0.0,
+    "N/A":               0.0,
+}
+
 # Combined spoilage table (all 3 stages combined)
 COMBINED_SPOILAGE_TABLE = [
     (0,     2000,  0.108),
@@ -222,6 +233,7 @@ def calculate_internal_cost(width, height, gusset, quantity, substrate, finish,
                             seal_type, zipper, tear_notch="Standard",
                             hole_punch="None", corners="Rounded",
                             gusset_detail="K-Seal",
+                            embellishment="None",
                             cmykovg_colors=DEFAULT_CMYKOVG_COLORS,
                             white_colors=None):
     """
@@ -239,6 +251,7 @@ def calculate_internal_cost(width, height, gusset, quantity, substrate, finish,
         hole_punch: "Standard" or "None"
         corners: "Rounded" or "Straight"
         gusset_detail: "K-Seal", "Plow Bottom", "Side Gusset", etc.
+        embellishment: "None", "Foil", "Spot UV", etc.
         cmykovg_colors: Number of CMYKOVG ink colors (default 4)
         white_colors: Number of white ink colors (None = auto-detect from substrate)
 
@@ -427,6 +440,11 @@ def calculate_internal_cost(width, height, gusset, quantity, substrate, finish,
 
     poucher_total = poucher_labor + sealer_cost
 
+    # ═══ EMBELLISHMENT ═══
+
+    embellishment_per_bag = EMBELLISHMENT_COSTS.get(embellishment, 0.0)
+    embellishment_cost = embellishment_per_bag * quantity
+
     # ═══ PACKAGING ═══
 
     qty_k = quantity / 1000
@@ -434,7 +452,7 @@ def calculate_internal_cost(width, height, gusset, quantity, substrate, finish,
 
     # ═══ TOTAL ═══
 
-    total_cost = hp_total + thermo_total + zip_cost + poucher_total + packaging_cost
+    total_cost = hp_total + thermo_total + zip_cost + poucher_total + embellishment_cost + packaging_cost
     unit_cost = total_cost / quantity if quantity > 0 else 0
 
     return {
@@ -464,6 +482,7 @@ def calculate_internal_cost(width, height, gusset, quantity, substrate, finish,
             "zipper": round(zip_cost, 2),
             "poucher_labor": round(poucher_labor, 2),
             "sealer": round(sealer_cost, 2),
+            "embellishment": round(embellishment_cost, 2),
             "packaging": round(packaging_cost, 2),
         },
     }
@@ -507,8 +526,12 @@ def calculate_internal_quote(specs: dict, quantity_tiers: list[int]) -> dict:
         "Stand Up Pouch": "Stand Up Pouch",
         "3 Side Seal": "3 Side Seal",
         "3-Side Seal": "3 Side Seal",
+        "3 Side Seal - Top Fill": "3 Side Top Fill",
+        "3 Side Seal - Bottom Fill": "3 Side Seal",
         "2 Side Seal": "2 Side Seal",
+        "2 Side Seal - Top Fill": "2 Side Seal",
         "3 Side Top Fill": "3 Side Top Fill",
+        "3 Side Bottom Fill": "3 Side Seal",
         "Cube": "Cube",
     }
     seal_type = seal_map.get(seal_type, seal_type)
@@ -521,8 +544,21 @@ def calculate_internal_quote(specs: dict, quantity_tiers: list[int]) -> dict:
     if tear_notch in ("Double (2)", "2 - Tear Notch"):
         tear_notch = "Standard"  # both trigger the UDO
 
-    # Hole punch: "None", "Standard", etc.
+    # Hole punch: "None", "Round", "Euro" (new UI); old values kept for compat
     hole_punch = specs.get("hole_punch", "None")
+    hole_punch_map = {
+        "None": "None",
+        "N/A": "None",
+        # New consolidated UI values
+        "Round": "Standard",
+        "Euro": "Standard",
+        # Old values → same internal key (all trigger the Hole Punch UDO)
+        "Standard": "Standard",
+        "Round (Butterfly)": "Standard",
+        "Euro Slot": "Standard",
+        "Sombrero": "Standard",
+    }
+    hole_punch = hole_punch_map.get(hole_punch, hole_punch)
 
     # Corners: "Rounded", "Straight"
     corners = specs.get("corner_treatment", "Rounded")
@@ -537,6 +573,21 @@ def calculate_internal_quote(specs: dict, quantity_tiers: list[int]) -> dict:
         "None": "K-Seal",
     }
     gusset_detail = gusset_map.get(gusset_detail, gusset_detail)
+
+    # Embellishment: "None", "Foil", "Spot UV" (new UI); old values kept for compat
+    embellishment = specs.get("embellishment", "None")
+    embellishment_map = {
+        "None": "None",
+        "N/A": "None",
+        # New consolidated UI value
+        "Foil": "Foil",
+        "Spot UV": "Spot UV",
+        # Old values → same internal cost
+        "Hot Stamp (Gold)": "Hot Stamp (Gold)",
+        "Hot Stamp (Silver)": "Hot Stamp (Silver)",
+        "Embossing": "Embossing",
+    }
+    embellishment = embellishment_map.get(embellishment, embellishment)
 
     # ── Run calculator for each tier ──
     predictions = []
@@ -557,6 +608,7 @@ def calculate_internal_quote(specs: dict, quantity_tiers: list[int]) -> dict:
             hole_punch=hole_punch,
             corners=corners,
             gusset_detail=gusset_detail,
+            embellishment=embellishment,
         )
 
         if "error" in result:
@@ -595,6 +647,7 @@ def calculate_internal_quote(specs: dict, quantity_tiers: list[int]) -> dict:
             "zipper": "Zipper Stock",
             "poucher_labor": "Poucher Labor",
             "sealer": "Sealer Ink",
+            "embellishment": "Embellishment",
             "packaging": "Packaging",
         }
         for key, label in component_labels.items():
@@ -613,6 +666,7 @@ def calculate_internal_quote(specs: dict, quantity_tiers: list[int]) -> dict:
             quantity=quantity_tiers[0], substrate=substrate, finish=finish,
             seal_type=seal_type, zipper=zipper, tear_notch=tear_notch,
             hole_punch=hole_punch, corners=corners, gusset_detail=gusset_detail,
+            embellishment=embellishment,
         )
         if "layout" in first_result:
             layout_info = first_result["layout"]

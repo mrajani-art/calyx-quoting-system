@@ -101,7 +101,9 @@ FINISH_UI_OPTIONS = ["Matte Laminate", "Soft Touch Laminate", "Gloss Laminate", 
 
 # Column G: Embellishment
 EMBELLISHMENT_OPTIONS = ["N/A", "NA", "None"]
-EMBELLISHMENT_UI_OPTIONS = ["None", "Hot Stamp (Gold)", "Hot Stamp (Silver)", "Embossing", "Spot UV"]
+# Embellishment: Foil only available for Gravure (international) quotes
+EMBELLISHMENT_UI_OPTIONS_GRAVURE = ["None", "Foil", "Spot UV"]
+EMBELLISHMENT_UI_OPTIONS_DEFAULT = ["None", "Spot UV"]
 
 # Column H: Fill Style
 FILL_STYLE_OPTIONS = ["Top", "Bottom"]
@@ -112,7 +114,7 @@ SEAL_TYPE_OPTIONS = [
     "3 Side Seal",
     "3-Side Seal",
 ]
-SEAL_TYPE_UI_OPTIONS = ["Stand Up", "3 Side Seal", "2 Side Seal", "3 Side Top Fill"]
+SEAL_TYPE_UI_OPTIONS = ["3 Side Seal - Top Fill", "3 Side Seal - Bottom Fill", "2 Side Seal - Top Fill", "Stand Up Pouch"]
 
 # Column J: Gusset Details
 GUSSET_OPTIONS = [
@@ -122,7 +124,7 @@ GUSSET_OPTIONS = [
     "Plow Bottom",
     "N/A",
 ]
-GUSSET_UI_OPTIONS = ["K Seal & Skirt Seal", "Plow Bottom", "None"]
+GUSSET_UI_OPTIONS = ["Plow Bottom", "K Seal & Skirt Seal", "None"]
 
 # Column K: Zipper
 ZIPPER_OPTIONS = [
@@ -133,16 +135,15 @@ ZIPPER_OPTIONS = [
     "Single Profile Non-CR",  # From internal Cerm data
     "Double Profile Non-CR",  # From internal Cerm data
 ]
-ZIPPER_UI_OPTIONS = ["CR Zipper", "Standard CR", "Presto CR Zipper",
-                     "Single Profile Non-CR", "Double Profile Non-CR", "No Zipper"]
+ZIPPER_UI_OPTIONS = ["CR Zipper", "Non-CR Zipper", "No Zipper"]
 
 # Column L: Tear Notch
 TEAR_NOTCH_OPTIONS = ["Standard", "N/A", "2 - Tear Notch"]
-TEAR_NOTCH_UI_OPTIONS = ["Standard", "Double (2)", "None"]
+TEAR_NOTCH_UI_OPTIONS = ["None", "Standard"]
 
 # Column M: Hole Punch
 HOLE_PUNCH_OPTIONS = ["N/A", "Standard", "Round (Butterfly)", "Euro Slot", "Sombrero"]
-HOLE_PUNCH_UI_OPTIONS = ["None", "Standard", "Round (Butterfly)", "Euro Slot", "Sombrero"]
+HOLE_PUNCH_UI_OPTIONS = ["None", "Round", "Euro"]
 
 # Column O: Corners
 CORNER_OPTIONS = ["Straight", "Rounded", "Round"]
@@ -196,7 +197,7 @@ CONFIDENCE_UPPER = 0.90
 TEDPACK_CONFIDENCE_LOWER = 0.05
 TEDPACK_CONFIDENCE_UPPER = 0.95
 # Conservative bias: blend point prediction toward upper bound so quoted cost leans higher
-TEDPACK_CONSERVATIVE_BLEND = 0.15  # adjusted = point * 0.85 + upper * 0.15
+TEDPACK_CONSERVATIVE_BLEND = 0.10  # adjusted = point * 0.90 + upper * 0.10
 # Tighter outlier threshold for TedPack (fewer anomalous overseas quotes)
 TEDPACK_OUTLIER_SIGMA = 2.5
 # Minimum CI half-width as fraction of point estimate (floor)
