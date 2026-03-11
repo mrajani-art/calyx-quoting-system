@@ -61,14 +61,27 @@ CATEGORY_ORDERS = {
     "substrate": ["CLR_PET", "MET_PET", "WHT_MET_PET", "HB_CLR_PET", "CUSTOM"],
     "finish": ["None", "Matte Laminate", "Gloss Laminate", "Soft Touch Laminate", "Holographic"],
     "fill_style": ["Top", "Bottom"],
-    "seal_type": ["Stand Up", "2 Side Seal", "3 Side Seal", "3 Side Top Fill"],
-    "gusset_type": ["None", "K Seal", "K Seal & Skirt Seal", "Plow Bottom", "Flat Bottom / Side Gusset"],
-    "zipper": ["No Zipper", "Single Profile Non-CR", "Double Profile Non-CR",
-               "Standard CR", "CR Zipper", "Presto CR Zipper"],
-    "tear_notch": ["None", "Standard", "Double (2)"],
-    "hole_punch": ["None", "Standard", "Round (Butterfly)", "Euro Slot", "Sombrero"],
+    "seal_type": ["Side Seal", "Stand Up Pouch"],
+    "gusset_type": ["None", "K Seal & Skirt Seal", "Plow Bottom", "Flat Bottom / Side Gusset"],
+    "zipper": ["No Zipper", "Non-CR Zipper", "CR Zipper"],
+    "tear_notch": ["None", "Standard"],
+    "hole_punch": ["None", "Round", "Euro"],
     "corner_treatment": ["Straight", "Rounded"],
-    "embellishment": ["None", "Hot Stamp (Gold)", "Hot Stamp (Silver)", "Embossing", "Spot UV"],
+    "embellishment": ["None", "Foil", "Spot UV"],
+}
+
+# ML seal-type consolidation: UI shows 4 options for customer reference,
+# ML model sees only 2 to pool training data for better accuracy.
+SEAL_TYPE_ML_MAP = {
+    "Stand Up Pouch": "Stand Up Pouch",
+    "3 Side Seal - Top Fill": "Side Seal",
+    "3 Side Seal - Bottom Fill": "Side Seal",
+    "2 Side Seal - Top Fill": "Side Seal",
+    # Legacy values (backward compat during transition)
+    "Stand Up": "Stand Up Pouch",
+    "3 Side Seal": "Side Seal",
+    "2 Side Seal": "Side Seal",
+    "3 Side Top Fill": "Side Seal",
 }
 
 
@@ -148,7 +161,7 @@ def prepare_features(df: pd.DataFrame) -> pd.DataFrame:
         "substrate": "CUSTOM",
         "finish": "None",
         "fill_style": "Top",
-        "seal_type": "Stand Up",
+        "seal_type": "Stand Up Pouch",
         "gusset_type": "None",
         "zipper": "No Zipper",
         "tear_notch": "None",
@@ -162,6 +175,46 @@ def prepare_features(df: pd.DataFrame) -> pd.DataFrame:
         else:
             df[col] = df[col].fillna(default)
 
+    # ── Consolidate seal_type for ML (UI keeps granular options) ──
+    df["seal_type"] = df["seal_type"].map(SEAL_TYPE_ML_MAP).fillna("Stand Up Pouch")
+
+    # ── Consolidate other categories to new canonical values ──────
+    # Hole punch: Standard and Round (Butterfly) → Round; Euro Slot and Sombrero → Euro
+    hole_punch_map = {
+        "None": "None", "Standard": "Round", "Round (Butterfly)": "Round",
+        "Round": "Round", "Euro Slot": "Euro", "Sombrero": "Euro", "Euro": "Euro",
+    }
+    df["hole_punch"] = df["hole_punch"].map(hole_punch_map).fillna("None")
+
+    # Tear notch: Double (2) → Standard
+    tear_notch_map = {"None": "None", "Standard": "Standard", "Double (2)": "Standard"}
+    df["tear_notch"] = df["tear_notch"].map(tear_notch_map).fillna("None")
+
+    # Zipper consolidation
+    zipper_map = {
+        "No Zipper": "No Zipper",
+        "CR Zipper": "CR Zipper", "Standard CR": "CR Zipper", "Presto CR Zipper": "CR Zipper",
+        "Single Profile Non-CR": "Non-CR Zipper", "Double Profile Non-CR": "Non-CR Zipper",
+        "Non-CR Zipper": "Non-CR Zipper",
+    }
+    df["zipper"] = df["zipper"].map(zipper_map).fillna("No Zipper")
+
+    # Embellishment consolidation
+    embellishment_map = {
+        "None": "None", "Spot UV": "Spot UV", "Foil": "Foil",
+        "Hot Stamp (Gold)": "Foil", "Hot Stamp (Silver)": "Foil", "Embossing": "Foil",
+    }
+    df["embellishment"] = df["embellishment"].map(embellishment_map).fillna("None")
+
+    # Gusset: consolidate K Seal → K Seal & Skirt Seal
+    gusset_map = {
+        "None": "None", "K Seal": "K Seal & Skirt Seal",
+        "K Seal & Skirt Seal": "K Seal & Skirt Seal",
+        "Plow Bottom": "Plow Bottom",
+        "Flat Bottom / Side Gusset": "Flat Bottom / Side Gusset",
+    }
+    df["gusset_type"] = df["gusset_type"].map(gusset_map).fillna("None")
+
     # ── Interaction features ────────────────────────────────────────
     # Area × quantity — captures how material cost scales
     df["area_x_logqty"] = df["bag_area_sqin"] * df["log_quantity"]
@@ -170,9 +223,7 @@ def prepare_features(df: pd.DataFrame) -> pd.DataFrame:
     df["has_gusset"] = (df["gusset"] > 0).astype(int)
 
     # Zipper complexity score (0-3)
-    zipper_score = {"No Zipper": 0, "Single Profile Non-CR": 1,
-                    "Double Profile Non-CR": 1.5, "Standard CR": 2,
-                    "CR Zipper": 3, "Presto CR Zipper": 3.5}
+    zipper_score = {"No Zipper": 0, "Non-CR Zipper": 1, "CR Zipper": 3}
     df["zipper_score"] = df["zipper"].map(zipper_score).fillna(0)
 
     # ── Ross cost-structure features ────────────────────────────────

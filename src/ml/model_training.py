@@ -172,7 +172,7 @@ class QuoteModelTrainer:
         elif self.vendor == "ross":
             n_est, depth, lr, min_leaf = 500, 6, 0.02, 3
         elif self.vendor in ("tedpack_air", "tedpack_ocean"):
-            n_est, depth, lr, min_leaf = 400, 5, 0.03, 4
+            n_est, depth, lr, min_leaf = 500, 5, 0.025, 3
         else:  # dazpak
             n_est, depth, lr, min_leaf = 300, 5, 0.05, 5
 

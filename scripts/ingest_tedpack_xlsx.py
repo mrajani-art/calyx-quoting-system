@@ -21,7 +21,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 logging.basicConfig(level=logging.INFO, format="%(levelname)s | %(message)s")
 logger = logging.getLogger(__name__)
 
-DEFAULT_XLSX = Path.home() / "Downloads" / "TedPack_Quotes_Specs_Pricing.xlsx"
+DEFAULT_XLSX = Path.home() / "Downloads" / "TedPack_Quotes_Specs_Pricing_2.xlsx"
 
 
 # ── Exclusion Rules ──────────────────────────────────────────────────
@@ -75,34 +75,43 @@ FINISH_MAP = {
 EMBELLISHMENT_MAP = {
     "Flat Spot UV": "Spot UV",
     "Spot UV": "Spot UV",
-    "Holographic": "None",  # substrate property, not surface embellishment
+    "Holographic": "None",
+    "Gold Foil": "Foil",
+    "Silver Foil": "Foil",
+    "Embossing": "Foil",
+    "Hot Stamp (Gold)": "Foil",
+    "Hot Stamp (Silver)": "Foil",
 }
 
 BAG_TYPE_TO_SEAL = {
-    "Stand Up Pouch": "Stand Up",
-    "Stand Up": "Stand Up",
-    "3 Side Seal": "3 Side Seal",
-    "3 Side Bottom Fill": "3 Side Seal",
-    "3 Side Top Fill": "3 Side Top Fill",
-    "2 Side Seal": "2 Side Seal",
+    "Stand Up Pouch": "Stand Up Pouch",
+    "Stand Up": "Stand Up Pouch",
+    "3 Side Seal": "3 Side Seal - Bottom Fill",
+    "3 Side Bottom Fill": "3 Side Seal - Bottom Fill",
+    "3 Side Top Fill": "3 Side Seal - Top Fill",
+    "2 Side Seal": "2 Side Seal - Top Fill",
 }
 
 BAG_TYPE_TO_FILL = {
     "3 Side Bottom Fill": "Bottom",
     "3 Side Top Fill": "Top",
+    "3 Side Seal": "Bottom",  # default for ambiguous 3-side
+    "2 Side Seal": "Top",
 }
 
 GUSSET_MAP = {
-    "K Seal": "K Seal",
-    "Doyen": "K Seal",
-    "Doyen Seal": "K Seal",
+    "K Seal": "K Seal & Skirt Seal",
+    "Doyen": "K Seal & Skirt Seal",
+    "Doyen Seal": "K Seal & Skirt Seal",
     "K Seal & Skirt Seal": "K Seal & Skirt Seal",
+    "Plow Bottom": "Plow Bottom",
+    "Flat Bottom / Side Gusset": "Plow Bottom",
 }
 
 ZIPPER_MAP = {
     "CR Zipper": "CR Zipper",
-    "Standard Zipper (Non-CR)": "Single Profile Non-CR",
-    "2-3 Track Zipper": "Double Profile Non-CR",
+    "Standard Zipper (Non-CR)": "Non-CR Zipper",
+    "2-3 Track Zipper": "Non-CR Zipper",
 }
 
 CORNER_MAP = {
@@ -244,12 +253,32 @@ def ingest_tedpack(xlsx_path: str) -> pd.DataFrame:
 
 
 def main():
-    xlsx_path = sys.argv[1] if len(sys.argv) > 1 else str(DEFAULT_XLSX)
-    df = ingest_tedpack(xlsx_path)
+    import argparse
+    parser = argparse.ArgumentParser(description="Ingest TedPack Excel into training CSV")
+    parser.add_argument("xlsx_path", nargs="?", default=str(DEFAULT_XLSX),
+                        help="Path to TedPack Excel file")
+    parser.add_argument("--merge-existing", action="store_true",
+                        help="Merge with existing tedpack_training.csv, deduplicating by (Bag ID, quantity, vendor)")
+    args = parser.parse_args()
+
+    df = ingest_tedpack(args.xlsx_path)
 
     out_dir = Path(__file__).resolve().parent.parent / "data"
     out_dir.mkdir(exist_ok=True)
     out_path = out_dir / "tedpack_training.csv"
+
+    if args.merge_existing and out_path.exists():
+        existing = pd.read_csv(out_path)
+        logger.info(f"Merging with existing {out_path}: {len(existing)} rows")
+        combined = pd.concat([existing, df], ignore_index=True)
+        # Deduplicate: keep last occurrence (new data takes priority)
+        combined = combined.drop_duplicates(
+            subset=["Bag ID", "quantity", "vendor"],
+            keep="last"
+        )
+        logger.info(f"After dedup: {len(combined)} rows (was {len(existing)} + {len(df)})")
+        df = combined
+
     df.to_csv(out_path, index=False)
     logger.info(f"Saved to {out_path}")
 
@@ -268,6 +297,8 @@ def main():
     print(df["substrate"].value_counts().to_string())
     print(f"\nSeal type dist:")
     print(df["seal_type"].value_counts().to_string())
+    print(f"\nZipper dist:")
+    print(df["zipper"].value_counts().to_string())
 
 
 if __name__ == "__main__":
