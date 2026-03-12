@@ -16,6 +16,14 @@ on:
         options:
           - 'false'
           - 'true'
+      force_retrain:
+        description: 'Force retrain even if no new data ingested'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
 
 jobs:
   ingest-and-retrain:
@@ -33,7 +41,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.13'
           cache: 'pip'
 
       - name: Install dependencies
@@ -50,9 +58,9 @@ jobs:
           ROSS_FOLDER_ID: ${{ secrets.ROSS_FOLDER_ID }}
         run: python scripts/auto_ingest.py
 
-      # ─── Retrain models (only if new data was ingested) ───
+      # ─── Retrain models (if new data ingested or force_retrain) ───
       - name: Retrain ML models
-        if: steps.ingest.outputs.total_new != '0' && github.event.inputs.skip_retrain != 'true'
+        if: (steps.ingest.outputs.total_new != '0' || github.event.inputs.force_retrain == 'true') && github.event.inputs.skip_retrain != 'true'
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
@@ -60,7 +68,7 @@ jobs:
 
       # ─── Commit updated model files ───
       - name: Commit updated models
-        if: steps.ingest.outputs.total_new != '0' && github.event.inputs.skip_retrain != 'true'
+        if: (steps.ingest.outputs.total_new != '0' || github.event.inputs.force_retrain == 'true') && github.event.inputs.skip_retrain != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
