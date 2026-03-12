@@ -32,13 +32,22 @@ class QuotePredictor:
         self._loaded = False
 
     def load_models(self):
-        """Load trained models for both vendors."""
+        """Load trained models for all vendors.
+
+        Catches any exception per vendor (not just FileNotFoundError)
+        so that a single vendor's deserialization failure (e.g. numpy
+        version mismatch) doesn't prevent other vendors from loading.
+        The internal calculator is deterministic and will still work
+        even when ML models fail to load.
+        """
         for vendor in ["dazpak", "ross", "internal", "tedpack_air", "tedpack_ocean"]:
             try:
                 self.models[vendor] = QuoteModelTrainer.load(vendor)
                 logger.info(f"Loaded {vendor} model")
             except FileNotFoundError:
                 logger.warning(f"No trained model found for {vendor}")
+            except Exception as e:
+                logger.error(f"Failed to load {vendor} model: {e}")
         self._loaded = True
 
     def predict(self, specs: dict, quantity_tiers: list[int],
