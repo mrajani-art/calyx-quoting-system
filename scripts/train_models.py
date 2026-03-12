@@ -130,6 +130,17 @@ def main():
         print("❌ No training data available")
         return
 
+    # ── Merge TedPack CSV if available (has proper air/ocean split) ──
+    tedpack_csv = Path(__file__).resolve().parent.parent / "data" / "tedpack_training.csv"
+    if tedpack_csv.exists():
+        tp_df = pd.read_csv(tedpack_csv)
+        tp_df = tp_df[tp_df["vendor"].isin(["tedpack_air", "tedpack_ocean"])]
+        if not tp_df.empty:
+            # Remove any tedpack rows from Supabase data (they'll be replaced)
+            df = df[~df["vendor"].isin(["tedpack", "tedpack_air", "tedpack_ocean"])]
+            df = pd.concat([df, tp_df], ignore_index=True)
+            print(f"Merged {len(tp_df)} rows from {tedpack_csv}")
+
     print(f"Training data: {len(df)} rows")
     print(f"Vendors: {df['vendor'].value_counts().to_dict()}")
     print(f"Price range: ${df['unit_price'].min():.5f} – ${df['unit_price'].max():.5f}")

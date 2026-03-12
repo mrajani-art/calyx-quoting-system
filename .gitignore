@@ -3,4 +3,5 @@ config/google_service_account.json
 
 # Data & models
 data/
+!data/tedpack_training.csv
 __pycache__/

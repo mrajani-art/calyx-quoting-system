@@ -1,0 +1,485 @@
+Bag ID,width,height,gusset,quantity,substrate,finish,embellishment,fill_style,seal_type,gusset_type,zipper,tear_notch,hole_punch,corner_treatment,print_method,created_at,vendor,unit_price
+CQ-48888283252,4.0,6.5,1.7,10000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2026-03-07,tedpack_air,0.197
+CQ-48888283252,4.0,6.5,1.7,25000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2026-03-07,tedpack_air,0.124
+CQ-48888283252,4.0,6.5,1.7,50000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2026-03-07,tedpack_air,0.11
+CQ-48888283252,4.0,6.5,1.7,100000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2026-03-07,tedpack_air,0.1
+CQ-4888468544,5.0,8.15,2.36,10000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2026-03-07,tedpack_air,0.23
+CQ-4888468544,5.0,8.15,2.36,25000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2026-03-07,tedpack_air,0.158
+CQ-4888468544,5.0,8.15,2.36,50000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2026-03-07,tedpack_air,0.152
+CQ-4888468544,5.0,8.15,2.36,100000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2026-03-07,tedpack_air,0.144
+CQ-4888407123,3.62,5.0,1.57,50000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2026-03-07,tedpack_air,0.088
+CQ-4888407123,3.62,5.0,1.57,100000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2026-03-07,tedpack_air,0.083
+CQ-4888407123,3.62,5.0,1.57,250000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2026-03-07,tedpack_air,0.078
+CQ-49460422966,5.0,4.5,2.0,50000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Rounded,gravure,2026-03-07,tedpack_air,0.097
+CQ-49460422966,5.0,4.5,2.0,100000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Rounded,gravure,2026-03-07,tedpack_air,0.091
+CQ-49460422966,5.0,4.5,2.0,250000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Rounded,gravure,2026-03-07,tedpack_air,0.084
+CQ-49544170416,4.0,5.1,0.0,25000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-03-07,tedpack_air,0.097
+CQ-49544170416,4.0,5.1,0.0,50000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-03-07,tedpack_air,0.079
+CQ-49544170416,4.0,5.1,0.0,100000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-03-07,tedpack_air,0.076
+CQ-49544170416,4.0,5.1,0.0,250000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-03-07,tedpack_air,0.072
+CQ-49460426847,3.2,5.5,0.0,25000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-03-07,tedpack_air,0.082
+CQ-49460426847,3.2,5.5,0.0,50000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-03-07,tedpack_air,0.067
+CQ-49460426847,3.2,5.5,0.0,100000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-03-07,tedpack_air,0.064
+CQ-49460426847,3.2,5.5,0.0,250000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-03-07,tedpack_air,0.059
+CQ-49389133708,3.5,5.0,2.0,10000,CLR_PET,Matte Laminate,Spot UV,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-03-06,tedpack_air,0.123
+CQ-49389133708,3.5,5.0,2.0,25000,CLR_PET,Matte Laminate,Spot UV,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-03-06,tedpack_air,0.083
+CQ-49389133708,3.5,5.0,2.0,50000,CLR_PET,Matte Laminate,Spot UV,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-03-06,tedpack_air,0.073
+CQ-49389133708,3.5,5.0,2.0,100000,CLR_PET,Matte Laminate,Spot UV,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-03-06,tedpack_air,0.071
+CQ-49389133708,3.5,5.0,2.0,150000,CLR_PET,Matte Laminate,Spot UV,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-03-06,tedpack_air,0.068
+CQ-49389133708,3.5,5.0,2.0,250000,CLR_PET,Matte Laminate,Spot UV,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-03-06,tedpack_air,0.065
+CQ-49337363062,6.25,9.0,2.25,10000,CLR_PET,Matte Laminate,Spot UV,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-03-06,tedpack_air,0.171
+CQ-49337363062,6.25,9.0,2.25,25000,CLR_PET,Matte Laminate,Spot UV,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-03-06,tedpack_air,0.157
+CQ-49337363062,6.25,9.0,2.25,50000,CLR_PET,Matte Laminate,Spot UV,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-03-06,tedpack_air,0.153
+CQ-49337363062,6.25,9.0,2.25,100000,CLR_PET,Matte Laminate,Spot UV,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-03-06,tedpack_air,0.145
+CQ-49337363062,6.25,9.0,2.25,150000,CLR_PET,Matte Laminate,Spot UV,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-03-06,tedpack_air,0.14
+CQ-49337363062,6.25,9.0,2.25,250000,CLR_PET,Matte Laminate,Spot UV,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-03-06,tedpack_air,0.133
+CQ-1726-BudBridge,6.0,9.0,3.0,5000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-03-06,tedpack_air,0.19
+CQ-1726-BudBridge,6.0,9.0,3.0,10000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-03-06,tedpack_air,0.177
+CQ-1726-BudBridge,6.0,9.0,3.0,25000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-03-06,tedpack_air,0.173
+CQ-1726-BudBridge,6.0,9.0,3.0,50000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-03-06,tedpack_air,0.164
+CQ-1726-BudBridge,6.0,9.0,3.0,100000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-03-06,tedpack_air,0.158
+CQ-1726-BudBridge,6.0,9.0,3.0,250000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-03-06,tedpack_air,0.151
+CQ-1727,4.0,5.0,2.0,5000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-02-26,tedpack_air,0.197
+CQ-1727,4.0,5.0,2.0,10000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-02-26,tedpack_air,0.144
+CQ-1727,4.0,5.0,2.0,25000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-02-26,tedpack_air,0.098
+CQ-1727,4.0,5.0,2.0,50000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-02-26,tedpack_air,0.091
+CQ-1727,4.0,5.0,2.0,100000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-02-26,tedpack_air,0.088
+CQ-1727,4.0,5.0,2.0,250000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-02-26,tedpack_air,0.081
+CQ-1723,2.5,6.0,0.0,5000,WHT_MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-26,tedpack_air,0.174
+CQ-1723,2.5,6.0,0.0,10000,WHT_MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-26,tedpack_air,0.119
+CQ-1723,2.5,6.0,0.0,25000,WHT_MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-26,tedpack_air,0.075
+CQ-1723,2.5,6.0,0.0,50000,WHT_MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-26,tedpack_air,0.063
+CQ-1723,2.5,6.0,0.0,100000,WHT_MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-26,tedpack_air,0.061
+CQ-1723,2.5,6.0,0.0,250000,WHT_MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-26,tedpack_air,0.057
+CQ-1734,6.0,9.0,2.3,10000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Straight,gravure,2026-03-03,tedpack_air,0.36
+CQ-1734,6.0,9.0,2.3,25000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Straight,gravure,2026-03-03,tedpack_air,0.31
+CQ-1734,6.0,9.0,2.3,50000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Straight,gravure,2026-03-03,tedpack_air,0.306
+CQ-1734,6.0,9.0,2.3,100000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Straight,gravure,2026-03-03,tedpack_air,0.289
+CQ-1730,2.5,5.0,2.0,5000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-03-03,tedpack_air,0.189
+CQ-1730,2.5,5.0,2.0,10000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-03-03,tedpack_air,0.123
+CQ-1730,2.5,5.0,2.0,25000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-03-03,tedpack_air,0.078
+CQ-1730,2.5,5.0,2.0,50000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-03-03,tedpack_air,0.065
+CQ-1730,2.5,5.0,2.0,100000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-03-03,tedpack_air,0.061
+CQ-1730,2.5,5.0,2.0,250000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-03-03,tedpack_air,0.056
+FL-DL-1649,4.5,5.5,2.0,5000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-24,tedpack_air,0.196
+FL-DL-1649,4.5,5.5,2.0,10000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-24,tedpack_air,0.144
+FL-DL-1649,4.5,5.5,2.0,25000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-24,tedpack_air,0.1
+FL-DL-1649,4.5,5.5,2.0,50000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-24,tedpack_air,0.094
+FL-DL-1649,4.5,5.5,2.0,100000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-24,tedpack_air,0.09
+FL-DL-1649,4.5,5.5,2.0,250000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-24,tedpack_air,0.083
+FL-DL-1678,4.0,7.0,2.0,10000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-24,tedpack_air,0.148
+FL-DL-1678,4.0,7.0,2.0,25000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-24,tedpack_air,0.112
+FL-DL-1678,4.0,7.0,2.0,50000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-24,tedpack_air,0.105
+FL-DL-1645,4.5,5.0,2.0,5000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-14,tedpack_air,0.196
+FL-DL-1645,4.5,5.0,2.0,10000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-14,tedpack_air,0.135
+FL-DL-1645,4.5,5.0,2.0,25000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-14,tedpack_air,0.098
+FL-DL-1645,4.5,5.0,2.0,50000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-14,tedpack_air,0.092
+FL-DL-1645,4.5,5.0,2.0,100000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-14,tedpack_air,0.088
+FL-DL-1645,4.5,5.0,2.0,250000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-14,tedpack_air,0.081
+FL-DL-1476-A,4.0,7.0,0.0,25000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_air,0.098
+FL-DL-1476-A,4.0,7.0,0.0,50000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_air,0.093
+FL-DL-1476-A,4.0,7.0,0.0,100000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_air,0.09
+FL-DL-1476-A,4.0,7.0,0.0,250000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_air,0.083
+FL-DL-1476-A,4.0,7.0,0.0,500000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_air,0.075
+FL-DL-1476-B,9.0,6.0,0.0,25000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_air,0.155
+FL-DL-1476-B,9.0,6.0,0.0,50000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_air,0.15
+FL-DL-1476-B,9.0,6.0,0.0,100000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_air,0.14
+FL-DL-1476-B,9.0,6.0,0.0,250000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_air,0.129
+FL-DL-1476-B,9.0,6.0,0.0,500000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_air,0.123
+FL-DL-1476-C,5.1,7.25,2.0,25000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_air,0.127
+FL-DL-1476-C,5.1,7.25,2.0,50000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_air,0.122
+FL-DL-1476-C,5.1,7.25,2.0,100000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_air,0.113
+FL-DL-1476-C,5.1,7.25,2.0,250000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_air,0.105
+FL-DL-1476-C,5.1,7.25,2.0,500000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_air,0.1
+FL-DL-1476-D,6.83,9.8,2.36,25000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_air,0.202
+FL-DL-1476-D,6.83,9.8,2.36,50000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_air,0.195
+FL-DL-1476-D,6.83,9.8,2.36,100000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_air,0.182
+FL-DL-1476-D,6.83,9.8,2.36,250000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_air,0.168
+FL-DL-1476-D,6.83,9.8,2.36,500000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_air,0.16
+FL-DL-1615,4.527,5.906,2.0,50000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_air,0.101
+FL-DL-1615,4.527,5.906,2.0,100000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_air,0.097
+FL-DL-1615,4.527,5.906,2.0,250000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_air,0.09
+FL-DL-1615,4.527,5.906,2.0,500000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_air,0.082
+FL-DL-1621,7.0,5.0,0.0,10000,WHT_MET_PET,Matte Laminate,None,Top,2 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_air,0.148
+FL-DL-1621,7.0,5.0,0.0,25000,WHT_MET_PET,Matte Laminate,None,Top,2 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_air,0.117
+FL-DL-1621,7.0,5.0,0.0,50000,WHT_MET_PET,Matte Laminate,None,Top,2 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_air,0.111
+FL-DL-1621,7.0,5.0,0.0,100000,WHT_MET_PET,Matte Laminate,None,Top,2 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_air,0.107
+FL-DL-1602,4.5,5.0,2.0,10000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-02-10,tedpack_air,0.135
+FL-DL-1602,4.5,5.0,2.0,25000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-02-10,tedpack_air,0.098
+FL-DL-1602,4.5,5.0,2.0,50000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-02-10,tedpack_air,0.092
+FL-DL-1602,4.5,5.0,2.0,100000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-02-10,tedpack_air,0.088
+FL-DL-1602,4.5,5.0,2.0,250000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-02-10,tedpack_air,0.081
+FL-DL-1603,2.5,6.8,0.0,5000,MET_PET,Matte Laminate,None,Top,2 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-02-10,tedpack_air,0.45
+FL-DL-1603,2.5,6.8,0.0,10000,MET_PET,Matte Laminate,None,Top,2 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-02-10,tedpack_air,0.381
+FL-DL-1603,2.5,6.8,0.0,25000,MET_PET,Matte Laminate,None,Top,2 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-02-10,tedpack_air,0.364
+FL-DL-1462 (3.3mil),5.0,5.0,0.0,5000,WHT_MET_PET,Matte Laminate,None,Top,2 Side Seal,None,Single Profile Non-CR,None,None,Straight,gravure,2026-02-04,tedpack_air,0.173
+FL-DL-1462 (3.3mil),5.0,5.0,0.0,10000,WHT_MET_PET,Matte Laminate,None,Top,2 Side Seal,None,Single Profile Non-CR,None,None,Straight,gravure,2026-02-04,tedpack_air,0.117
+FL-DL-1462 (3.3mil),5.0,5.0,0.0,25000,WHT_MET_PET,Matte Laminate,None,Top,2 Side Seal,None,Single Profile Non-CR,None,None,Straight,gravure,2026-02-04,tedpack_air,0.077
+FL-DL-1462 (3.3mil),5.0,5.0,0.0,50000,WHT_MET_PET,Matte Laminate,None,Top,2 Side Seal,None,Single Profile Non-CR,None,None,Straight,gravure,2026-02-04,tedpack_air,0.07
+FL-DL-1462 (3.3mil),5.0,5.0,0.0,100000,WHT_MET_PET,Matte Laminate,None,Top,2 Side Seal,None,Single Profile Non-CR,None,None,Straight,gravure,2026-02-04,tedpack_air,0.066
+FL-DL-1462 (3.3mil),5.0,5.0,0.0,250000,WHT_MET_PET,Matte Laminate,None,Top,2 Side Seal,None,Single Profile Non-CR,None,None,Straight,gravure,2026-02-04,tedpack_air,0.063
+FL-DL-1462 (4mil),5.0,5.0,0.0,5000,WHT_MET_PET,Matte Laminate,None,Top,2 Side Seal,None,Single Profile Non-CR,None,None,Straight,gravure,2026-02-04,tedpack_air,0.183
+FL-DL-1462 (4mil),5.0,5.0,0.0,10000,WHT_MET_PET,Matte Laminate,None,Top,2 Side Seal,None,Single Profile Non-CR,None,None,Straight,gravure,2026-02-04,tedpack_air,0.127
+FL-DL-1462 (4mil),5.0,5.0,0.0,25000,WHT_MET_PET,Matte Laminate,None,Top,2 Side Seal,None,Single Profile Non-CR,None,None,Straight,gravure,2026-02-04,tedpack_air,0.087
+FL-DL-1462 (4mil),5.0,5.0,0.0,50000,WHT_MET_PET,Matte Laminate,None,Top,2 Side Seal,None,Single Profile Non-CR,None,None,Straight,gravure,2026-02-04,tedpack_air,0.081
+FL-DL-1462 (4mil),5.0,5.0,0.0,100000,WHT_MET_PET,Matte Laminate,None,Top,2 Side Seal,None,Single Profile Non-CR,None,None,Straight,gravure,2026-02-04,tedpack_air,0.078
+FL-DL-1462 (4mil),5.0,5.0,0.0,250000,WHT_MET_PET,Matte Laminate,None,Top,2 Side Seal,None,Single Profile Non-CR,None,None,Straight,gravure,2026-02-04,tedpack_air,0.073
+FL-DL-1487,5.0,9.0,0.0,25000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-01-29,tedpack_air,0.128
+FL-DL-1487,5.0,9.0,0.0,50000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-01-29,tedpack_air,0.123
+FL-DL-1487,5.0,9.0,0.0,100000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-01-29,tedpack_air,0.118
+FL-DL-1487,5.0,9.0,0.0,250000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-01-29,tedpack_air,0.113
+FL-DL-1488,5.25,6.75,0.0,25000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-01-29,tedpack_air,0.106
+FL-DL-1488,5.25,6.75,0.0,50000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-01-29,tedpack_air,0.101
+FL-DL-1488,5.25,6.75,0.0,100000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-01-29,tedpack_air,0.098
+FL-DL-1488,5.25,6.75,0.0,250000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-01-29,tedpack_air,0.092
+FL-DL-1419,6.0,8.0,2.0,5000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Rounded,gravure,2026-01-15,tedpack_air,0.2452
+FL-DL-1419,6.0,8.0,2.0,10000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Rounded,gravure,2026-01-15,tedpack_air,0.1973
+FL-DL-1419,6.0,8.0,2.0,25000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Rounded,gravure,2026-01-15,tedpack_air,0.173
+FL-DL-1419,6.0,8.0,2.0,50000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Rounded,gravure,2026-01-15,tedpack_air,0.1646
+FL-DL-1419,6.0,8.0,2.0,100000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Rounded,gravure,2026-01-15,tedpack_air,0.1352
+FL-DL-1419,6.0,8.0,2.0,250000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Rounded,gravure,2026-01-15,tedpack_air,0.1303
+FL-DL-1420,3.0,6.0,0.0,5000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-01-15,tedpack_air,0.179
+FL-DL-1420,3.0,6.0,0.0,10000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-01-15,tedpack_air,0.1271
+FL-DL-1420,3.0,6.0,0.0,25000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-01-15,tedpack_air,0.0927
+FL-DL-1420,3.0,6.0,0.0,50000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-01-15,tedpack_air,0.0825
+FL-DL-1420,3.0,6.0,0.0,100000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-01-15,tedpack_air,0.0778
+FL-DL-1420,3.0,6.0,0.0,250000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-01-15,tedpack_air,0.0621
+FL-DL-1416,4.0,6.0,2.0,5000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-01-14,tedpack_air,0.2234
+FL-DL-1416,4.0,6.0,2.0,10000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-01-14,tedpack_air,0.1794
+FL-DL-1416,4.0,6.0,2.0,25000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-01-14,tedpack_air,0.1074
+FL-DL-1416,4.0,6.0,2.0,50000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-01-14,tedpack_air,0.101
+FL-DL-1416,4.0,6.0,2.0,100000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-01-14,tedpack_air,0.0983
+FL-DL-1339-1,5.0,14.5,0.0,5000,HB_CLR_PET,Soft Touch Laminate,None,Bottom,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-12-31,tedpack_air,0.2878
+FL-DL-1339-1,5.0,14.5,0.0,10000,HB_CLR_PET,Soft Touch Laminate,None,Bottom,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-12-31,tedpack_air,0.2398
+FL-DL-1339-1,5.0,14.5,0.0,25000,HB_CLR_PET,Soft Touch Laminate,None,Bottom,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-12-31,tedpack_air,0.211
+FL-DL-1339-1,5.0,14.5,0.0,50000,HB_CLR_PET,Soft Touch Laminate,None,Bottom,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-12-31,tedpack_air,0.2017
+FL-DL-1339-1,5.0,14.5,0.0,100000,HB_CLR_PET,Soft Touch Laminate,None,Bottom,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-12-31,tedpack_air,0.1979
+FL-DL-1339-1,5.0,14.5,0.0,250000,HB_CLR_PET,Soft Touch Laminate,None,Bottom,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-12-31,tedpack_air,0.1924
+FL-DL-1339-2,5.0,16.0,0.0,5000,HB_CLR_PET,Soft Touch Laminate,None,Bottom,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-12-31,tedpack_air,0.318
+FL-DL-1339-2,5.0,16.0,0.0,10000,HB_CLR_PET,Soft Touch Laminate,None,Bottom,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-12-31,tedpack_air,0.261
+FL-DL-1339-2,5.0,16.0,0.0,25000,HB_CLR_PET,Soft Touch Laminate,None,Bottom,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-12-31,tedpack_air,0.2285
+FL-DL-1339-2,5.0,16.0,0.0,50000,HB_CLR_PET,Soft Touch Laminate,None,Bottom,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-12-31,tedpack_air,0.2178
+FL-DL-1339-2,5.0,16.0,0.0,100000,HB_CLR_PET,Soft Touch Laminate,None,Bottom,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-12-31,tedpack_air,0.2139
+FL-DL-1339-2,5.0,16.0,0.0,250000,HB_CLR_PET,Soft Touch Laminate,None,Bottom,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-12-31,tedpack_air,0.21
+FL-DL-1366,4.0,6.0,2.0,5000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-12-22,tedpack_air,0.1772
+FL-DL-1366,4.0,6.0,2.0,10000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-12-22,tedpack_air,0.1533
+FL-DL-1366,4.0,6.0,2.0,25000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-12-22,tedpack_air,0.1089
+FL-DL-1366,4.0,6.0,2.0,50000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-12-22,tedpack_air,0.1038
+FL-DL-1366,4.0,6.0,2.0,100000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-12-22,tedpack_air,0.1016
+FL-DL-1363,6.0,5.5,2.5,25000,CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Rounded,gravure,2025-12-17,tedpack_air,0.0941
+FL-DL-1363,6.0,5.5,2.5,50000,CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Rounded,gravure,2025-12-17,tedpack_air,0.0918
+FL-DL-1363,6.0,5.5,2.5,100000,CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Rounded,gravure,2025-12-17,tedpack_air,0.0918
+FL-DL-1363,6.0,5.5,2.5,250000,CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Rounded,gravure,2025-12-17,tedpack_air,0.0824
+FL-DL-1283,5.5,4.5,0.0,5000,WHT_MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2025-11-26,tedpack_air,0.161
+FL-DL-1283,5.5,4.5,0.0,10000,WHT_MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2025-11-26,tedpack_air,0.1438
+FL-DL-1283,5.5,4.5,0.0,25000,WHT_MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2025-11-26,tedpack_air,0.0929
+FL-DL-1283,5.5,4.5,0.0,50000,WHT_MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2025-11-26,tedpack_air,0.0861
+FL-DL-1283,5.5,4.5,0.0,100000,WHT_MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2025-11-26,tedpack_air,0.0827
+FL-DL-1283,5.5,4.5,0.0,250000,WHT_MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2025-11-26,tedpack_air,0.0792
+FL-DL-1196,8.0,6.0,2.63,10000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-11-04,tedpack_air,0.1871
+FL-DL-1196,8.0,6.0,2.63,25000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-11-04,tedpack_air,0.16
+FL-DL-1196,8.0,6.0,2.63,50000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-11-04,tedpack_air,0.1541
+FL-DL-1196,8.0,6.0,2.63,100000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-11-04,tedpack_air,0.1444
+FL-DL-1205,4.0,6.0,2.0,25000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-10-31,tedpack_air,0.0696
+FL-DL-1205,4.0,6.0,2.0,50000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-10-31,tedpack_air,0.0652
+FL-DL-1205,4.0,6.0,2.0,100000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-10-31,tedpack_air,0.0678
+FL-DL-1205,4.0,6.0,2.0,250000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-10-31,tedpack_air,0.0652
+FL-DL-1197,3.62,5.86,1.5,10000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-10-23,tedpack_air,0.0677
+FL-DL-1197,3.62,5.86,1.5,25000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-10-23,tedpack_air,0.0638
+FL-DL-1197,3.62,5.86,1.5,50000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-10-23,tedpack_air,0.0622
+FL-DL-1197,3.62,5.86,1.5,100000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-10-23,tedpack_air,0.0598
+FL-DL-1170-FG,4.0,6.0,2.0,2500,MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_air,0.132
+FL-DL-1170-FG,4.0,6.0,2.0,5000,MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_air,0.075
+FL-DL-1170-FG,4.0,6.0,2.0,7500,MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_air,0.0751
+FL-DL-1170-FG,4.0,6.0,2.0,10000,MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_air,0.075
+FL-DL-1170-FG,4.0,6.0,2.0,12500,MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_air,0.0752
+FL-DL-1170-FG,4.0,6.0,2.0,15000,MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_air,0.075
+FL-DL-1170-FG,4.0,6.0,2.0,20000,MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_air,0.0706
+FL-DL-1170-FG,4.0,6.0,2.0,25000,MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_air,0.0706
+FL-DL-1170-FG,4.0,6.0,2.0,30000,MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_air,0.0706
+FL-DL-1170-FG,4.0,6.0,2.0,35000,MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_air,0.0662
+FL-DL-1170-FG,4.0,6.0,2.0,40000,MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_air,0.0662
+FL-DL-1170-FG,4.0,6.0,2.0,45000,MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_air,0.0662
+FL-DL-1170-FG,4.0,6.0,2.0,50000,MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_air,0.0662
+FL-DL-1176,4.5,5.0,1.5,5000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_air,0.074
+FL-DL-1176,4.5,5.0,1.5,10000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_air,0.0739
+FL-DL-1176,4.5,5.0,1.5,25000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_air,0.0739
+FL-DL-1176,4.5,5.0,1.5,50000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_air,0.0635
+FL-DL-1176,4.5,5.0,1.5,100000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_air,0.0617
+FL-DL-1176,4.5,5.0,1.5,150000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_air,0.0617
+FL-DL-1176,4.5,5.0,1.5,200000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_air,0.0504
+FL-DL-1137,4.0,7.0,0.0,5000,WHT_MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-10-09,tedpack_air,0.0926
+FL-DL-1137,4.0,7.0,0.0,10000,WHT_MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-10-09,tedpack_air,0.0926
+FL-DL-1137,4.0,7.0,0.0,25000,WHT_MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-10-09,tedpack_air,0.0926
+FL-DL-1137,4.0,7.0,0.0,50000,WHT_MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-10-09,tedpack_air,0.0776
+FL-DL-1137,4.0,7.0,0.0,100000,WHT_MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-10-09,tedpack_air,0.0732
+FL-DL-1128,4.0,6.875,2.6325,550000,WHT_MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-30,tedpack_air,0.075
+FL-DL-1128,4.0,6.875,2.6325,1000000,WHT_MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-30,tedpack_air,0.074
+FL-DL-1128,4.0,6.875,2.6325,1500000,WHT_MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-30,tedpack_air,0.0723
+FL-DL-1128,4.0,6.875,2.6325,2000000,WHT_MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-30,tedpack_air,0.0705
+FL-DL-1128,4.0,6.875,2.6325,2500000,WHT_MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-30,tedpack_air,0.0695
+FL-DL-1128,4.0,6.875,2.6325,3000000,WHT_MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-30,tedpack_air,0.0682
+FL-DL-1082 (5W×7.5H),5.0,7.5,0.0,50000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-09-17,tedpack_air,0.1026
+FL-DL-1082 (5W×7.5H),5.0,7.5,0.0,100000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-09-17,tedpack_air,0.0996
+FL-DL-1082 (5W×7.5H),5.0,7.5,0.0,200000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-09-17,tedpack_air,0.0965
+FL-DL-1082 (5W×8H),5.0,8.0,0.0,50000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-09-17,tedpack_air,0.1088
+FL-DL-1082 (5W×8H),5.0,8.0,0.0,100000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-09-17,tedpack_air,0.1055
+FL-DL-1082 (5W×8H),5.0,8.0,0.0,200000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-09-17,tedpack_air,0.1023
+FL-DL-1082 (5W×9H),5.0,9.0,0.0,50000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-09-17,tedpack_air,0.1175
+FL-DL-1082 (5W×9H),5.0,9.0,0.0,100000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-09-17,tedpack_air,0.1142
+FL-DL-1082 (5W×9H),5.0,9.0,0.0,200000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-09-17,tedpack_air,0.1108
+FL-DL-1082 (5W×8.25H),5.0,8.25,0.0,50000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-09-18,tedpack_air,0.1105
+FL-DL-1082 (5W×8.25H),5.0,8.25,0.0,100000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-09-18,tedpack_air,0.1064
+FL-DL-1082 (5W×8.25H),5.0,8.25,0.0,200000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-09-18,tedpack_air,0.1023
+FL-DL-1080,5.0,8.0,1.0,25000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-08,tedpack_air,0.1195
+FL-DL-1080,5.0,8.0,1.0,50000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-08,tedpack_air,0.1124
+FL-DL-1080,5.0,8.0,1.0,100000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-08,tedpack_air,0.1091
+FL-DL-1080,5.0,8.0,1.0,250000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-08,tedpack_air,0.1024
+FL-DL-1077,5.0,8.0,0.0,25000,MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2025-09-08,tedpack_air,0.1152
+FL-DL-1077,5.0,8.0,0.0,50000,MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2025-09-08,tedpack_air,0.1081
+FL-DL-1077,5.0,8.0,0.0,100000,MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2025-09-08,tedpack_air,0.1048
+FL-DL-1077,5.0,8.0,0.0,250000,MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2025-09-08,tedpack_air,0.0982
+FL-DL-1067,5.0,5.25,3.0,50000,WHT_MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-03,tedpack_air,0.0942
+FL-DL-1067,5.0,5.25,3.0,100000,WHT_MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-03,tedpack_air,0.0913
+FL-DL-1067,5.0,5.25,3.0,150000,WHT_MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-03,tedpack_air,0.089
+FL-DL-1067,5.0,5.25,3.0,200000,WHT_MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-03,tedpack_air,0.0874
+FL-DL-1067,5.0,5.25,3.0,300000,WHT_MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-03,tedpack_air,0.0846
+FL-DL-1067,5.0,5.25,3.0,600000,WHT_MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-03,tedpack_air,0.0806
+FL-DL-1049,5.25,8.45,2.0,5000,CLR_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-08-22,tedpack_air,0.263
+FL-DL-1049,5.25,8.45,2.0,10000,CLR_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-08-22,tedpack_air,0.2021
+FL-DL-1049,5.25,8.45,2.0,25000,CLR_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-08-22,tedpack_air,0.1512
+FL-DL-1049,5.25,8.45,2.0,50000,CLR_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-08-22,tedpack_air,0.1466
+FL-DL-1049,5.25,8.45,2.0,100000,CLR_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-08-22,tedpack_air,0.135
+FL-DL-1051,4.0,6.0,2.0,5000,CLR_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-08-22,tedpack_air,0.2254
+FL-DL-1051,4.0,6.0,2.0,10000,CLR_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-08-22,tedpack_air,0.1646
+FL-DL-1051,4.0,6.0,2.0,25000,CLR_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-08-22,tedpack_air,0.1222
+FL-DL-1051,4.0,6.0,2.0,50000,CLR_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-08-22,tedpack_air,0.1053
+FL-DL-1051,4.0,6.0,2.0,100000,CLR_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-08-22,tedpack_air,0.1016
+CQ-48888283252,4.0,6.5,1.7,25000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2026-03-07,tedpack_ocean,0.088
+CQ-48888283252,4.0,6.5,1.7,50000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2026-03-07,tedpack_ocean,0.07
+CQ-48888283252,4.0,6.5,1.7,100000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2026-03-07,tedpack_ocean,0.065
+CQ-4888468544,5.0,8.15,2.36,10000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2026-03-07,tedpack_ocean,0.177
+CQ-4888468544,5.0,8.15,2.36,25000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2026-03-07,tedpack_ocean,0.105
+CQ-4888468544,5.0,8.15,2.36,50000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2026-03-07,tedpack_ocean,0.099
+CQ-4888468544,5.0,8.15,2.36,100000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2026-03-07,tedpack_ocean,0.089
+CQ-4888407123,3.62,5.0,1.57,50000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2026-03-07,tedpack_ocean,0.058
+CQ-4888407123,3.62,5.0,1.57,100000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2026-03-07,tedpack_ocean,0.054
+CQ-4888407123,3.62,5.0,1.57,250000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2026-03-07,tedpack_ocean,0.047
+CQ-49460422966,5.0,4.5,2.0,50000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Rounded,gravure,2026-03-07,tedpack_ocean,0.061
+CQ-49460422966,5.0,4.5,2.0,100000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Rounded,gravure,2026-03-07,tedpack_ocean,0.056
+CQ-49460422966,5.0,4.5,2.0,250000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Rounded,gravure,2026-03-07,tedpack_ocean,0.049
+CQ-49544170416,4.0,5.1,0.0,25000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-03-07,tedpack_ocean,0.068
+CQ-49544170416,4.0,5.1,0.0,50000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-03-07,tedpack_ocean,0.05
+CQ-49544170416,4.0,5.1,0.0,100000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-03-07,tedpack_ocean,0.047
+CQ-49544170416,4.0,5.1,0.0,250000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-03-07,tedpack_ocean,0.042
+CQ-49460426847,3.2,5.5,0.0,25000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-03-07,tedpack_ocean,0.059
+CQ-49460426847,3.2,5.5,0.0,50000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-03-07,tedpack_ocean,0.043
+CQ-49460426847,3.2,5.5,0.0,100000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-03-07,tedpack_ocean,0.04
+CQ-49460426847,3.2,5.5,0.0,250000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-03-07,tedpack_ocean,0.035
+CQ-49389133708,3.5,5.0,2.0,25000,CLR_PET,Matte Laminate,Spot UV,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-03-06,tedpack_ocean,0.054
+CQ-49389133708,3.5,5.0,2.0,50000,CLR_PET,Matte Laminate,Spot UV,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-03-06,tedpack_ocean,0.044
+CQ-49389133708,3.5,5.0,2.0,100000,CLR_PET,Matte Laminate,Spot UV,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-03-06,tedpack_ocean,0.041
+CQ-49389133708,3.5,5.0,2.0,150000,CLR_PET,Matte Laminate,Spot UV,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-03-06,tedpack_ocean,0.039
+CQ-49389133708,3.5,5.0,2.0,250000,CLR_PET,Matte Laminate,Spot UV,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-03-06,tedpack_ocean,0.035
+CQ-49337363062,6.25,9.0,2.25,10000,CLR_PET,Matte Laminate,Spot UV,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-03-06,tedpack_ocean,0.112
+CQ-49337363062,6.25,9.0,2.25,25000,CLR_PET,Matte Laminate,Spot UV,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-03-06,tedpack_ocean,0.098
+CQ-49337363062,6.25,9.0,2.25,50000,CLR_PET,Matte Laminate,Spot UV,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-03-06,tedpack_ocean,0.094
+CQ-49337363062,6.25,9.0,2.25,100000,CLR_PET,Matte Laminate,Spot UV,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-03-06,tedpack_ocean,0.085
+CQ-49337363062,6.25,9.0,2.25,150000,CLR_PET,Matte Laminate,Spot UV,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-03-06,tedpack_ocean,0.081
+CQ-49337363062,6.25,9.0,2.25,250000,CLR_PET,Matte Laminate,Spot UV,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-03-06,tedpack_ocean,0.077
+CQ-1726-BudBridge,6.0,9.0,3.0,5000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-03-06,tedpack_ocean,0.126
+CQ-1726-BudBridge,6.0,9.0,3.0,10000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-03-06,tedpack_ocean,0.113
+CQ-1726-BudBridge,6.0,9.0,3.0,25000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-03-06,tedpack_ocean,0.108
+CQ-1726-BudBridge,6.0,9.0,3.0,50000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-03-06,tedpack_ocean,0.098
+CQ-1726-BudBridge,6.0,9.0,3.0,100000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-03-06,tedpack_ocean,0.094
+CQ-1726-BudBridge,6.0,9.0,3.0,250000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-03-06,tedpack_ocean,0.09
+CQ-1727,4.0,5.0,2.0,25000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-02-26,tedpack_ocean,0.054
+CQ-1727,4.0,5.0,2.0,50000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-02-26,tedpack_ocean,0.05
+CQ-1727,4.0,5.0,2.0,100000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-02-26,tedpack_ocean,0.046
+CQ-1727,4.0,5.0,2.0,250000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-02-26,tedpack_ocean,0.041
+CQ-1723,2.5,6.0,0.0,25000,WHT_MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-26,tedpack_ocean,0.045
+CQ-1723,2.5,6.0,0.0,50000,WHT_MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-26,tedpack_ocean,0.036
+CQ-1723,2.5,6.0,0.0,100000,WHT_MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-26,tedpack_ocean,0.033
+CQ-1723,2.5,6.0,0.0,250000,WHT_MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-26,tedpack_ocean,0.029
+CQ-1734,6.0,9.0,2.3,10000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Straight,gravure,2026-03-03,tedpack_ocean,0.296
+CQ-1734,6.0,9.0,2.3,25000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Straight,gravure,2026-03-03,tedpack_ocean,0.246
+CQ-1734,6.0,9.0,2.3,50000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Straight,gravure,2026-03-03,tedpack_ocean,0.241
+CQ-1734,6.0,9.0,2.3,100000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Straight,gravure,2026-03-03,tedpack_ocean,0.223
+CQ-1730,2.5,5.0,2.0,5000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-03-03,tedpack_ocean,0.139
+CQ-1730,2.5,5.0,2.0,10000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-03-03,tedpack_ocean,0.073
+CQ-1730,2.5,5.0,2.0,25000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-03-03,tedpack_ocean,0.045
+CQ-1730,2.5,5.0,2.0,50000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-03-03,tedpack_ocean,0.033
+CQ-1730,2.5,5.0,2.0,100000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-03-03,tedpack_ocean,0.031
+CQ-1730,2.5,5.0,2.0,250000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,None,CR Zipper,None,None,Rounded,gravure,2026-03-03,tedpack_ocean,0.028
+FL-DL-1649,4.5,5.5,2.0,25000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-24,tedpack_ocean,0.056
+FL-DL-1649,4.5,5.5,2.0,50000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-24,tedpack_ocean,0.053
+FL-DL-1649,4.5,5.5,2.0,100000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-24,tedpack_ocean,0.049
+FL-DL-1649,4.5,5.5,2.0,250000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-24,tedpack_ocean,0.047
+FL-DL-1645,4.5,5.0,2.0,25000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-14,tedpack_ocean,0.058
+FL-DL-1645,4.5,5.0,2.0,50000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-14,tedpack_ocean,0.052
+FL-DL-1645,4.5,5.0,2.0,100000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-14,tedpack_ocean,0.05
+FL-DL-1645,4.5,5.0,2.0,250000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-14,tedpack_ocean,0.046
+FL-DL-1476-A,4.0,7.0,0.0,25000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_ocean,0.059
+FL-DL-1476-A,4.0,7.0,0.0,50000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_ocean,0.053
+FL-DL-1476-A,4.0,7.0,0.0,100000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_ocean,0.051
+FL-DL-1476-A,4.0,7.0,0.0,250000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_ocean,0.047
+FL-DL-1476-A,4.0,7.0,0.0,500000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_ocean,0.042
+FL-DL-1476-B,9.0,6.0,0.0,25000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_ocean,0.092
+FL-DL-1476-B,9.0,6.0,0.0,50000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_ocean,0.088
+FL-DL-1476-B,9.0,6.0,0.0,100000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_ocean,0.083
+FL-DL-1476-B,9.0,6.0,0.0,250000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_ocean,0.075
+FL-DL-1476-B,9.0,6.0,0.0,500000,MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_ocean,0.072
+FL-DL-1476-C,5.1,7.25,2.0,25000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_ocean,0.074
+FL-DL-1476-C,5.1,7.25,2.0,50000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_ocean,0.071
+FL-DL-1476-C,5.1,7.25,2.0,100000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_ocean,0.067
+FL-DL-1476-C,5.1,7.25,2.0,250000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_ocean,0.06
+FL-DL-1476-C,5.1,7.25,2.0,500000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_ocean,0.057
+FL-DL-1476-D,6.83,9.8,2.36,25000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_ocean,0.119
+FL-DL-1476-D,6.83,9.8,2.36,50000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_ocean,0.114
+FL-DL-1476-D,6.83,9.8,2.36,100000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_ocean,0.108
+FL-DL-1476-D,6.83,9.8,2.36,250000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_ocean,0.098
+FL-DL-1476-D,6.83,9.8,2.36,500000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_ocean,0.088
+FL-DL-1615,4.527,5.906,2.0,50000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_ocean,0.058
+FL-DL-1615,4.527,5.906,2.0,100000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_ocean,0.055
+FL-DL-1615,4.527,5.906,2.0,250000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_ocean,0.052
+FL-DL-1615,4.527,5.906,2.0,500000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_ocean,0.046
+FL-DL-1621,7.0,5.0,0.0,10000,WHT_MET_PET,Matte Laminate,None,Top,2 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_ocean,0.061
+FL-DL-1621,7.0,5.0,0.0,25000,WHT_MET_PET,Matte Laminate,None,Top,2 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_ocean,0.071
+FL-DL-1621,7.0,5.0,0.0,50000,WHT_MET_PET,Matte Laminate,None,Top,2 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_ocean,0.065
+FL-DL-1621,7.0,5.0,0.0,100000,WHT_MET_PET,Matte Laminate,None,Top,2 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2026-02-12,tedpack_ocean,0.062
+FL-DL-1602,4.5,5.0,2.0,25000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-02-10,tedpack_ocean,0.058
+FL-DL-1602,4.5,5.0,2.0,50000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-02-10,tedpack_ocean,0.052
+FL-DL-1602,4.5,5.0,2.0,100000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-02-10,tedpack_ocean,0.05
+FL-DL-1602,4.5,5.0,2.0,250000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-02-10,tedpack_ocean,0.046
+FL-DL-1603,2.5,6.8,0.0,25000,MET_PET,Matte Laminate,None,Top,2 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-02-10,tedpack_ocean,0.331
+FL-DL-1462 (3.3mil),5.0,5.0,0.0,25000,WHT_MET_PET,Matte Laminate,None,Top,2 Side Seal,None,Single Profile Non-CR,None,None,Straight,gravure,2026-02-04,tedpack_ocean,0.057
+FL-DL-1462 (3.3mil),5.0,5.0,0.0,50000,WHT_MET_PET,Matte Laminate,None,Top,2 Side Seal,None,Single Profile Non-CR,None,None,Straight,gravure,2026-02-04,tedpack_ocean,0.047
+FL-DL-1462 (3.3mil),5.0,5.0,0.0,100000,WHT_MET_PET,Matte Laminate,None,Top,2 Side Seal,None,Single Profile Non-CR,None,None,Straight,gravure,2026-02-04,tedpack_ocean,0.043
+FL-DL-1462 (3.3mil),5.0,5.0,0.0,250000,WHT_MET_PET,Matte Laminate,None,Top,2 Side Seal,None,Single Profile Non-CR,None,None,Straight,gravure,2026-02-04,tedpack_ocean,0.0397
+FL-DL-1462 (4mil),5.0,5.0,0.0,25000,WHT_MET_PET,Matte Laminate,None,Top,2 Side Seal,None,Single Profile Non-CR,None,None,Straight,gravure,2026-02-04,tedpack_ocean,0.063
+FL-DL-1462 (4mil),5.0,5.0,0.0,50000,WHT_MET_PET,Matte Laminate,None,Top,2 Side Seal,None,Single Profile Non-CR,None,None,Straight,gravure,2026-02-04,tedpack_ocean,0.055
+FL-DL-1462 (4mil),5.0,5.0,0.0,100000,WHT_MET_PET,Matte Laminate,None,Top,2 Side Seal,None,Single Profile Non-CR,None,None,Straight,gravure,2026-02-04,tedpack_ocean,0.048
+FL-DL-1462 (4mil),5.0,5.0,0.0,250000,WHT_MET_PET,Matte Laminate,None,Top,2 Side Seal,None,Single Profile Non-CR,None,None,Straight,gravure,2026-02-04,tedpack_ocean,0.044
+FL-DL-1487,5.0,9.0,0.0,25000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-01-29,tedpack_ocean,0.093
+FL-DL-1487,5.0,9.0,0.0,50000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-01-29,tedpack_ocean,0.077
+FL-DL-1487,5.0,9.0,0.0,100000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-01-29,tedpack_ocean,0.072
+FL-DL-1487,5.0,9.0,0.0,250000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-01-29,tedpack_ocean,0.068
+FL-DL-1488,5.25,6.75,0.0,25000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-01-29,tedpack_ocean,0.077
+FL-DL-1488,5.25,6.75,0.0,50000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-01-29,tedpack_ocean,0.063
+FL-DL-1488,5.25,6.75,0.0,100000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-01-29,tedpack_ocean,0.059
+FL-DL-1488,5.25,6.75,0.0,250000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-01-29,tedpack_ocean,0.055
+FL-DL-1419,6.0,8.0,2.0,10000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Rounded,gravure,2026-01-15,tedpack_ocean,0.1208
+FL-DL-1419,6.0,8.0,2.0,25000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Rounded,gravure,2026-01-15,tedpack_ocean,0.0994
+FL-DL-1419,6.0,8.0,2.0,50000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Rounded,gravure,2026-01-15,tedpack_ocean,0.0985
+FL-DL-1419,6.0,8.0,2.0,100000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Rounded,gravure,2026-01-15,tedpack_ocean,0.0872
+FL-DL-1419,6.0,8.0,2.0,250000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Rounded,gravure,2026-01-15,tedpack_ocean,0.0818
+FL-DL-1420,3.0,6.0,0.0,25000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-01-15,tedpack_ocean,0.0537
+FL-DL-1420,3.0,6.0,0.0,50000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-01-15,tedpack_ocean,0.0457
+FL-DL-1420,3.0,6.0,0.0,100000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-01-15,tedpack_ocean,0.0396
+FL-DL-1420,3.0,6.0,0.0,250000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2026-01-15,tedpack_ocean,0.0364
+FL-DL-1416,4.0,6.0,2.0,25000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-01-14,tedpack_ocean,0.0589
+FL-DL-1416,4.0,6.0,2.0,50000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-01-14,tedpack_ocean,0.0525
+FL-DL-1416,4.0,6.0,2.0,100000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2026-01-14,tedpack_ocean,0.0497
+FL-DL-1339-1,5.0,14.5,0.0,10000,HB_CLR_PET,Soft Touch Laminate,None,Bottom,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-12-31,tedpack_ocean,0.1427
+FL-DL-1339-1,5.0,14.5,0.0,25000,HB_CLR_PET,Soft Touch Laminate,None,Bottom,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-12-31,tedpack_ocean,0.1139
+FL-DL-1339-1,5.0,14.5,0.0,50000,HB_CLR_PET,Soft Touch Laminate,None,Bottom,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-12-31,tedpack_ocean,0.1064
+FL-DL-1339-1,5.0,14.5,0.0,100000,HB_CLR_PET,Soft Touch Laminate,None,Bottom,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-12-31,tedpack_ocean,0.0956
+FL-DL-1339-1,5.0,14.5,0.0,250000,HB_CLR_PET,Soft Touch Laminate,None,Bottom,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-12-31,tedpack_ocean,0.0883
+FL-DL-1339-2,5.0,16.0,0.0,10000,HB_CLR_PET,Soft Touch Laminate,None,Bottom,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-12-31,tedpack_ocean,0.1559
+FL-DL-1339-2,5.0,16.0,0.0,25000,HB_CLR_PET,Soft Touch Laminate,None,Bottom,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-12-31,tedpack_ocean,0.1233
+FL-DL-1339-2,5.0,16.0,0.0,50000,HB_CLR_PET,Soft Touch Laminate,None,Bottom,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-12-31,tedpack_ocean,0.1145
+FL-DL-1339-2,5.0,16.0,0.0,100000,HB_CLR_PET,Soft Touch Laminate,None,Bottom,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-12-31,tedpack_ocean,0.103
+FL-DL-1339-2,5.0,16.0,0.0,250000,HB_CLR_PET,Soft Touch Laminate,None,Bottom,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-12-31,tedpack_ocean,0.0972
+FL-DL-1366,4.0,6.0,2.0,25000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-12-22,tedpack_ocean,0.0654
+FL-DL-1366,4.0,6.0,2.0,50000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-12-22,tedpack_ocean,0.0644
+FL-DL-1366,4.0,6.0,2.0,100000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-12-22,tedpack_ocean,0.0614
+FL-DL-1363,6.0,5.5,2.5,25000,CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Rounded,gravure,2025-12-17,tedpack_ocean,0.0412
+FL-DL-1363,6.0,5.5,2.5,50000,CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Rounded,gravure,2025-12-17,tedpack_ocean,0.0412
+FL-DL-1363,6.0,5.5,2.5,100000,CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Rounded,gravure,2025-12-17,tedpack_ocean,0.0353
+FL-DL-1363,6.0,5.5,2.5,250000,CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Rounded,gravure,2025-12-17,tedpack_ocean,0.0294
+FL-DL-1283,5.5,4.5,0.0,25000,WHT_MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2025-11-26,tedpack_ocean,0.055
+FL-DL-1283,5.5,4.5,0.0,50000,WHT_MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2025-11-26,tedpack_ocean,0.0505
+FL-DL-1283,5.5,4.5,0.0,100000,WHT_MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2025-11-26,tedpack_ocean,0.0479
+FL-DL-1283,5.5,4.5,0.0,250000,WHT_MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2025-11-26,tedpack_ocean,0.0436
+FL-DL-1196,8.0,6.0,2.63,10000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-11-04,tedpack_ocean,0.1147
+FL-DL-1196,8.0,6.0,2.63,25000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-11-04,tedpack_ocean,0.0847
+FL-DL-1196,8.0,6.0,2.63,50000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-11-04,tedpack_ocean,0.0812
+FL-DL-1196,8.0,6.0,2.63,100000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-11-04,tedpack_ocean,0.0763
+FL-DL-1205,4.0,6.0,2.0,25000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-10-31,tedpack_ocean,0.0244
+FL-DL-1205,4.0,6.0,2.0,50000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-10-31,tedpack_ocean,0.0217
+FL-DL-1205,4.0,6.0,2.0,100000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-10-31,tedpack_ocean,0.0226
+FL-DL-1205,4.0,6.0,2.0,250000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-10-31,tedpack_ocean,0.0217
+FL-DL-1197,3.62,5.86,1.5,10000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-10-23,tedpack_ocean,0.0279
+FL-DL-1197,3.62,5.86,1.5,25000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-10-23,tedpack_ocean,0.0223
+FL-DL-1197,3.62,5.86,1.5,50000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-10-23,tedpack_ocean,0.0207
+FL-DL-1197,3.62,5.86,1.5,100000,WHT_MET_PET,Matte Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-10-23,tedpack_ocean,0.0199
+FL-DL-1170-FG,4.0,6.0,2.0,20000,MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_ocean,0.0397
+FL-DL-1170-FG,4.0,6.0,2.0,25000,MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_ocean,0.0397
+FL-DL-1170-FG,4.0,6.0,2.0,30000,MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_ocean,0.0397
+FL-DL-1170-FG,4.0,6.0,2.0,35000,MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_ocean,0.0364
+FL-DL-1170-FG,4.0,6.0,2.0,40000,MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_ocean,0.0334
+FL-DL-1170-FG,4.0,6.0,2.0,45000,MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_ocean,0.0309
+FL-DL-1170-FG,4.0,6.0,2.0,50000,MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_ocean,0.0309
+FL-DL-1176,4.5,5.0,1.5,25000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_ocean,0.0434
+FL-DL-1176,4.5,5.0,1.5,50000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_ocean,0.0296
+FL-DL-1176,4.5,5.0,1.5,100000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_ocean,0.0261
+FL-DL-1176,4.5,5.0,1.5,150000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_ocean,0.0261
+FL-DL-1176,4.5,5.0,1.5,200000,HB_CLR_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,None,None,Straight,gravure,2025-10-20,tedpack_ocean,0.0243
+FL-DL-1137,4.0,7.0,0.0,25000,WHT_MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-10-09,tedpack_ocean,0.0768
+FL-DL-1137,4.0,7.0,0.0,50000,WHT_MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-10-09,tedpack_ocean,0.0492
+FL-DL-1137,4.0,7.0,0.0,100000,WHT_MET_PET,Matte Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-10-09,tedpack_ocean,0.0351
+FL-DL-1151,12.0,9.0,4.0,1000000,MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-10-09,tedpack_ocean,0.0154
+FL-DL-1151,12.0,9.0,4.0,1500000,MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-10-09,tedpack_ocean,0.0152
+FL-DL-1151,12.0,9.0,4.0,2000000,MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-10-09,tedpack_ocean,0.0159
+FL-DL-1128,4.0,6.875,2.6325,550000,WHT_MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-30,tedpack_ocean,0.0395
+FL-DL-1128,4.0,6.875,2.6325,1000000,WHT_MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-30,tedpack_ocean,0.0395
+FL-DL-1128,4.0,6.875,2.6325,1500000,WHT_MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-30,tedpack_ocean,0.0388
+FL-DL-1128,4.0,6.875,2.6325,2000000,WHT_MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-30,tedpack_ocean,0.037
+FL-DL-1128,4.0,6.875,2.6325,2500000,WHT_MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-30,tedpack_ocean,0.037
+FL-DL-1128,4.0,6.875,2.6325,3000000,WHT_MET_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-30,tedpack_ocean,0.0352
+FL-DL-1082 (5W×7.5H),5.0,7.5,0.0,50000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-09-17,tedpack_ocean,0.0695
+FL-DL-1082 (5W×7.5H),5.0,7.5,0.0,100000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-09-17,tedpack_ocean,0.0665
+FL-DL-1082 (5W×7.5H),5.0,7.5,0.0,200000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-09-17,tedpack_ocean,0.0634
+FL-DL-1082 (5W×8H),5.0,8.0,0.0,50000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-09-17,tedpack_ocean,0.0735
+FL-DL-1082 (5W×8H),5.0,8.0,0.0,100000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-09-17,tedpack_ocean,0.0702
+FL-DL-1082 (5W×8H),5.0,8.0,0.0,200000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-09-17,tedpack_ocean,0.067
+FL-DL-1082 (5W×9H),5.0,9.0,0.0,50000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-09-17,tedpack_ocean,0.08
+FL-DL-1082 (5W×9H),5.0,9.0,0.0,100000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-09-17,tedpack_ocean,0.0766
+FL-DL-1082 (5W×9H),5.0,9.0,0.0,200000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-09-17,tedpack_ocean,0.0733
+FL-DL-1082 (5W×8.25H),5.0,8.25,0.0,50000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-09-18,tedpack_ocean,0.0752
+FL-DL-1082 (5W×8.25H),5.0,8.25,0.0,100000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-09-18,tedpack_ocean,0.0711
+FL-DL-1082 (5W×8.25H),5.0,8.25,0.0,200000,WHT_MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Rounded,gravure,2025-09-18,tedpack_ocean,0.067
+FL-DL-1080,5.0,8.0,1.0,25000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-08,tedpack_ocean,0.0824
+FL-DL-1080,5.0,8.0,1.0,50000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-08,tedpack_ocean,0.0753
+FL-DL-1080,5.0,8.0,1.0,100000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-08,tedpack_ocean,0.072
+FL-DL-1080,5.0,8.0,1.0,250000,MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-08,tedpack_ocean,0.0619
+FL-DL-1077,5.0,8.0,0.0,25000,MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2025-09-08,tedpack_ocean,0.0781
+FL-DL-1077,5.0,8.0,0.0,50000,MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2025-09-08,tedpack_ocean,0.071
+FL-DL-1077,5.0,8.0,0.0,100000,MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2025-09-08,tedpack_ocean,0.0677
+FL-DL-1077,5.0,8.0,0.0,250000,MET_PET,Soft Touch Laminate,None,Top,3 Side Seal,None,CR Zipper,None,None,Straight,gravure,2025-09-08,tedpack_ocean,0.0577
+FL-DL-1067,5.0,5.25,3.0,50000,WHT_MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-03,tedpack_ocean,0.0617
+FL-DL-1067,5.0,5.25,3.0,100000,WHT_MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-03,tedpack_ocean,0.0589
+FL-DL-1067,5.0,5.25,3.0,150000,WHT_MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-03,tedpack_ocean,0.0555
+FL-DL-1067,5.0,5.25,3.0,200000,WHT_MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-03,tedpack_ocean,0.0519
+FL-DL-1067,5.0,5.25,3.0,300000,WHT_MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-03,tedpack_ocean,0.0491
+FL-DL-1067,5.0,5.25,3.0,600000,WHT_MET_PET,Soft Touch Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-09-03,tedpack_ocean,0.0461
+FL-DL-1049,5.25,8.45,2.0,5000,CLR_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-08-22,tedpack_ocean,0.4766
+FL-DL-1049,5.25,8.45,2.0,10000,CLR_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-08-22,tedpack_ocean,0.2527
+FL-DL-1049,5.25,8.45,2.0,25000,CLR_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-08-22,tedpack_ocean,0.1238
+FL-DL-1049,5.25,8.45,2.0,50000,CLR_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-08-22,tedpack_ocean,0.1019
+FL-DL-1049,5.25,8.45,2.0,100000,CLR_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-08-22,tedpack_ocean,0.0804
+FL-DL-1051,4.0,6.0,2.0,5000,CLR_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-08-22,tedpack_ocean,0.4766
+FL-DL-1051,4.0,6.0,2.0,10000,CLR_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-08-22,tedpack_ocean,0.2527
+FL-DL-1051,4.0,6.0,2.0,25000,CLR_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-08-22,tedpack_ocean,0.1168
+FL-DL-1051,4.0,6.0,2.0,50000,CLR_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-08-22,tedpack_ocean,0.084
+FL-DL-1051,4.0,6.0,2.0,100000,CLR_PET,Gloss Laminate,None,Top,Stand Up,K Seal & Skirt Seal,CR Zipper,None,None,Straight,gravure,2025-08-22,tedpack_ocean,0.0643
+CQ-49619544236,3.2,5.75,1.5,5000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,Standard,None,Straight,gravure,2026-03-10,tedpack_air,0.201
+CQ-49619544236,3.2,5.75,1.5,10000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,Standard,None,Straight,gravure,2026-03-10,tedpack_air,0.138
+CQ-49619544236,3.2,5.75,1.5,25000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,Standard,None,Straight,gravure,2026-03-10,tedpack_air,0.095
+CQ-49619544236,3.2,5.75,1.5,50000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,Standard,None,Straight,gravure,2026-03-10,tedpack_air,0.086
+CQ-49619544236,3.2,5.75,1.5,100000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,Standard,None,Straight,gravure,2026-03-10,tedpack_air,0.082
+CQ-49619544236,3.2,5.75,1.5,250000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,Standard,None,Straight,gravure,2026-03-10,tedpack_air,0.078
+CQ-49619544236,3.2,5.75,1.5,25000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,Standard,None,Straight,gravure,2026-03-10,tedpack_ocean,0.060
+CQ-49619544236,3.2,5.75,1.5,50000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,Standard,None,Straight,gravure,2026-03-10,tedpack_ocean,0.051
+CQ-49619544236,3.2,5.75,1.5,100000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,Standard,None,Straight,gravure,2026-03-10,tedpack_ocean,0.046
+CQ-49619544236,3.2,5.75,1.5,250000,MET_PET,Matte Laminate,None,Top,Stand Up,K Seal,CR Zipper,Standard,None,Straight,gravure,2026-03-10,tedpack_ocean,0.042
