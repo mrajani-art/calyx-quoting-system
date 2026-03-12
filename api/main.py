@@ -69,3 +69,44 @@ async def health_check():
         "service": "calyx-quoting-api",
         "version": "1.0.0",
     }
+
+
+@app.get("/api/v1/debug/models")
+async def debug_models():
+    """Temporary diagnostic endpoint to check model status."""
+    import sklearn
+    import joblib
+    import numpy
+    import os
+
+    model_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "models")
+    model_files = {}
+    if os.path.isdir(model_dir):
+        for f in sorted(os.listdir(model_dir)):
+            if f.endswith(".joblib"):
+                model_files[f] = os.path.getsize(os.path.join(model_dir, f))
+
+    # Check if predictor loaded
+    from api.services.prediction_service import _predictor
+    predictor_status = "loaded" if _predictor is not None else "not loaded"
+
+    # Try loading a preprocessor
+    load_test = {}
+    for name in ["dazpak", "ross", "tedpack_air", "internal"]:
+        fpath = os.path.join(model_dir, f"{name}_preprocessor.joblib")
+        try:
+            obj = joblib.load(fpath)
+            load_test[name] = f"OK: {type(obj).__name__}"
+        except Exception as e:
+            load_test[name] = f"FAILED: {str(e)[:200]}"
+
+    return {
+        "sklearn_version": sklearn.__version__,
+        "joblib_version": joblib.__version__,
+        "numpy_version": numpy.__version__,
+        "model_dir": model_dir,
+        "model_dir_exists": os.path.isdir(model_dir),
+        "model_files": model_files,
+        "predictor_status": predictor_status,
+        "load_test": load_test,
+    }
