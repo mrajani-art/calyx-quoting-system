@@ -9,9 +9,11 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException
 
 from api.schemas.quote_request import InstantQuoteRequest
 from api.schemas.quote_response import InstantQuoteResponse
+from pydantic import BaseModel
+
 from api.services.prediction_service import generate_instant_quote, DEFAULT_MARGIN_PCT
-from api.services.supabase_client import insert_quote
-from api.services.slack_service import notify_slack_quote
+from api.services.supabase_client import insert_quote, update_quote, get_supabase
+from api.services.slack_service import notify_slack_quote, notify_slack_manager_request
 from api.middleware.sanitizer import sanitize_response
 
 logger = logging.getLogger(__name__)
@@ -129,3 +131,42 @@ async def instant_quote(
     )
 
     return response
+
+
+class ManagerRequest(BaseModel):
+    lead_id: str
+    quote_id: str
+
+
+@router.post("/quotes/request-manager")
+async def request_manager(
+    request: ManagerRequest,
+    background_tasks: BackgroundTasks,
+):
+    """Flag a quote as requesting an account manager and notify Slack."""
+    # Update the quote in Supabase
+    try:
+        update_quote(request.quote_id, {"requested_manager": True})
+    except Exception as e:
+        logger.error(f"Failed to update quote {request.quote_id}: {e}")
+        # Non-fatal: still send the Slack notification
+
+    # Look up lead info for the Slack message
+    lead_data = {}
+    try:
+        sb = get_supabase()
+        result = sb.table("customer_leads").select("*").eq("id", request.lead_id).execute()
+        if result.data:
+            lead_data = result.data[0]
+    except Exception as e:
+        logger.error(f"Failed to fetch lead {request.lead_id}: {e}")
+
+    # Fire-and-forget Slack notification
+    background_tasks.add_task(
+        notify_slack_manager_request,
+        lead_data,
+        request.quote_id,
+    )
+
+    logger.info(f"Manager requested for quote {request.quote_id} by lead {request.lead_id}")
+    return {"status": "ok"}

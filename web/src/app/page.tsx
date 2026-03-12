@@ -12,7 +12,7 @@ import { PricingComparison } from "@/components/results/PricingComparison";
 import { TierButtons } from "@/components/results/TierButtons";
 import { PostQuoteActions } from "@/components/results/PostQuoteActions";
 import { useLeadSession } from "@/lib/hooks/useLeadSession";
-import { submitLead, getInstantQuote } from "@/lib/api/quote-client";
+import { submitLead, getInstantQuote, requestAccountManager } from "@/lib/api/quote-client";
 import { DEFAULTS } from "@/lib/constants/bag-options";
 import { DEFAULT_ACTIVE_QTY, METHODS } from "@/lib/constants/method-config";
 import type { InstantQuoteResponse, BagConfig } from "@/lib/types/quote";
@@ -170,8 +170,13 @@ export default function QuotePage() {
   };
 
   const handleRequestManager = async () => {
+    if (!quote || !lead) return;
     setManagerRequested(true);
-    // TODO: API call to flag manager request
+    try {
+      await requestAccountManager(quote.quote_id, lead.lead_id);
+    } catch (err) {
+      console.error("Failed to request manager:", err);
+    }
   };
 
   const handleUploadArtwork = () => {

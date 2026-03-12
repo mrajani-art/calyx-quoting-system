@@ -31,3 +31,15 @@ export async function getInstantQuote(
   if (!res.ok) throw new Error("Failed to get quote");
   return res.json();
 }
+
+export async function requestAccountManager(
+  quoteId: string,
+  leadId: string
+): Promise<void> {
+  const res = await fetch(`${API_BASE}/quotes/request-manager`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ quote_id: quoteId, lead_id: leadId }),
+  });
+  if (!res.ok) throw new Error("Failed to request manager");
+}

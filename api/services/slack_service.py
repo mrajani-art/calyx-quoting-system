@@ -102,3 +102,18 @@ async def notify_slack_quote(lead_data: dict, quote_data: dict):
         f":dollar: Intl Ocean: {ocean_price}/unit\n"
     )
     await _post_to_slack(text)
+
+
+async def notify_slack_manager_request(lead_data: dict, quote_id: str):
+    """Notify Slack that a customer wants to speak with an account manager."""
+    text = (
+        f":speech_balloon: *Account Manager Requested*\n"
+        f"━━━━━━━━━━━━━━━━━━\n"
+        f":bust_in_silhouette: {lead_data.get('full_name', '')} — {lead_data.get('business_name', '')}\n"
+        f":email: {lead_data.get('email', '')} | :phone: {lead_data.get('phone', '')}\n"
+        f":moneybag: Annual Spend: {lead_data.get('annual_spend', '')}\n"
+        f":page_facing_up: Quote ID: {quote_id}\n"
+        f"\n"
+        f":rotating_light: *Please reach out to this customer ASAP.*"
+    )
+    await _post_to_slack(text)
