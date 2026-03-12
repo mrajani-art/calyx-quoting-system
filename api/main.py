@@ -49,6 +49,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "https://quote.calyxcontainers.com",
+        "https://calyx-quoting-portal.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
