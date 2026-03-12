@@ -261,13 +261,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ── Sandbox Banner ──────────────────────────────────────────────────
-st.markdown("""
-<div style="background:#32CD32;color:#000;text-align:center;padding:0.5rem;font-weight:700;
-    font-size:0.85rem;letter-spacing:0.1em;text-transform:uppercase;position:sticky;top:0;z-index:999;">
-    🧪 SANDBOX — Testing Branch
-</div>
-""", unsafe_allow_html=True)
 
 # ── Session State Init ──────────────────────────────────────────────
 if "predictor" not in st.session_state:
@@ -385,6 +378,232 @@ def _generate_demo_data() -> pd.DataFrame:
 # ═══════════════════════════════════════════════════════════════════
 # HELPER: Render prediction results
 # ═══════════════════════════════════════════════════════════════════
+@st.cache_data(ttl=600, show_spinner=False)
+def _sweep_predictions(specs_key: str, vendor: str, qty_list: tuple) -> list:
+    """Cache-safe wrapper — runs predictor for a quantity sweep."""
+    predictor = st.session_state.get("predictor")
+    if predictor is None:
+        return []
+    import json
+    specs = json.loads(specs_key)
+    try:
+        sweep = predictor.predict(specs, list(qty_list), vendor_override=vendor)
+        return sweep.get("predictions", [])
+    except Exception:
+        return []
+
+
+def _penny_step_chart(result: dict, margin_multiplier: float) -> "go.Figure | None":
+    """
+    Continuous quantity sweep — the 'penny step' price curve.
+
+    Runs the predictor at ~70 log-spaced quantity points so the chart
+    shows where pricing changes at each level, not just at the user's
+    chosen tiers.  User-specified tiers are overlaid as large dots.
+    """
+    import json, numpy as np
+
+    vendor = result.get("vendor", "ross")
+    specs  = result.get("specs", {})
+    is_det = result.get("is_deterministic", False)
+    preds  = result.get("predictions", [])
+
+    if not preds:
+        return None
+
+    # ── Quantity sweep range per vendor ─────────────────────────────
+    sweep_map = {
+        "dazpak":   (35_000, 2_000_000),
+        "ross":     (1_000, 300_000),
+        "internal": (500, 100_000),
+        "tedpack":  (10_000, 1_000_000),
+    }
+    lo, hi = sweep_map.get(vendor, (1_000, 300_000))
+    # Extend hi to cover any user tiers beyond the default range
+    max_user_qty = max((p["quantity"] for p in preds), default=hi)
+    hi = max(hi, int(max_user_qty * 1.1))
+
+    qty_sweep = np.unique(np.geomspace(lo, hi, 70).astype(int))
+
+    # Add user-specified tiers explicitly so they land exactly on curve
+    user_qtys = [p["quantity"] for p in preds]
+    qty_sweep = np.unique(np.concatenate([qty_sweep, user_qtys]))
+
+    specs_key = json.dumps({k: v for k, v in specs.items() if k != "quantity"}, sort_keys=True)
+    sweep_preds = _sweep_predictions(specs_key, vendor, tuple(qty_sweep.tolist()))
+
+    if not sweep_preds:
+        return None
+
+    # Handle Teapack dual air/ocean structure
+    if vendor == "tedpack" and sweep_preds and "air_unit_price" in sweep_preds[0]:
+        sq  = [p["quantity"]        for p in sweep_preds]
+        air = [p["air_unit_price"]  for p in sweep_preds]
+        ocn = [p["ocean_unit_price"] for p in sweep_preds]
+        air_s = [v * margin_multiplier for v in air]
+        ocn_s = [v * margin_multiplier for v in ocn]
+
+        tier_q     = [p["quantity"]        for p in preds]
+        tier_air_s = [p["air_unit_price"] * margin_multiplier  for p in preds]
+        tier_ocn_s = [p["ocean_unit_price"] * margin_multiplier for p in preds]
+
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(
+            x=sq, y=air_s, mode="lines",
+            line=dict(color="#2d6a4f", width=2.5),
+            name="Air (sell)", hovertemplate="<b>%{x:,}</b><br>Air: $%{y:.4f}<extra></extra>",
+        ))
+        fig.add_trace(go.Scatter(
+            x=sq, y=ocn_s, mode="lines",
+            line=dict(color="#6cb4e4", width=2.5),
+            name="Ocean (sell)", hovertemplate="<b>%{x:,}</b><br>Ocean: $%{y:.4f}<extra></extra>",
+        ))
+        fig.add_trace(go.Scatter(
+            x=tier_q, y=tier_air_s, mode="markers",
+            marker=dict(size=11, color="#1a472a", symbol="circle",
+                        line=dict(color="white", width=2)),
+            name="Air tiers", hovertemplate="<b>%{x:,} (tier)</b><br>Air: $%{y:.4f}<extra></extra>",
+        ))
+        fig.add_trace(go.Scatter(
+            x=tier_q, y=tier_ocn_s, mode="markers",
+            marker=dict(size=11, color="#1e6091", symbol="diamond",
+                        line=dict(color="white", width=2)),
+            name="Ocean tiers", hovertemplate="<b>%{x:,} (tier)</b><br>Ocean: $%{y:.4f}<extra></extra>",
+        ))
+    else:
+        sq    = [p["quantity"]   for p in sweep_preds]
+        costs = [p["unit_price"] for p in sweep_preds]
+        sells = [p["unit_price"] * margin_multiplier for p in sweep_preds]
+
+        # CI band (ML models only)
+        has_ci = not is_det and "upper_bound" in (sweep_preds[0] if sweep_preds else {})
+        if has_ci:
+            uppers = [p["upper_bound"] * margin_multiplier for p in sweep_preds]
+            lowers = [p["lower_bound"] * margin_multiplier for p in sweep_preds]
+
+        tier_q = [p["quantity"]   for p in preds]
+        tier_s = [p["unit_price"] * margin_multiplier for p in preds]
+
+        fig = go.Figure()
+        if has_ci:
+            fig.add_trace(go.Scatter(
+                x=sq + sq[::-1], y=uppers + lowers[::-1],
+                fill="toself", fillcolor="rgba(45,106,79,0.10)",
+                line=dict(color="rgba(0,0,0,0)"),
+                name="80% CI", hoverinfo="skip", showlegend=True,
+            ))
+        fig.add_trace(go.Scatter(
+            x=sq, y=costs, mode="lines",
+            line=dict(color="#9e9e9e", width=1.5, dash="dot"),
+            name="Est. Cost",
+            hovertemplate="<b>%{x:,}</b><br>Cost: $%{y:.4f}<extra></extra>",
+        ))
+        fig.add_trace(go.Scatter(
+            x=sq, y=sells, mode="lines",
+            line=dict(color="#2d6a4f", width=2.5),
+            name=f"Sell Price",
+            hovertemplate="<b>%{x:,}</b><br>Sell: $%{y:.4f}<extra></extra>",
+        ))
+        fig.add_trace(go.Scatter(
+            x=tier_q, y=tier_s, mode="markers",
+            marker=dict(size=11, color="#1a472a", symbol="circle",
+                        line=dict(color="white", width=2)),
+            name="Your Tiers",
+            hovertemplate="<b>%{x:,} units (tier)</b><br>Sell: $%{y:.4f}<extra></extra>",
+        ))
+
+    fig.update_layout(
+        xaxis_title="Quantity",
+        yaxis_title="Unit Price ($)",
+        template="plotly_white",
+        height=380,
+        margin=dict(l=50, r=30, t=10, b=50),
+        legend=dict(orientation="h", yanchor="bottom", y=1.01, x=0),
+        hovermode="x unified",
+    )
+    fig.update_xaxes(tickformat=",")
+    return fig
+
+
+@st.cache_data(ttl=900, show_spinner=False)
+def _vendor_alternatives_ai(vendor: str, specs_key: str, tier_summary: str) -> str:
+    """
+    Call the Anthropic API to generate a sentence-level explanation of
+    what it would take to route this job to each alternative vendor.
+    Returns markdown-formatted text.
+    """
+    import os, httpx, json
+
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        try:
+            api_key = st.secrets.get("ANTHROPIC_API_KEY", "")
+        except Exception:
+            pass
+    if not api_key:
+        return "_AI vendor analysis requires ANTHROPIC_API_KEY in your environment or Streamlit secrets._"
+
+    specs = json.loads(specs_key)
+    w, h, g = specs.get("width", "?"), specs.get("height", "?"), specs.get("gusset", 0)
+    substrate = specs.get("substrate", "Unknown")
+    finish    = specs.get("finish", "Unknown")
+    zipper    = specs.get("zipper", "None")
+    pw = float(h) * 2 + float(g) if h != "?" else "?"
+
+    vendor_labels = {
+        "internal": "Internal HP 6900 (narrow digital)",
+        "ross":     "Ross HP Indigo (wide-format digital)",
+        "dazpak":   "Dazpak (flexographic)",
+        "tedpack":  "Teapack (China, FOB)",
+    }
+    current_label = vendor_labels.get(vendor, vendor)
+
+    prompt = f"""You are a flexible packaging pricing analyst at Calyx Containers.
+You have just generated a quote for a customer. Here are the job specs:
+
+- Dimensions: {w}" W × {h}" H × {g}" G  (print width = {pw}")
+- Substrate: {substrate}
+- Finish: {finish}
+- Zipper: {zipper}
+- Quantity tiers: {tier_summary}
+- Routed to: **{current_label}**
+
+The four available vendors and their routing rules:
+1. **Internal HP 6900** — narrow digital. Only viable when print width ≤ 12". Best for short runs and proofs.
+2. **Ross HP Indigo** — wide-format digital. Used when print width > 12". Best for runs up to ~250K.
+3. **Dazpak** — flexographic. MOQ 35,000 units per SKU. Best for 75K–2M unit runs. Plates + setup time adds 3–4 weeks to first run.
+4. **Teapack** — Chinese vendor, FOB pricing. Best for high-volume 50K+ orders. Ocean freight: 5–7 weeks. Air freight: 1–2 weeks. 35% tariff currently in effect.
+
+Write 2–4 short, punchy sentences (no headers, no bullet points) that tell the sales rep:
+- Why this job landed on {current_label}
+- What specific changes (qty, dimensions, print method) would be needed to qualify for each viable alternative
+- Any tradeoffs worth flagging (lead time, cost at scale, MOQ gaps, tariff exposure)
+
+Be direct, specific, and use numbers. Mention actual quantity thresholds and lead times.
+Do not mention SHAP or machine learning. Keep it under 120 words."""
+
+    try:
+        resp = httpx.post(
+            "https://api.anthropic.com/v1/messages",
+            headers={
+                "x-api-key": api_key,
+                "anthropic-version": "2023-06-01",
+                "content-type": "application/json",
+            },
+            json={
+                "model": "claude-sonnet-4-20250514",
+                "max_tokens": 300,
+                "messages": [{"role": "user", "content": prompt}],
+            },
+            timeout=15.0,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        return data["content"][0]["text"].strip()
+    except Exception as e:
+        return f"_Vendor analysis unavailable: {e}_"
+
+
 def _render_results(result: dict, margin_pct: int = 35):
     """Render prediction results with margin-adjusted sell prices."""
     st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
@@ -573,61 +792,28 @@ def _render_results(result: dict, margin_pct: int = 35):
         except Exception as e:
             st.caption(f"PDF generation unavailable: {e}")
 
-    # Charts
+    # ── Penny-Step Price Curve ───────────────────────────────────────
+    if preds:
+        st.markdown('<div class="results-header">Price Curve — All Quantity Levels</div>', unsafe_allow_html=True)
+        st.caption("Continuous sweep across the full quantity range. Your quoted tiers shown as ●")
+        with st.spinner("Building price curve…"):
+            penny_fig = _penny_step_chart(result, margin_multiplier)
+        if penny_fig:
+            st.plotly_chart(penny_fig, use_container_width=True)
+        else:
+            st.info("Price curve requires trained models to be loaded.")
+
+    # ── SHAP Breakdown + AI Vendor Analysis ─────────────────────────
     if preds:
         is_det = result.get("is_deterministic", False)
-        chart_cols = st.columns(2)
+        analysis_cols = st.columns([1, 1])
 
-        with chart_cols[0]:
-            st.markdown('<div class="results-header">Unit Price vs Quantity</div>', unsafe_allow_html=True)
-            fig = go.Figure()
-            qtys = [p["quantity"] for p in preds]
-            costs = [p["unit_price"] for p in preds]
-            sells = [p["unit_price"] * margin_multiplier for p in preds]
-
-            if not is_det:
-                # Confidence band (only for ML models)
-                lowers = [p["lower_bound"] for p in preds]
-                uppers = [p["upper_bound"] for p in preds]
-                fig.add_trace(go.Scatter(
-                    x=qtys + qtys[::-1],
-                    y=uppers + lowers[::-1],
-                    fill="toself",
-                    fillcolor="rgba(45, 106, 79, 0.08)",
-                    line=dict(color="rgba(0,0,0,0)"),
-                    name="90% CI (Cost)",
-                    showlegend=True,
-                ))
-
-            # Cost line
-            fig.add_trace(go.Scatter(
-                x=qtys, y=costs,
-                mode="lines+markers",
-                line=dict(color="#9e9e9e", width=2, dash="dot"),
-                marker=dict(size=7, color="#9e9e9e"),
-                name="Cost",
-            ))
-            # Sell price line
-            fig.add_trace(go.Scatter(
-                x=qtys, y=sells,
-                mode="lines+markers",
-                line=dict(color="#2d6a4f", width=3),
-                marker=dict(size=10, color="#1a472a"),
-                name=f"Sell Price ({margin_pct}% margin)",
-            ))
-            fig.update_layout(
-                xaxis_title="Quantity",
-                yaxis_title="Unit Price ($)",
-                template="plotly_white",
-                height=350,
-                margin=dict(l=40, r=20, t=20, b=40),
-            )
-            st.plotly_chart(fig, use_container_width=True)
-
-        with chart_cols[1]:
-            st.markdown('<div class="results-header">Cost Factor Breakdown</div>', unsafe_allow_html=True)
+        with analysis_cols[0]:
+            st.markdown('<div class="results-header">Key Price Drivers</div>', unsafe_allow_html=True)
             cf_df = cost_factors_to_dataframe(result.get("cost_factors", {}))
             if not cf_df.empty:
+                # Truncate long factor names for display
+                cf_df["Cost Factor"] = cf_df["Cost Factor"].str.replace("_", " ").str.title()
                 fig2 = px.bar(
                     cf_df.head(10),
                     x="Importance",
@@ -637,21 +823,79 @@ def _render_results(result: dict, margin_pct: int = 35):
                     color_continuous_scale=["#d1d5db", "#1a472a"],
                     text="Your Value",
                 )
+                fig2.update_traces(textposition="inside", insidetextanchor="middle")
                 fig2.update_layout(
                     template="plotly_white",
-                    height=350,
-                    margin=dict(l=40, r=20, t=20, b=40),
+                    height=340,
+                    margin=dict(l=10, r=20, t=10, b=30),
                     showlegend=False,
                     coloraxis_showscale=False,
                     yaxis=dict(autorange="reversed"),
+                    xaxis_title="% Influence on Price" if not is_det else "% of Total Cost",
                 )
-                if is_det:
-                    fig2.update_layout(
-                        xaxis_title="% of Total Cost",
-                    )
                 st.plotly_chart(fig2, use_container_width=True)
             else:
-                st.info("Cost factor breakdown requires a trained model.")
+                st.info("Price driver breakdown requires a trained model.")
+
+        with analysis_cols[1]:
+            st.markdown('<div class="results-header">Vendor Routing Analysis</div>', unsafe_allow_html=True)
+            import json
+            specs = result.get("specs", {})
+            vendor = result.get("vendor", "")
+            tier_summary = ", ".join(
+                f"{p['quantity']:,}" for p in preds[:6]
+            )
+            specs_key = json.dumps(
+                {k: v for k, v in specs.items() if k != "quantity"}, sort_keys=True
+            )
+            with st.spinner("Analyzing vendor options…"):
+                ai_text = _vendor_alternatives_ai(vendor, specs_key, tier_summary)
+
+            # Render the AI text in a styled card
+            st.markdown(f"""
+            <div style="
+                background:#f0fdf4;
+                border-left:3px solid #2d6a4f;
+                border-radius:6px;
+                padding:1rem 1.1rem;
+                font-size:0.85rem;
+                line-height:1.65;
+                color:#1a1a1a;
+                font-family:'Instrument Sans',sans-serif;
+                margin-top:0.25rem;
+            ">{ai_text}</div>
+            """, unsafe_allow_html=True)
+
+            # Quick-glance routing grid below the AI text
+            pw = float(specs.get("height", 0)) * 2 + float(specs.get("gusset", 0))
+            min_qty = min((p["quantity"] for p in preds), default=0)
+            max_qty = max((p["quantity"] for p in preds), default=0)
+            rows = {
+                "Internal HP":  ("✅" if pw <= 12 else "❌",  "Any qty",       "1–2 days"),
+                "Ross":         ("✅" if pw > 12 else "❌",   "Any qty",       "1–2 weeks"),
+                "Dazpak":       ("✅" if max_qty >= 35_000 else "⚠️", "35K+ MOQ", "3–5 weeks"),
+                "Teapack":      ("✅" if max_qty >= 50_000 else "⚠️", "50K+ ideal","5–7 wks ocean / 1–2 wks air"),
+            }
+            grid_html = """<table style="width:100%;border-collapse:collapse;font-size:0.75rem;margin-top:0.75rem;">
+            <thead><tr>
+              <th style="text-align:left;padding:4px 6px;color:#6b7280;border-bottom:1px solid #e5e7eb;">Vendor</th>
+              <th style="text-align:center;padding:4px 6px;color:#6b7280;border-bottom:1px solid #e5e7eb;">Eligible</th>
+              <th style="text-align:left;padding:4px 6px;color:#6b7280;border-bottom:1px solid #e5e7eb;">Qty</th>
+              <th style="text-align:left;padding:4px 6px;color:#6b7280;border-bottom:1px solid #e5e7eb;">Lead Time</th>
+            </tr></thead><tbody>"""
+            for vname, (elig, qty_note, lt) in rows.items():
+                is_active = vname.lower().replace(" hp", "").replace("pack", "pak") in vendor.lower() or \
+                            (vname == "Internal HP" and vendor == "internal") or \
+                            (vname == "Teapack" and vendor == "tedpack")
+                bg = "background:#ecfdf5;" if is_active else ""
+                grid_html += f"""<tr style="{bg}">
+                  <td style="padding:4px 6px;font-weight:{'600' if is_active else '400'};">{vname}</td>
+                  <td style="text-align:center;padding:4px 6px;">{elig}</td>
+                  <td style="padding:4px 6px;color:#374151;">{qty_note}</td>
+                  <td style="padding:4px 6px;color:#374151;">{lt}</td>
+                </tr>"""
+            grid_html += "</tbody></table>"
+            st.html(grid_html)
 
         # ── Component Cost Breakdown Table (deterministic only) ──
         if is_det and result.get("component_costs"):
