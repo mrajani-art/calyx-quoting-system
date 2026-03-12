@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+/* ── Calyx Brand Tokens ─────────────────────────────────── */
+@theme {
+  --color-calyx-blue: #0033A1;
+  --color-flash-blue: #004FFF;
+  --color-cloud-blue: #D9F1FD;
+  --color-powder-blue: #DBE6FF;
+  --color-ocean-blue: #001F60;
+  --color-mist-blue: #202945;
+  --color-gray-90: #1A1A1A;
+  --color-gray-60: #666666;
+  --color-gray-30: #B3B3B3;
+  --color-gray-10: #E5E5E5;
+  --color-gray-5: #F1F2F2;
+
+  --font-sans: "Inter", "Montserrat", system-ui, -apple-system, sans-serif;
+}
+
+/* ── Base ────────────────────────────────────────────── */
+body {
+  @apply bg-white text-gray-90 antialiased;
+}
+
+/* ── Gradient utilities ──────────────────────────────── */
+.calyx-gradient {
+  background: linear-gradient(135deg, #0088FF 0%, #0033A1 100%);
+}
