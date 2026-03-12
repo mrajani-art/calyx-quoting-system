@@ -1,0 +1,12 @@
+web/
+node_modules/
+.next/
+__pycache__/
+*.pyc
+.git/
+.claude/
+docs/
+scripts/
+*.md
+.env
+.env.*
