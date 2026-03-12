@@ -2,9 +2,11 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install API dependencies
-COPY api/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+ENV PYTHONPATH=/app
+
+# Install API + ML dependencies (renamed dest to bust Docker layer cache)
+COPY api/requirements.txt ./api-requirements.txt
+RUN pip install --no-cache-dir -r api-requirements.txt
 
 # Copy API code
 COPY api/ /app/api/
