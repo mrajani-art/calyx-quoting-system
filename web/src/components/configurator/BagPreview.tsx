@@ -1,8 +1,16 @@
 "use client";
 
+import { useState, useCallback, useEffect } from "react";
+import dynamic from "next/dynamic";
 import StandUpPouch from "./bag-svg/StandUpPouch";
 import FlatPouch from "./bag-svg/FlatPouch";
 import type { BagVisualProps } from "./bag-svg/types";
+
+// Dynamic import — only loaded client-side, never during SSR
+const BagScene = dynamic(() => import("./bag-3d/BagScene"), {
+  ssr: false,
+  loading: () => null, // We show our own SVG fallback
+});
 
 interface Props extends BagVisualProps {
   compact?: boolean;
@@ -26,11 +34,34 @@ function formatDims(w: number, h: number, g: number): string {
   return `${w}" W × ${h}" H`;
 }
 
+/** Hook: true when viewport is >= 1024px (lg breakpoint) */
+function useIsDesktop(): boolean {
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    setIsDesktop(mq.matches);
+
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
+  return isDesktop;
+}
+
 export default function BagPreview({ compact = false, ...visualProps }: Props) {
   const { sealType, width, height, gusset, substrate } = visualProps;
   const badges = featureBadges(visualProps);
-
   const isStandUpPouch = sealType === "Stand Up Pouch";
+
+  const isDesktop = useIsDesktop();
+  const [sceneReady, setSceneReady] = useState(false);
+  const handleSceneLoaded = useCallback(() => setSceneReady(true), []);
+
+  // Show SVG when: mobile, or desktop but 3D hasn't loaded yet
+  const showSvg = !isDesktop || !sceneReady;
+  const show3d = isDesktop;
 
   return (
     <div className={compact ? "" : "space-y-3"}>
@@ -39,19 +70,46 @@ export default function BagPreview({ compact = false, ...visualProps }: Props) {
         <h4 className="text-sm font-semibold text-gray-90">Preview</h4>
         <span className="text-xs text-gray-60">
           {isStandUpPouch ? "Stand Up Pouch" : sealType}
+          {show3d && sceneReady && (
+            <span className="ml-1 text-gray-30">· 3D</span>
+          )}
         </span>
       </div>
 
-      {/* SVG container — fixed aspect so layout doesn't shift */}
-      <div className="flex items-center justify-center rounded-lg border border-gray-10 bg-gray-5 p-4">
-        <div className={compact ? "w-40" : "w-full max-w-[200px]"}>
-          {isStandUpPouch ? (
-            <StandUpPouch {...visualProps} />
-          ) : (
-            <FlatPouch {...visualProps} />
-          )}
-        </div>
+      {/* Preview container */}
+      <div className="relative flex items-center justify-center rounded-lg border border-gray-10 bg-gray-5 p-4 min-h-[280px]">
+        {/* SVG fallback: shown on mobile always, on desktop until 3D loads */}
+        {showSvg && (
+          <div className={compact ? "w-40" : "w-full max-w-[200px]"}>
+            {isStandUpPouch ? (
+              <StandUpPouch {...visualProps} />
+            ) : (
+              <FlatPouch {...visualProps} />
+            )}
+          </div>
+        )}
+
+        {/* 3D canvas: rendered on desktop, hidden until ready */}
+        {show3d && (
+          <div
+            className={`absolute inset-0 ${
+              sceneReady ? "" : "opacity-0 pointer-events-none"
+            }`}
+          >
+            <BagScene
+              visualProps={visualProps}
+              onLoaded={handleSceneLoaded}
+            />
+          </div>
+        )}
       </div>
+
+      {/* Drag hint */}
+      {show3d && sceneReady && (
+        <p className="text-center text-[10px] text-gray-30">
+          Drag to rotate · Scroll to zoom
+        </p>
+      )}
 
       {/* Dimension label */}
       <p className="text-center text-xs font-medium text-gray-60">
