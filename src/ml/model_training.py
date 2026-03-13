@@ -16,21 +16,34 @@ import numpy as np
 import pandas as pd
 import joblib
 from sklearn.ensemble import GradientBoostingRegressor
-from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.model_selection import (
+    cross_val_score, train_test_split, GroupShuffleSplit,
+)
 from sklearn.metrics import (
     mean_absolute_percentage_error,
     mean_squared_error,
     r2_score,
+    make_scorer,
 )
 
 from config.settings import (
     MODEL_DIR, RANDOM_STATE, TEST_SIZE, CV_FOLDS,
     CONFIDENCE_LOWER, CONFIDENCE_UPPER,
-    TEDPACK_CONFIDENCE_LOWER, TEDPACK_CONFIDENCE_UPPER,
-    TEDPACK_OUTLIER_SIGMA,
     RECENCY_RECENT_DAYS, RECENCY_RECENT_WEIGHT,
     RECENCY_DECAY_HALF_LIFE, RECENCY_MIN_WEIGHT,
 )
+
+# Tedpack settings may not exist in older settings.py
+try:
+    from config.settings import TEDPACK_CONFIDENCE_LOWER, TEDPACK_CONFIDENCE_UPPER
+except ImportError:
+    TEDPACK_CONFIDENCE_LOWER = 0.05
+    TEDPACK_CONFIDENCE_UPPER = 0.95
+
+try:
+    from config.settings import TEDPACK_OUTLIER_SIGMA
+except ImportError:
+    TEDPACK_OUTLIER_SIGMA = 2.5
 from src.ml.feature_engineering import (
     prepare_features, build_preprocessor, get_feature_names,
     save_preprocessor,
@@ -72,15 +85,29 @@ class QuoteModelTrainer:
                      f"(log_target={self.use_log_target})...")
 
         # ── Compute recency weights BEFORE prepare_features ──────────
-        # (prepare_features drops non-feature columns like created_at)
+        # Prefer quote_date (actual date the vendor quoted) over created_at
+        # (date we ingested it). Falls back to created_at if quote_date missing.
+        date_col = "quote_date"
+        if date_col not in df.columns or df[date_col].isna().all():
+            date_col = "created_at"
         sample_weights = compute_recency_weights_from_df(
             df,
-            date_column="created_at",
+            date_column=date_col,
             recent_days=RECENCY_RECENT_DAYS,
             recent_weight=RECENCY_RECENT_WEIGHT,
             decay_half_life=RECENCY_DECAY_HALF_LIFE,
             min_weight=RECENCY_MIN_WEIGHT,
         )
+
+        # ── Preserve FL numbers for group-based splitting ────────────
+        # All quantity tiers for the same FL number must stay in the same
+        # split — otherwise the model "cheats" by seeing the same bag's
+        # cost at 5K in training and predicting it at 25K in test.
+        if "fl_number" in df.columns:
+            fallback = "no_fl_" + df.index.astype(str)
+            groups = df["fl_number"].where(df["fl_number"].notna(), fallback)
+        else:
+            groups = pd.Series("no_fl_" + df.index.astype(str), index=df.index)
 
         # Prepare features
         df = prepare_features(df)
@@ -89,10 +116,9 @@ class QuoteModelTrainer:
         valid_mask = df[target_col].notna()
         df = df[valid_mask]
         sample_weights = sample_weights[valid_mask.values]
+        groups = groups[valid_mask]
 
         # ── Outlier removal: drop extreme prices ──────────────────
-        # Remove rows where log(unit_price) exceeds σ threshold from mean.
-        # TedPack uses tighter threshold (2.5σ) due to overseas pricing variance.
         prices = df[target_col].values
         if len(prices) > 20:
             sigma_threshold = (TEDPACK_OUTLIER_SIGMA
@@ -109,10 +135,9 @@ class QuoteModelTrainer:
                                 f"(>{sigma_threshold}σ in log-space) for {self.vendor}")
                     df = df[inlier_mask]
                     sample_weights = sample_weights[inlier_mask]
+                    groups = groups[inlier_mask]
 
         # ── TedPack secondary filter: price-per-sqin IQR ────────
-        # Catches anomalous quotes where the price is wildly off for
-        # the bag size (e.g. tiny bags quoted at premium prices).
         if self.vendor.startswith("tedpack") and len(df) > 20:
             if "width" in df.columns and "height" in df.columns:
                 area = (df["width"] * df["height"]).clip(lower=1)
@@ -127,6 +152,7 @@ class QuoteModelTrainer:
                                     f"(IQR method) for {self.vendor}")
                         df = df[psi_mask]
                         sample_weights = sample_weights[psi_mask.values]
+                        groups = groups[psi_mask]
 
         if len(df) < 10:
             logger.warning(f"Only {len(df)} samples for {self.vendor} — model may be unreliable")
@@ -150,23 +176,34 @@ class QuoteModelTrainer:
         X_transformed = self.preprocessor.transform(X)
         self.feature_names = get_feature_names(self.preprocessor)
 
-        # Train/test split — include sample_weights so they stay aligned
-        X_train, X_test, y_train, y_test, w_train, w_test = train_test_split(
-            X_transformed, y, sample_weights,
-            test_size=TEST_SIZE, random_state=RANDOM_STATE
-        )
-        # Keep raw y_test for evaluation in original scale
-        if self.use_log_target:
-            _, _, y_raw_train, y_raw_test, _, _ = train_test_split(
-                X_transformed, y_raw, sample_weights,
+        # ── Group-based train/test split ─────────────────────────────
+        # All tiers for the same FL number stay together — prevents
+        # data leakage from the model seeing the same bag in both sets.
+        n_unique_groups = groups.nunique()
+        if n_unique_groups >= 5:
+            gss = GroupShuffleSplit(
+                n_splits=1, test_size=TEST_SIZE, random_state=RANDOM_STATE
+            )
+            train_idx, test_idx = next(gss.split(X_transformed, y, groups=groups.values))
+            X_train, X_test = X_transformed[train_idx], X_transformed[test_idx]
+            y_train, y_test = y[train_idx], y[test_idx]
+            w_train, w_test = sample_weights[train_idx], sample_weights[test_idx]
+            if self.use_log_target:
+                y_raw_test = y_raw[test_idx]
+        else:
+            # Too few groups for group split — fall back to random
+            logger.warning(f"  Only {n_unique_groups} unique FL groups — using random split")
+            X_train, X_test, y_train, y_test, w_train, w_test = train_test_split(
+                X_transformed, y, sample_weights,
                 test_size=TEST_SIZE, random_state=RANDOM_STATE
             )
+            if self.use_log_target:
+                _, _, _, y_raw_test, _, _ = train_test_split(
+                    X_transformed, y_raw, sample_weights,
+                    test_size=TEST_SIZE, random_state=RANDOM_STATE
+                )
 
         # ── Point prediction model ─────────────────────────────────
-        # Per-vendor hyperparameters tuned for dataset characteristics:
-        # - Internal: more estimators + lower LR for small dataset (97 cost-only)
-        # - Ross: moderate depth + lower LR for log-target stability
-        # - Dazpak: standard settings for mature dataset
         if self.vendor == "internal":
             n_est, depth, lr, min_leaf = 500, 6, 0.03, 3
         elif self.vendor == "ross":
@@ -174,31 +211,39 @@ class QuoteModelTrainer:
         elif self.vendor in ("tedpack_air", "tedpack_ocean"):
             n_est, depth, lr, min_leaf = 500, 5, 0.025, 3
         else:  # dazpak
-            n_est, depth, lr, min_leaf = 300, 5, 0.05, 5
+            n_est, depth, lr, min_leaf = 400, 5, 0.03, 4
 
+        # Huber loss for all vendors — robust to remaining outliers
         self.model_point = GradientBoostingRegressor(
             n_estimators=n_est,
             max_depth=depth,
             learning_rate=lr,
             subsample=0.8,
             min_samples_leaf=min_leaf,
-            loss="huber" if self.vendor in ("ross", "tedpack_air", "tedpack_ocean") else "squared_error",
+            loss="huber",
             random_state=RANDOM_STATE,
         )
         self.model_point.fit(X_train, y_train, sample_weight=w_train)
 
         # ── Confidence interval models (quantile regression) ───────
-        # TedPack uses wider quantile bounds (5th/95th) for better coverage
+        # Dazpak gets wider bounds (5th/95th) due to small dataset
         if self.vendor.startswith("tedpack"):
             ci_lower_alpha = TEDPACK_CONFIDENCE_LOWER
             ci_upper_alpha = TEDPACK_CONFIDENCE_UPPER
+        elif self.vendor == "dazpak":
+            ci_lower_alpha = 0.05
+            ci_upper_alpha = 0.95
         else:
             ci_lower_alpha = CONFIDENCE_LOWER
             ci_upper_alpha = CONFIDENCE_UPPER
 
+        # Simpler CI models to avoid overfitting — fewer estimators, shallower
+        ci_n_est = min(n_est, 250)
+        ci_depth = min(depth, 3)
+
         self.model_lower = GradientBoostingRegressor(
-            n_estimators=min(n_est, 300),
-            max_depth=min(depth, 4),
+            n_estimators=ci_n_est,
+            max_depth=ci_depth,
             learning_rate=lr,
             subsample=0.8,
             min_samples_leaf=min_leaf,
@@ -209,8 +254,8 @@ class QuoteModelTrainer:
         self.model_lower.fit(X_train, y_train, sample_weight=w_train)
 
         self.model_upper = GradientBoostingRegressor(
-            n_estimators=min(n_est, 300),
-            max_depth=min(depth, 4),
+            n_estimators=ci_n_est,
+            max_depth=ci_depth,
             learning_rate=lr,
             subsample=0.8,
             min_samples_leaf=min_leaf,
@@ -230,7 +275,7 @@ class QuoteModelTrainer:
             y_pred = np.exp(y_pred_raw)
             y_pred_lower = np.exp(y_pred_lower_raw)
             y_pred_upper = np.exp(y_pred_upper_raw)
-            y_eval = y_raw_test  # Compare against original scale
+            y_eval = y_raw_test
         else:
             y_pred = y_pred_raw
             y_pred_lower = y_pred_lower_raw
@@ -241,29 +286,50 @@ class QuoteModelTrainer:
         self.metrics = {
             "n_train": len(X_train),
             "n_test": len(X_test),
+            "n_groups_train": int(groups.iloc[train_idx].nunique()) if n_unique_groups >= 5 else "N/A",
+            "n_groups_test": int(groups.iloc[test_idx].nunique()) if n_unique_groups >= 5 else "N/A",
+            "group_split": n_unique_groups >= 5,
             "mape": float(mean_absolute_percentage_error(y_eval, y_pred) * 100),
             "rmse": float(np.sqrt(mean_squared_error(y_eval, y_pred))),
             "r2": float(r2_score(y_eval, y_pred)),
             "coverage_90": float(
                 np.mean((y_eval >= y_pred_lower) & (y_eval <= y_pred_upper)) * 100
             ),
+            "ci_bounds": f"{ci_lower_alpha:.0%}/{ci_upper_alpha:.0%}",
             "use_log_target": self.use_log_target,
             "recency_weighting": True,
+            "recency_date_column": date_col,
             "recency_recent_days": RECENCY_RECENT_DAYS,
             "recency_recent_weight": RECENCY_RECENT_WEIGHT,
             "n_recent_train": int((w_train >= RECENCY_RECENT_WEIGHT * 0.99).sum()),
         }
 
-        # Cross-validation on full data (in transformed space)
-        cv_scores = cross_val_score(
-            self.model_point, X_transformed, y,
-            cv=min(CV_FOLDS, len(df) // 2),
-            scoring="neg_mean_absolute_percentage_error",
-        )
+        # ── Cross-validation ───────────────────────────────────────
+        # For log-target models, use a custom scorer that back-transforms
+        # predictions before computing MAPE — avoids the meaningless
+        # "MAPE on log values" problem.
+        n_cv = min(CV_FOLDS, n_unique_groups // 2) if n_unique_groups >= 5 else min(CV_FOLDS, len(df) // 2)
+        n_cv = max(n_cv, 2)
+
+        if self.use_log_target:
+            def _mape_log_scorer(estimator, X_cv, y_cv):
+                """Score in original price scale for log-target models."""
+                y_pred_log = estimator.predict(X_cv)
+                y_pred_orig = np.exp(y_pred_log)
+                y_orig = np.exp(y_cv)
+                return -mean_absolute_percentage_error(y_orig, y_pred_orig)
+
+            cv_scores = cross_val_score(
+                self.model_point, X_transformed, y,
+                cv=n_cv, scoring=_mape_log_scorer,
+            )
+        else:
+            cv_scores = cross_val_score(
+                self.model_point, X_transformed, y,
+                cv=n_cv, scoring="neg_mean_absolute_percentage_error",
+            )
         self.metrics["cv_mape_mean"] = float(-cv_scores.mean() * 100)
         self.metrics["cv_mape_std"] = float(cv_scores.std() * 100)
-        if self.use_log_target:
-            self.metrics["cv_note"] = "CV MAPE is in log-space; actual MAPE reported above is in original scale"
 
         # Feature importances
         importances = self.model_point.feature_importances_
@@ -278,7 +344,8 @@ class QuoteModelTrainer:
         logger.info(
             f"{self.vendor} model: MAPE={self.metrics['mape']:.1f}%, "
             f"R²={self.metrics['r2']:.3f}, "
-            f"90% CI coverage={self.metrics['coverage_90']:.1f}%"
+            f"CI coverage={self.metrics['coverage_90']:.1f}% "
+            f"(group_split={self.metrics['group_split']})"
         )
         return self.metrics
 
@@ -335,8 +402,9 @@ def train_all_models(training_df: pd.DataFrame) -> dict:
             logger.warning(f"No data for {vendor} — skipping")
             continue
 
-        # Ross and TedPack models use log-target for better fit across wide price/qty ranges
-        use_log = (vendor in ("internal", "ross", "tedpack_air", "tedpack_ocean"))
+        # All vendors use log-target for better fit across wide price/qty ranges
+        use_log = vendor in ("internal", "ross", "dazpak",
+                             "tedpack_air", "tedpack_ocean")
         trainer = QuoteModelTrainer(vendor, use_log_target=use_log)
         metrics = trainer.train(vendor_df)
         trainer.save()
