@@ -1,16 +1,9 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
-import dynamic from "next/dynamic";
+import { useState, useRef, useCallback } from "react";
 import StandUpPouch from "./bag-svg/StandUpPouch";
 import FlatPouch from "./bag-svg/FlatPouch";
 import type { BagVisualProps } from "./bag-svg/types";
-
-// Dynamic import — only loaded client-side, never during SSR
-const BagScene = dynamic(() => import("./bag-3d/BagScene"), {
-  ssr: false,
-  loading: () => null, // We show our own SVG fallback
-});
 
 interface Props extends BagVisualProps {
   compact?: boolean;
@@ -34,20 +27,9 @@ function formatDims(w: number, h: number, g: number): string {
   return `${w}" W × ${h}" H`;
 }
 
-/** Hook: true when viewport is >= 1024px (lg breakpoint) */
-function useIsDesktop(): boolean {
-  const [isDesktop, setIsDesktop] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 1024px)");
-    setIsDesktop(mq.matches);
-
-    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
-
-  return isDesktop;
+/** Clamp a value between min and max */
+function clamp(val: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, val));
 }
 
 export default function BagPreview({ compact = false, ...visualProps }: Props) {
@@ -55,13 +37,33 @@ export default function BagPreview({ compact = false, ...visualProps }: Props) {
   const badges = featureBadges(visualProps);
   const isStandUpPouch = sealType === "Stand Up Pouch";
 
-  const isDesktop = useIsDesktop();
-  const [sceneReady, setSceneReady] = useState(false);
-  const handleSceneLoaded = useCallback(() => setSceneReady(true), []);
+  // Perspective tilt state
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const [isHovering, setIsHovering] = useState(false);
 
-  // Show SVG when: mobile, or desktop but 3D hasn't loaded yet
-  const showSvg = !isDesktop || !sceneReady;
-  const show3d = isDesktop;
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      const el = containerRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      // Normalize mouse position to -1..1 from center
+      const nx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+      const ny = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+      // Clamp to ±12 degrees
+      setTilt({
+        x: clamp(-ny * 12, -12, 12), // tilt around X axis (vertical mouse → pitch)
+        y: clamp(nx * 12, -12, 12),  // tilt around Y axis (horizontal mouse → yaw)
+      });
+    },
+    []
+  );
+
+  const handleMouseEnter = useCallback(() => setIsHovering(true), []);
+  const handleMouseLeave = useCallback(() => {
+    setIsHovering(false);
+    setTilt({ x: 0, y: 0 });
+  }, []);
 
   return (
     <div className={compact ? "" : "space-y-3"}>
@@ -70,46 +72,35 @@ export default function BagPreview({ compact = false, ...visualProps }: Props) {
         <h4 className="text-sm font-semibold text-gray-90">Preview</h4>
         <span className="text-xs text-gray-60">
           {isStandUpPouch ? "Stand Up Pouch" : sealType}
-          {show3d && sceneReady && (
-            <span className="ml-1 text-gray-30">· 3D</span>
-          )}
         </span>
       </div>
 
-      {/* Preview container */}
-      <div className="relative flex items-center justify-center rounded-lg border border-gray-10 bg-gray-5 p-4 min-h-[280px]">
-        {/* SVG fallback: shown on mobile always, on desktop until 3D loads */}
-        {showSvg && (
-          <div className={compact ? "w-40" : "w-full max-w-[200px]"}>
-            {isStandUpPouch ? (
-              <StandUpPouch {...visualProps} />
-            ) : (
-              <FlatPouch {...visualProps} />
-            )}
-          </div>
-        )}
-
-        {/* 3D canvas: rendered on desktop, hidden until ready */}
-        {show3d && (
-          <div
-            className={`absolute inset-0 ${
-              sceneReady ? "" : "opacity-0 pointer-events-none"
-            }`}
-          >
-            <BagScene
-              visualProps={visualProps}
-              onLoaded={handleSceneLoaded}
-            />
-          </div>
-        )}
+      {/* SVG container with perspective tilt */}
+      <div
+        ref={containerRef}
+        onMouseMove={handleMouseMove}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className="flex items-center justify-center rounded-lg border border-gray-10 bg-gray-5 p-4 cursor-grab active:cursor-grabbing"
+        style={{ perspective: "600px" }}
+      >
+        <div
+          className={compact ? "w-40" : "w-full max-w-[200px]"}
+          style={{
+            transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+            transition: isHovering
+              ? "transform 0.08s ease-out"
+              : "transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)",
+            transformStyle: "preserve-3d",
+          }}
+        >
+          {isStandUpPouch ? (
+            <StandUpPouch {...visualProps} />
+          ) : (
+            <FlatPouch {...visualProps} />
+          )}
+        </div>
       </div>
-
-      {/* Drag hint */}
-      {show3d && sceneReady && (
-        <p className="text-center text-[10px] text-gray-30">
-          Drag to rotate · Scroll to zoom
-        </p>
-      )}
 
       {/* Dimension label */}
       <p className="text-center text-xs font-medium text-gray-60">
