@@ -151,6 +151,9 @@ st.markdown("""
     .vendor-internal {
         background: #faf5ff; color: #6b21a8; border: 1px solid #e9d5ff;
     }
+    .vendor-tedpack {
+        background: #fefce8; color: #854d0e; border: 1px solid #fde68a;
+    }
 
     /* ── Routing Box ────────────────────────────────── */
     .routing-box {
@@ -316,6 +319,9 @@ with st.sidebar:
 
     **Internal** — HP 6900 (≤12" web)
     In-house digital · Tiers: 500–50K
+
+    **TedPack** — Gravure (overseas)
+    DDP Air/Ocean · Tiers: 10K–500K
     """)
 
 
@@ -417,21 +423,18 @@ def _penny_step_chart(result: dict, margin_multiplier: float) -> "go.Figure | No
     if not preds:
         return None
 
-    # ── Quantity sweep range per vendor ─────────────────────────────
-    sweep_map = {
-        "dazpak":   (35_000, 2_000_000),
-        "ross":     (1_000, 300_000),
-        "internal": (500, 100_000),
-        "tedpack":  (10_000, 1_000_000),
-    }
-    lo, hi = sweep_map.get(vendor, (1_000, 300_000))
-    max_user_qty = max((p["quantity"] for p in preds), default=hi)
-    hi = max(hi, int(max_user_qty * 1.1))
+    # ── Quantity sweep range — driven by user's actual tiers ─────────
+    user_qtys = sorted([p["quantity"] for p in preds])
+    min_user_qty = min(user_qtys)
+    max_user_qty = max(user_qtys)
+
+    # Pad 20% below and 20% above the user's range for context
+    lo = max(int(min_user_qty * 0.7), 500)
+    hi = int(max_user_qty * 1.25)
 
     qty_sweep = np.unique(np.geomspace(lo, hi, 80).astype(int))
 
     # Add user-specified tiers so they land exactly on curve
-    user_qtys = [p["quantity"] for p in preds]
     qty_sweep = np.unique(np.concatenate([qty_sweep, user_qtys]))
 
     specs_key = json.dumps({k: v for k, v in specs.items() if k != "quantity"}, sort_keys=True)
@@ -619,7 +622,7 @@ def _render_tedpack_comparison(result: dict, preds: list, margin_multiplier: flo
 
     specs = result.get("specs", {})
     current_vendor = result.get("vendor", "ross")
-    vendor_labels = {"ross": "Ross", "dazpak": "Dazpak", "internal": "Internal"}
+    vendor_labels = {"ross": "Ross", "dazpak": "Dazpak", "internal": "Internal", "tedpack": "TedPack"}
     current_label = vendor_labels.get(current_vendor, current_vendor.title())
 
     user_qtys = sorted([p["quantity"] for p in preds])
@@ -866,8 +869,8 @@ def _render_results(result: dict, margin_pct: int = 35):
     if preds:
         mcols = st.columns(3)
         with mcols[0]:
-            vendor_label = {"dazpak": "Dazpak", "ross": "Ross", "internal": "Internal"}.get(result["vendor"], result["vendor"])
-            vendor_class = {"dazpak": "vendor-dazpak", "ross": "vendor-ross", "internal": "vendor-internal"}.get(result["vendor"], "")
+            vendor_label = {"dazpak": "Dazpak", "ross": "Ross", "internal": "Internal", "tedpack": "TedPack"}.get(result["vendor"], result["vendor"])
+            vendor_class = {"dazpak": "vendor-dazpak", "ross": "vendor-ross", "internal": "vendor-internal", "tedpack": "vendor-tedpack"}.get(result["vendor"], "")
             st.markdown(f"""
             <div class="metric-card">
                 <div class="label">Vendor</div>
@@ -880,7 +883,13 @@ def _render_results(result: dict, margin_pct: int = 35):
                 <div class="value" style="font-size:1rem; font-family:'Instrument Sans',sans-serif;">{result['print_method'].title()}</div>
             </div>""", unsafe_allow_html=True)
         with mcols[2]:
-            mape = result.get("model_metrics", {}).get("mape", None)
+            mm = result.get("model_metrics", {})
+            # TedPack has nested metrics per sub-model — average the MAPEs
+            if result.get("vendor") == "tedpack" and isinstance(mm, dict):
+                mapes = [v.get("mape") for v in mm.values() if isinstance(v, dict) and v.get("mape") is not None]
+                mape = sum(mapes) / len(mapes) if mapes else None
+            else:
+                mape = mm.get("mape", None)
 
             if isinstance(mape, (int, float)):
                 if mape <= 5:
@@ -1238,7 +1247,7 @@ if page == "🏷️ Quote Builder":
         calyx_rep = st.selectbox("Calyx Rep", CALYX_REPS)
     with cust_cols[2]:
         print_method = st.selectbox("Print Method", PRINT_METHODS,
-                                    help="Flexographic → Dazpak | Digital: ≤12\" → Internal, >12\" → Ross")
+                                    help="Digital: ≤12\" → Internal, >12\" → Ross | Flexographic → Dazpak | Gravure → TedPack")
 
     st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
@@ -1343,11 +1352,12 @@ if page == "🏷️ Quote Builder":
 
         # ── Vendor Routing Preview ──────────────────────────────────
         routing = route_vendor(print_method, height, gusset, quantities)
-        vendor_class_map = {"dazpak": "vendor-dazpak", "ross": "vendor-ross", "internal": "vendor-internal"}
+        vendor_class_map = {"dazpak": "vendor-dazpak", "ross": "vendor-ross", "internal": "vendor-internal", "tedpack": "vendor-tedpack"}
         vendor_label_map = {
             "dazpak": "Dazpak (Flexographic)",
             "ross": "Ross (Digital)",
             "internal": "Internal — HP 6900 (Digital)",
+            "tedpack": "TedPack (Gravure)",
         }
         vendor_class = vendor_class_map.get(routing["vendor"], "vendor-internal")
         vendor_label = vendor_label_map.get(routing["vendor"], routing["vendor"])
@@ -1501,7 +1511,7 @@ elif page == "📊 Analytics":
                 fig = px.histogram(
                     data, x="unit_price", color="vendor",
                     barmode="overlay", nbins=40,
-                    color_discrete_map={"dazpak": "#166534", "ross": "#1e40af", "internal": "#6b21a8"},
+                    color_discrete_map={"dazpak": "#166534", "ross": "#1e40af", "internal": "#6b21a8", "tedpack_air": "#854d0e", "tedpack_ocean": "#0e7490"},
                 )
                 fig.update_layout(template="plotly_white", height=400)
                 st.plotly_chart(fig, use_container_width=True)
@@ -1512,7 +1522,7 @@ elif page == "📊 Analytics":
                     data, x="quantity", y="unit_price",
                     color="vendor" if "vendor" in data.columns else None,
                     size="bag_area_sqin" if "bag_area_sqin" in data.columns else None,
-                    color_discrete_map={"dazpak": "#166534", "ross": "#1e40af", "internal": "#6b21a8"},
+                    color_discrete_map={"dazpak": "#166534", "ross": "#1e40af", "internal": "#6b21a8", "tedpack_air": "#854d0e", "tedpack_ocean": "#0e7490"},
                     labels={"quantity": "Order Quantity", "unit_price": "Unit Price ($)"},
                     log_x=True,
                 )
@@ -1524,7 +1534,7 @@ elif page == "📊 Analytics":
                 fig = px.box(
                     data, x="substrate", y="unit_price",
                     color="vendor" if "vendor" in data.columns else None,
-                    color_discrete_map={"dazpak": "#166534", "ross": "#1e40af", "internal": "#6b21a8"},
+                    color_discrete_map={"dazpak": "#166534", "ross": "#1e40af", "internal": "#6b21a8", "tedpack_air": "#854d0e", "tedpack_ocean": "#0e7490"},
                 )
                 fig.update_layout(template="plotly_white", height=400)
                 st.plotly_chart(fig, use_container_width=True)
@@ -1556,11 +1566,14 @@ elif page == "⚙️ Model Manager":
         This will train separate Gradient Boosting models for:
         - **Dazpak** (Flexographic) — predicts Price/Ea Impression
         - **Ross** (Digital >12") — predicts unit price per bag
-        - **Internal** (Digital ≤12" / HP 6900) — predicts unit cost per bag (log-target)
+        - **Internal** (Digital ≤12" / HP 6900) — deterministic calculator (no ML)
+        - **TedPack Air** (Gravure, overseas) — predicts DDP Air price per bag
+        - **TedPack Ocean** (Gravure, overseas) — predicts DDP Ocean price per bag
 
         Each model includes:
-        - Point prediction (squared error loss)
-        - Lower/upper confidence bounds (10th/90th quantile regression)
+        - Point prediction (Huber loss)
+        - Lower/upper confidence bounds (quantile regression)
+        - Group-based train/test split (no data leakage across FL numbers)
         - Cross-validated performance metrics
         - **Recency weighting** — quotes from the last 90 days get 3× training weight
         """)
@@ -1598,13 +1611,21 @@ elif page == "⚙️ Model Manager":
     with tab_metrics:
         st.markdown("### Current Model Performance")
 
-        for vendor in ["dazpak", "ross"]:
+        for vendor in ["dazpak", "ross", "tedpack_air", "tedpack_ocean"]:
             try:
                 import joblib
                 metrics = joblib.load(MODEL_DIR / f"{vendor}_metrics.joblib")
                 importances = joblib.load(MODEL_DIR / f"{vendor}_importances.joblib")
 
-                st.markdown(f"#### {vendor.title()} Model")
+                # Friendly display name
+                display_name = {
+                    "dazpak": "Dazpak (Flexographic)",
+                    "ross": "Ross (Digital)",
+                    "tedpack_air": "TedPack Air (Gravure)",
+                    "tedpack_ocean": "TedPack Ocean (Gravure)",
+                }.get(vendor, vendor.title())
+
+                st.markdown(f"#### {display_name}")
                 metric_cols = st.columns(5)
                 with metric_cols[0]:
                     st.metric("MAPE", f"{metrics['mape']:.1f}%")
@@ -1613,20 +1634,28 @@ elif page == "⚙️ Model Manager":
                 with metric_cols[2]:
                     st.metric("R²", f"{metrics['r2']:.3f}")
                 with metric_cols[3]:
-                    st.metric("90% CI Coverage", f"{metrics['coverage_90']:.0f}%")
+                    ci_label = metrics.get("ci_bounds", "90%")
+                    st.metric(f"{ci_label} CI Coverage", f"{metrics['coverage_90']:.0f}%")
                 with metric_cols[4]:
                     st.metric("CV MAPE", f"{metrics['cv_mape_mean']:.1f}% ± {metrics['cv_mape_std']:.1f}%")
 
-                # Show recency weighting info if present
+                # Show group split + recency info
+                extra_info = []
+                if metrics.get("group_split"):
+                    extra_info.append(
+                        f"🔀 Group split: {metrics.get('n_groups_train', '?')} FL groups train / "
+                        f"{metrics.get('n_groups_test', '?')} test"
+                    )
                 if metrics.get("recency_weighting"):
                     n_recent = metrics.get("n_recent_train", "?")
                     n_total = metrics.get("n_train", "?")
-                    recent_days = metrics.get("recency_recent_days", 90)
-                    st.caption(
-                        f"📅 Recency weighted: {n_recent}/{n_total} training samples "
-                        f"from last {recent_days} days received "
+                    date_col = metrics.get("recency_date_column", "created_at")
+                    extra_info.append(
+                        f"📅 Recency ({date_col}): {n_recent}/{n_total} recent samples × "
                         f"{metrics.get('recency_recent_weight', 3.0):.0f}× weight"
                     )
+                if extra_info:
+                    st.caption(" · ".join(extra_info))
 
                 # Feature importance chart
                 imp_items = sorted(importances.items(), key=lambda x: x[1], reverse=True)[:12]
