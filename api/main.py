@@ -60,6 +60,12 @@ app.add_middleware(
 app.include_router(leads.router)
 app.include_router(quotes.router)
 
+# Conditionally register debug router when DEBUG_API_KEY is set
+import os
+if os.getenv("DEBUG_API_KEY"):
+    from api.routers import debug
+    app.include_router(debug.router)
+
 
 @app.get("/api/v1/health")
 async def health_check():

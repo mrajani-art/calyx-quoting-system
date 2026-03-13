@@ -28,6 +28,10 @@ class InstantQuoteRequest(BaseModel):
         ...,
         description="Fill orientation: Top | Bottom",
     )
+    gusset_type: str = Field(
+        default="Plow Bottom",
+        description="Gusset type: Plow Bottom | K Seal | None",
+    )
     zipper: str = Field(
         ...,
         description="Zipper type: Child-Resistant | Standard | None",

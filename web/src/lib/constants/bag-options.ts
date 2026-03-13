@@ -23,6 +23,12 @@ export const FILL_STYLES = [
   { label: "Bottom Fill", value: "Bottom" },
 ] as const;
 
+export const GUSSET_TYPES = [
+  { label: "Plow Bottom", value: "Plow Bottom" },
+  { label: "K Seal", value: "K Seal" },
+  { label: "None", value: "None" },
+] as const;
+
 export const ZIPPERS = [
   { label: "Child-Resistant", value: "Child-Resistant" },
   { label: "Standard", value: "Standard" },
@@ -65,6 +71,7 @@ export const DEFAULTS = {
   finish: "Matte",
   sealType: "Stand Up Pouch",
   fillStyle: "Top",
+  gussetType: "Plow Bottom",
   zipper: "None",
   tearNotch: "Standard",
   holePunch: "None",

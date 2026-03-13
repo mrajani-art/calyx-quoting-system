@@ -36,6 +36,7 @@ export interface BagConfig {
   finish: string;
   seal_type: string;
   fill_style: string;
+  gusset_type: string;
   zipper: string;
   tear_notch: string;
   hole_punch: string;

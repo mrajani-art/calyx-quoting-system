@@ -53,6 +53,7 @@ export default function QuotePage() {
   const [holePunch, setHolePunch] = useState<string>(DEFAULTS.holePunch);
   const [corners, setCorners] = useState<string>(DEFAULTS.corners);
   const [embellishment, setEmbellishment] = useState<string>(DEFAULTS.embellishment);
+  const [gussetType, setGussetType] = useState<string>(DEFAULTS.gussetType);
 
   // Tier state
   const allTiers = buildUnifiedTiers();
@@ -105,6 +106,7 @@ export default function QuotePage() {
         if (value === "Stand Up Pouch") setFillStyle("Top");
         break;
       case "fillStyle": setFillStyle(value); break;
+      case "gussetType": setGussetType(value); break;
       case "zipper": setZipper(value); break;
       case "tearNotch": setTearNotch(value); break;
       case "holePunch": setHolePunch(value); break;
@@ -121,13 +123,14 @@ export default function QuotePage() {
     finish,
     seal_type: sealType,
     fill_style: fillStyle,
+    gusset_type: gussetType,
     zipper,
     tear_notch: tearNotch,
     hole_punch: holePunch,
     corners,
     embellishment,
     quantities: selectedTiers,
-  }), [dims, substrate, finish, sealType, fillStyle, zipper, tearNotch, holePunch, corners, embellishment, selectedTiers]);
+  }), [dims, substrate, finish, sealType, fillStyle, gussetType, zipper, tearNotch, holePunch, corners, embellishment, selectedTiers]);
 
   const handleContinue = () => {
     // If lead already captured in session, skip to results
@@ -246,6 +249,7 @@ export default function QuotePage() {
                 finish={finish}
                 sealType={sealType}
                 fillStyle={fillStyle}
+                gussetType={gussetType}
                 zipper={zipper}
                 tearNotch={tearNotch}
                 holePunch={holePunch}

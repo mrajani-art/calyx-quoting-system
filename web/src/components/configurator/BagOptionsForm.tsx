@@ -6,6 +6,7 @@ import {
   FINISHES,
   SEAL_TYPES,
   FILL_STYLES,
+  GUSSET_TYPES,
   ZIPPERS,
   TEAR_NOTCHES,
   HOLE_PUNCHES,
@@ -18,6 +19,7 @@ interface Props {
   finish: string;
   sealType: string;
   fillStyle: string;
+  gussetType: string;
   zipper: string;
   tearNotch: string;
   holePunch: string;
@@ -84,6 +86,7 @@ export default function BagOptionsForm({
   finish,
   sealType,
   fillStyle,
+  gussetType,
   zipper,
   tearNotch,
   holePunch,
@@ -113,7 +116,17 @@ export default function BagOptionsForm({
         disabledReason="Stand Up Pouch requires top fill"
       />
 
-      {/* Row 2: Substrate, Finish */}
+      {/* Row 2: Gusset Type */}
+      <SelectField
+        id="gusset-type"
+        label="Gusset Type"
+        value={gussetType}
+        options={GUSSET_TYPES}
+        onChange={(v) => onChange("gussetType", v)}
+      />
+      <div /> {/* Empty cell to maintain grid alignment */}
+
+      {/* Row 3: Substrate, Finish */}
       <SelectField
         id="substrate"
         label="Substrate"

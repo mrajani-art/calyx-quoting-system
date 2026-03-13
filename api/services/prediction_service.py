@@ -58,6 +58,12 @@ HOLE_PUNCH_MAP = {
     "None": "None",
 }
 
+GUSSET_TYPE_MAP = {
+    "Plow Bottom": "Plow Bottom",
+    "K Seal": "K Seal & Skirt Seal",
+    "None": "None",
+}
+
 # Default margin percentage applied to convert cost to sell price
 DEFAULT_MARGIN_PCT = 20.0
 
@@ -118,11 +124,8 @@ def _build_internal_specs(req: InstantQuoteRequest) -> dict:
         # e.g. "3 Side Seal" + "Top" -> "3 Side Seal - Top Fill"
         seal_type = f"{base_seal} - {req.fill_style} Fill"
 
-    # Map gusset type: Stand Up Pouch -> Plow Bottom, else None
-    if req.seal_type == "Stand Up Pouch":
-        gusset_type = "Plow Bottom"
-    else:
-        gusset_type = "None"
+    # Map gusset type from request field
+    gusset_type = GUSSET_TYPE_MAP.get(req.gusset_type, "Plow Bottom")
 
     # Map other fields
     zipper = ZIPPER_MAP.get(req.zipper, "No Zipper")
@@ -299,6 +302,8 @@ def generate_instant_quote(
     specs = _build_internal_specs(req)
     quantities = sorted(req.quantities)
 
+    logger.info("Instant quote: specs=%s quantities=%s", specs, quantities)
+
     result = {
         "digital": None,
         "flexographic": None,
@@ -310,6 +315,9 @@ def generate_instant_quote(
     try:
         digital_specs = {**specs, "print_method": "Digital"}
         digital_result = predictor.predict(digital_specs, quantities)
+        logger.info("Digital: vendor=%s route=%s tier0_cost=%s",
+                    digital_result.get("vendor"), digital_result.get("routing_reason"),
+                    digital_result.get("predictions", [{}])[0].get("unit_price"))
         result["digital"] = _extract_digital_pricing(
             digital_result, quantities, margin_pct
         )
@@ -320,6 +328,9 @@ def generate_instant_quote(
     try:
         flexo_specs = {**specs, "print_method": "Flexographic"}
         flexo_result = predictor.predict(flexo_specs, quantities)
+        logger.info("Flexo: vendor=%s route=%s tier0_cost=%s",
+                    flexo_result.get("vendor"), flexo_result.get("routing_reason"),
+                    flexo_result.get("predictions", [{}])[0].get("unit_price"))
         result["flexographic"] = _extract_flexo_pricing(
             flexo_result, quantities, margin_pct
         )
@@ -329,6 +340,10 @@ def generate_instant_quote(
     # 3. TedPack (Gravure) — one call returns both air and ocean
     try:
         tedpack_result = predictor.predict(specs, quantities, vendor_override="tedpack")
+        logger.info("TedPack: vendor=%s route=%s tier0_air=%s tier0_ocean=%s",
+                    tedpack_result.get("vendor"), tedpack_result.get("routing_reason"),
+                    tedpack_result.get("predictions", [{}])[0].get("air_unit_price"),
+                    tedpack_result.get("predictions", [{}])[0].get("ocean_unit_price"))
         result["international_air"] = _extract_tedpack_pricing(
             tedpack_result, "air", quantities, margin_pct
         )
