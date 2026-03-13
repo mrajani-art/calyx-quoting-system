@@ -1,16 +1,13 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import clsx from "clsx";
-import { Check, Plus, X } from "lucide-react";
 
 interface Props {
   tiers: number[];
   activeTier: number;
   onTierClick: (quantity: number) => void;
-  onAddTier?: (qty: number) => void;
-  onRemoveTier?: (qty: number) => void;
-  minTiers?: number;
+  onEditTier?: (oldQty: number, newQty: number) => void;
 }
 
 const fmt = new Intl.NumberFormat("en-US");
@@ -19,123 +16,99 @@ export default function TierSelector({
   tiers,
   activeTier,
   onTierClick,
-  onAddTier,
-  onRemoveTier,
-  minTiers = 1,
+  onEditTier,
 }: Props) {
-  const [adding, setAdding] = useState(false);
+  const [editingTier, setEditingTier] = useState<number | null>(null);
   const [inputValue, setInputValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const canRemove = tiers.length > minTiers;
+  // Auto-focus the input when editing starts
+  useEffect(() => {
+    if (editingTier !== null) {
+      setTimeout(() => inputRef.current?.focus(), 0);
+    }
+  }, [editingTier]);
 
-  function openInput() {
-    setInputValue("");
-    setAdding(true);
-    // auto-focus after React renders the input
-    setTimeout(() => inputRef.current?.focus(), 0);
+  function startEdit(tier: number) {
+    if (!onEditTier) return;
+    setEditingTier(tier);
+    setInputValue(String(tier));
   }
 
-  function closeInput() {
-    setAdding(false);
-    setInputValue("");
-  }
-
-  function confirmAdd() {
+  function confirmEdit() {
+    if (editingTier === null) return;
     const parsed = Number(inputValue);
-    if (!parsed || parsed <= 0 || !Number.isInteger(parsed)) return;
-    if (tiers.includes(parsed)) return;
-    if (tiers.length >= 10) return;
-    onAddTier?.(parsed);
-    closeInput();
+    if (!parsed || parsed <= 0 || !Number.isInteger(parsed)) {
+      cancelEdit();
+      return;
+    }
+    // If unchanged, just close
+    if (parsed === editingTier) {
+      cancelEdit();
+      return;
+    }
+    // Don't allow duplicates
+    if (tiers.includes(parsed)) {
+      cancelEdit();
+      return;
+    }
+    onEditTier?.(editingTier, parsed);
+    setEditingTier(null);
+    setInputValue("");
+  }
+
+  function cancelEdit() {
+    setEditingTier(null);
+    setInputValue("");
   }
 
   return (
     <div className="flex flex-wrap items-center gap-2">
       {tiers.map((tier) => {
         const isActive = tier === activeTier;
+        const isEditing = editingTier === tier;
+
+        if (isEditing) {
+          return (
+            <div
+              key={tier}
+              className="inline-flex items-center rounded-full bg-gray-5 border-2 border-calyx-blue px-2 py-1"
+            >
+              <input
+                ref={inputRef}
+                type="number"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") confirmEdit();
+                  if (e.key === "Escape") cancelEdit();
+                }}
+                onBlur={confirmEdit}
+                className="w-24 rounded-full bg-white px-2 py-1 text-sm text-center font-medium outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              />
+            </div>
+          );
+        }
+
         return (
           <button
             key={tier}
             type="button"
             onClick={() => onTierClick(tier)}
+            onDoubleClick={() => startEdit(tier)}
             className={clsx(
-              "group relative inline-flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium transition-colors",
+              "rounded-full px-4 py-2 text-sm font-medium transition-colors",
               isActive
                 ? "bg-calyx-blue text-white"
-                : "bg-gray-5 text-gray-60 hover:bg-gray-10"
+                : "bg-gray-5 text-gray-60 hover:bg-gray-10",
+              onEditTier && "cursor-pointer"
             )}
+            title={onEditTier ? "Double-click to edit" : undefined}
           >
             {fmt.format(tier)}
-
-            {onRemoveTier && canRemove && (
-              <span
-                role="button"
-                tabIndex={-1}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onRemoveTier(tier);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.stopPropagation();
-                    onRemoveTier(tier);
-                  }
-                }}
-                className={clsx(
-                  "ml-1 inline-flex items-center justify-center rounded-full transition-opacity",
-                  isActive
-                    ? "opacity-50 hover:opacity-100"
-                    : "opacity-30 group-hover:opacity-60 hover:!opacity-100"
-                )}
-              >
-                <X size={12} />
-              </span>
-            )}
           </button>
         );
       })}
-
-      {onAddTier && !adding && (
-        <button
-          type="button"
-          onClick={openInput}
-          className="inline-flex items-center justify-center rounded-full border-2 border-dashed border-gray-20 px-3 py-2 text-sm font-medium text-gray-40 transition-colors hover:border-gray-40 hover:text-gray-60"
-        >
-          <Plus size={14} />
-        </button>
-      )}
-
-      {onAddTier && adding && (
-        <div className="inline-flex items-center gap-1 rounded-full bg-gray-5 px-2 py-1">
-          <input
-            ref={inputRef}
-            type="number"
-            placeholder="Qty"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") confirmAdd();
-              if (e.key === "Escape") closeInput();
-            }}
-            className="w-20 rounded-full bg-white px-2 py-1 text-sm outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-          />
-          <button
-            type="button"
-            onClick={confirmAdd}
-            className="inline-flex items-center justify-center rounded-full p-1 text-green-600 transition-colors hover:bg-green-50"
-          >
-            <Check size={14} />
-          </button>
-          <button
-            type="button"
-            onClick={closeInput}
-            className="inline-flex items-center justify-center rounded-full p-1 text-gray-40 transition-colors hover:bg-gray-10"
-          >
-            <X size={14} />
-          </button>
-        </div>
-      )}
     </div>
   );
 }

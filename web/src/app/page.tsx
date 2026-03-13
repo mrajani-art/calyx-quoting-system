@@ -106,19 +106,14 @@ export default function QuotePage() {
     }
   }, []);
 
-  const handleAddTier = useCallback((qty: number) => {
-    setSelectedTiers((prev) => [...prev, qty].sort((a, b) => a - b));
-  }, []);
-
-  const handleRemoveTier = useCallback((qty: number) => {
-    setSelectedTiers((prev) => {
-      const next = prev.filter((t) => t !== qty);
-      // If the active tier was removed, fall back to the first remaining tier
-      if (qty === activeTier && next.length > 0) {
-        setActiveTier(next[0]);
-      }
-      return next;
-    });
+  const handleEditTier = useCallback((oldQty: number, newQty: number) => {
+    setSelectedTiers((prev) =>
+      prev.map((t) => (t === oldQty ? newQty : t)).sort((a, b) => a - b)
+    );
+    // If the active tier was the one edited, update it
+    if (oldQty === activeTier) {
+      setActiveTier(newQty);
+    }
   }, [activeTier]);
 
   const buildBagConfig = useCallback((): BagConfig => ({
@@ -274,8 +269,7 @@ export default function QuotePage() {
                   tiers={selectedTiers}
                   activeTier={activeTier}
                   onTierClick={setActiveTier}
-                  onAddTier={handleAddTier}
-                  onRemoveTier={handleRemoveTier}
+                  onEditTier={handleEditTier}
                 />
               </div>
 
@@ -329,7 +323,7 @@ export default function QuotePage() {
         {step === "results" && quote && (
           <div className="space-y-8">
             <div>
-              <h2 className="text-2xl font-semibold text-gray-90">Your Instant Pricing</h2>
+              <h2 className="text-2xl font-semibold text-gray-90">Your Instant Quote</h2>
               <p className="mt-1 text-gray-60">
                 Compare production methods and quantities side by side.
               </p>
@@ -357,8 +351,7 @@ export default function QuotePage() {
                 tiers={selectedTiers}
                 activeTier={activeTier}
                 onTierClick={setActiveTier}
-                onAddTier={handleAddTier}
-                onRemoveTier={handleRemoveTier}
+                onEditTier={handleEditTier}
               />
             </div>
 
