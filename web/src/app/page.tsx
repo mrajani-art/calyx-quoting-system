@@ -9,25 +9,16 @@ import BagOptionsForm from "@/components/configurator/BagOptionsForm";
 import TierSelector from "@/components/configurator/TierSelector";
 import BagPreview from "@/components/configurator/BagPreview";
 import { LeadCaptureForm } from "@/components/lead-capture/LeadCaptureForm";
-import { PricingComparison } from "@/components/results/PricingComparison";
-import { TierButtons } from "@/components/results/TierButtons";
+import QuoteSummaryHeader from "@/components/results/QuoteSummaryHeader";
+import PricingGrid from "@/components/results/PricingGrid";
 import { PostQuoteActions } from "@/components/results/PostQuoteActions";
 import { useLeadSession } from "@/lib/hooks/useLeadSession";
 import { submitLead, getInstantQuote, requestAccountManager } from "@/lib/api/quote-client";
 import { DEFAULTS } from "@/lib/constants/bag-options";
-import { DEFAULT_ACTIVE_QTY, METHODS } from "@/lib/constants/method-config";
+import { DEFAULT_ACTIVE_QTY } from "@/lib/constants/method-config";
 import type { InstantQuoteResponse, BagConfig } from "@/lib/types/quote";
 
 type Step = "configure" | "lead-capture" | "results";
-
-// Collect all unique tiers from all methods, sorted
-function buildUnifiedTiers(): number[] {
-  const all = new Set<number>();
-  for (const m of Object.values(METHODS)) {
-    for (const t of m.defaultTiers) all.add(t);
-  }
-  return Array.from(all).sort((a, b) => a - b);
-}
 
 export default function QuotePage() {
   const { lead, saveLead, isLoaded } = useLeadSession();
@@ -57,9 +48,8 @@ export default function QuotePage() {
   const [gussetType, setGussetType] = useState<string>(DEFAULTS.gussetType);
 
   // Tier state
-  const allTiers = buildUnifiedTiers();
   const defaultTiers = [5_000, 10_000, 25_000, 50_000, 100_000, 250_000];
-  const [selectedTiers] = useState<number[]>(defaultTiers);
+  const [selectedTiers, setSelectedTiers] = useState<number[]>(defaultTiers);
   const [activeTier, setActiveTier] = useState(DEFAULT_ACTIVE_QTY);
 
   // Results state
@@ -115,6 +105,21 @@ export default function QuotePage() {
       case "embellishment": setEmbellishment(value); break;
     }
   }, []);
+
+  const handleAddTier = useCallback((qty: number) => {
+    setSelectedTiers((prev) => [...prev, qty].sort((a, b) => a - b));
+  }, []);
+
+  const handleRemoveTier = useCallback((qty: number) => {
+    setSelectedTiers((prev) => {
+      const next = prev.filter((t) => t !== qty);
+      // If the active tier was removed, fall back to the first remaining tier
+      if (qty === activeTier && next.length > 0) {
+        setActiveTier(next[0]);
+      }
+      return next;
+    });
+  }, [activeTier]);
 
   const buildBagConfig = useCallback((): BagConfig => ({
     width: dims.w,
@@ -269,6 +274,8 @@ export default function QuotePage() {
                   tiers={selectedTiers}
                   activeTier={activeTier}
                   onTierClick={setActiveTier}
+                  onAddTier={handleAddTier}
+                  onRemoveTier={handleRemoveTier}
                 />
               </div>
 
@@ -324,19 +331,40 @@ export default function QuotePage() {
             <div>
               <h2 className="text-2xl font-semibold text-gray-90">Your Instant Pricing</h2>
               <p className="mt-1 text-gray-60">
-                Compare production methods side by side. Select a quantity tier to update pricing.
+                Compare production methods and quantities side by side.
               </p>
             </div>
 
-            <TierButtons
-              tiers={selectedTiers}
-              selectedTier={activeTier}
-              onSelect={setActiveTier}
+            <QuoteSummaryHeader
+              visualProps={{
+                width: dims.w,
+                height: dims.h,
+                gusset: dims.g,
+                sealType,
+                gussetType,
+                zipper,
+                tearNotch,
+                holePunch,
+                corners,
+                substrate,
+                finish,
+              }}
             />
 
-            <PricingComparison
+            <div>
+              <h3 className="text-lg font-semibold text-gray-90 mb-3">Quantity Tiers</h3>
+              <TierSelector
+                tiers={selectedTiers}
+                activeTier={activeTier}
+                onTierClick={setActiveTier}
+                onAddTier={handleAddTier}
+                onRemoveTier={handleRemoveTier}
+              />
+            </div>
+
+            <PricingGrid
               quote={quote}
-              selectedQuantity={activeTier}
+              tiers={selectedTiers}
             />
 
             <PostQuoteActions
