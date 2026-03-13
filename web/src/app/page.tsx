@@ -7,6 +7,7 @@ import StandardSizeSelector from "@/components/configurator/StandardSizeSelector
 import CustomSizeInput from "@/components/configurator/CustomSizeInput";
 import BagOptionsForm from "@/components/configurator/BagOptionsForm";
 import TierSelector from "@/components/configurator/TierSelector";
+import BagPreview from "@/components/configurator/BagPreview";
 import { LeadCaptureForm } from "@/components/lead-capture/LeadCaptureForm";
 import { PricingComparison } from "@/components/results/PricingComparison";
 import { TierButtons } from "@/components/results/TierButtons";
@@ -191,7 +192,7 @@ export default function QuotePage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8">
+      <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-8">
         {/* Step indicators */}
         <div className="flex items-center gap-3 mb-8">
           {["Configure", "Contact Info", "Your Pricing"].map((label, i) => {
@@ -221,61 +222,83 @@ export default function QuotePage() {
 
         {/* Step 1: Configure Bag */}
         {step === "configure" && (
-          <div className="space-y-8">
-            <div>
-              <h2 className="text-2xl font-semibold text-gray-90">Configure Your Bag</h2>
-              <p className="mt-1 text-gray-60">Select a standard size or enter custom dimensions.</p>
+          <div className="lg:flex lg:gap-8">
+            {/* Left: form content */}
+            <div className="flex-1 min-w-0 space-y-8">
+              <div>
+                <h2 className="text-2xl font-semibold text-gray-90">Configure Your Bag</h2>
+                <p className="mt-1 text-gray-60">Select a standard size or enter custom dimensions.</p>
+              </div>
+
+              <StandardSizeSelector
+                selectedSize={selectedSize}
+                onSelect={handleSizeSelect}
+                isCustom={isCustomSize}
+              />
+
+              {isCustomSize && (
+                <CustomSizeInput
+                  width={customWidth}
+                  height={customHeight}
+                  gusset={customGusset}
+                  onChange={handleCustomDimChange}
+                />
+              )}
+
+              <div>
+                <h3 className="text-lg font-semibold text-gray-90 mb-4">Bag Options</h3>
+                <BagOptionsForm
+                  substrate={substrate}
+                  finish={finish}
+                  sealType={sealType}
+                  fillStyle={fillStyle}
+                  gussetType={gussetType}
+                  zipper={zipper}
+                  tearNotch={tearNotch}
+                  holePunch={holePunch}
+                  corners={corners}
+                  embellishment={embellishment}
+                  onChange={handleOptionChange}
+                />
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-gray-90 mb-4">Quantity Tiers</h3>
+                <p className="text-sm text-gray-60 mb-3">Select a quantity to compare pricing across methods.</p>
+                <TierSelector
+                  tiers={selectedTiers}
+                  activeTier={activeTier}
+                  onTierClick={setActiveTier}
+                />
+              </div>
+
+              <button
+                onClick={handleContinue}
+                disabled={isLoading}
+                className="bg-calyx-blue text-white px-8 py-3 rounded-lg font-medium hover:bg-flash-blue transition-colors disabled:opacity-50"
+              >
+                {isLoading ? "Loading..." : lead ? "See My Quote" : "Continue"}
+              </button>
             </div>
 
-            <StandardSizeSelector
-              selectedSize={selectedSize}
-              onSelect={handleSizeSelect}
-              isCustom={isCustomSize}
-            />
-
-            {isCustomSize && (
-              <CustomSizeInput
-                width={customWidth}
-                height={customHeight}
-                gusset={customGusset}
-                onChange={handleCustomDimChange}
-              />
-            )}
-
-            <div>
-              <h3 className="text-lg font-semibold text-gray-90 mb-4">Bag Options</h3>
-              <BagOptionsForm
-                substrate={substrate}
-                finish={finish}
-                sealType={sealType}
-                fillStyle={fillStyle}
-                gussetType={gussetType}
-                zipper={zipper}
-                tearNotch={tearNotch}
-                holePunch={holePunch}
-                corners={corners}
-                embellishment={embellishment}
-                onChange={handleOptionChange}
-              />
+            {/* Right: sticky bag preview (desktop only) */}
+            <div className="hidden lg:block lg:w-80 xl:w-96 shrink-0">
+              <div className="sticky top-8">
+                <BagPreview
+                  width={dims.w}
+                  height={dims.h}
+                  gusset={dims.g}
+                  sealType={sealType}
+                  gussetType={gussetType}
+                  zipper={zipper}
+                  tearNotch={tearNotch}
+                  holePunch={holePunch}
+                  corners={corners}
+                  substrate={substrate}
+                  finish={finish}
+                />
+              </div>
             </div>
-
-            <div>
-              <h3 className="text-lg font-semibold text-gray-90 mb-4">Quantity Tiers</h3>
-              <p className="text-sm text-gray-60 mb-3">Select a quantity to compare pricing across methods.</p>
-              <TierSelector
-                tiers={selectedTiers}
-                activeTier={activeTier}
-                onTierClick={setActiveTier}
-              />
-            </div>
-
-            <button
-              onClick={handleContinue}
-              disabled={isLoading}
-              className="bg-calyx-blue text-white px-8 py-3 rounded-lg font-medium hover:bg-flash-blue transition-colors disabled:opacity-50"
-            >
-              {isLoading ? "Loading..." : lead ? "See My Price" : "Continue"}
-            </button>
           </div>
         )}
 
