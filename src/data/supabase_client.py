@@ -12,12 +12,30 @@ logger = logging.getLogger(__name__)
 
 
 def get_client():
-    """Lazy-initialize Supabase client."""
+    """Lazy-initialize Supabase client.
+
+    Tries config.settings first (reads from os.environ / .env).
+    Falls back to st.secrets directly — handles cases where the
+    settings.py import-time copy didn't pick up Streamlit Cloud secrets.
+    """
     from supabase import create_client
     from config.settings import SUPABASE_URL, SUPABASE_KEY
-    if not SUPABASE_URL or not SUPABASE_KEY:
-        raise EnvironmentError("Set SUPABASE_URL and SUPABASE_KEY in .env")
-    return create_client(SUPABASE_URL, SUPABASE_KEY)
+
+    url = SUPABASE_URL
+    key = SUPABASE_KEY
+
+    # Direct fallback to st.secrets if settings didn't resolve
+    if not url or not key:
+        try:
+            import streamlit as st
+            url = url or st.secrets.get("SUPABASE_URL", "")
+            key = key or st.secrets.get("SUPABASE_KEY", "")
+        except Exception:
+            pass
+
+    if not url or not key:
+        raise EnvironmentError("Set SUPABASE_URL and SUPABASE_KEY in .env or Streamlit secrets")
+    return create_client(url, key)
 
 
 # ── Run this SQL in the Supabase SQL Editor ────────────────────────
