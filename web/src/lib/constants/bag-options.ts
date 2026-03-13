@@ -32,7 +32,6 @@ export const GUSSET_TYPES = [
 export const ZIPPERS = [
   { label: "Child-Resistant", value: "Child-Resistant" },
   { label: "Standard", value: "Standard" },
-  { label: "None", value: "None" },
 ] as const;
 
 export const TEAR_NOTCHES = [
@@ -72,7 +71,7 @@ export const DEFAULTS = {
   sealType: "Stand Up Pouch",
   fillStyle: "Top",
   gussetType: "Plow Bottom",
-  zipper: "None",
+  zipper: "Child-Resistant",
   tearNotch: "Standard",
   holePunch: "None",
   corners: "Straight",
