@@ -37,8 +37,8 @@ CALYX_REPS = [
 ]
 
 # ── Supabase ────────────────────────────────────────────────────────
-SUPABASE_URL = os.getenv("SUPABASE_URL", "https://dernxirzvawjmdxzxefl.supabase.co")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlcm54aXJ6dmF3am1keHp4ZWZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NTU1MDksImV4cCI6MjA4NjQzMTUwOX0.3PcdiGLP6jFpIdUP9mHVVMWfNks96UP_bCZ4kep-PvQ")
+SUPABASE_URL = os.getenv("SUPABASE_URL", "")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
 
 # ── Google APIs ─────────────────────────────────────────────────────
 GOOGLE_CREDENTIALS = os.getenv("GOOGLE_CREDENTIALS", "config/google_service_account.json")
