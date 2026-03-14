@@ -47,7 +47,6 @@ export default function QuotePage() {
   const [tearNotch, setTearNotch] = useState<string>(DEFAULTS.tearNotch);
   const [holePunch, setHolePunch] = useState<string>(DEFAULTS.holePunch);
   const [corners, setCorners] = useState<string>(DEFAULTS.corners);
-  const [embellishment, setEmbellishment] = useState<string>(DEFAULTS.embellishment);
   const [gussetType, setGussetType] = useState<string>(DEFAULTS.gussetType);
 
   // Tier state
@@ -105,7 +104,6 @@ export default function QuotePage() {
       case "tearNotch": setTearNotch(value); break;
       case "holePunch": setHolePunch(value); break;
       case "corners": setCorners(value); break;
-      case "embellishment": setEmbellishment(value); break;
     }
   }, []);
 
@@ -132,9 +130,9 @@ export default function QuotePage() {
     tear_notch: tearNotch,
     hole_punch: holePunch,
     corners,
-    embellishment,
+    embellishment: "None",
     quantities: selectedTiers,
-  }), [dims, substrate, finish, sealType, fillStyle, gussetType, zipper, tearNotch, holePunch, corners, embellishment, selectedTiers]);
+  }), [dims, substrate, finish, sealType, fillStyle, gussetType, zipper, tearNotch, holePunch, corners, selectedTiers]);
 
   const handleContinue = () => {
     // If lead already captured in session, skip to results
@@ -282,7 +280,6 @@ export default function QuotePage() {
                   tearNotch={tearNotch}
                   holePunch={holePunch}
                   corners={corners}
-                  embellishment={embellishment}
                   gusset={dims.g}
                   onChange={handleOptionChange}
                 />
@@ -362,7 +359,7 @@ export default function QuotePage() {
               <BagPreview compact width={dims.w} height={dims.h} gusset={dims.g} sealType={sealType} gussetType={gussetType} zipper={zipper} tearNotch={tearNotch} holePunch={holePunch} corners={corners} substrate={substrate} finish={finish} />
               <div className="text-sm text-gray-60">
                 <p className="font-medium text-gray-90">{dims.w}&quot; &times; {dims.h}&quot;{dims.g > 0 ? ` \u00d7 ${dims.g}"` : ""} {sealType}</p>
-                <p>{substrate} &middot; {finish}{embellishment !== "None" ? ` \u00b7 ${embellishment}` : ""} &middot; {zipper} Zipper</p>
+                <p>{substrate} &middot; {finish} &middot; {zipper} Zipper</p>
               </div>
             </div>
 
@@ -415,18 +412,19 @@ export default function QuotePage() {
                 corners,
                 substrate,
                 finish,
-                embellishment,
               }}
             />
 
-            <div>
+            <div className="text-center">
               <h3 className="text-lg font-semibold text-gray-90 mb-3">Quantity Tiers</h3>
-              <TierSelector
-                tiers={selectedTiers}
-                activeTier={activeTier}
-                onTierClick={setActiveTier}
-                onEditTier={handleEditTier}
-              />
+              <div className="flex justify-center">
+                <TierSelector
+                  tiers={selectedTiers}
+                  activeTier={activeTier}
+                  onTierClick={setActiveTier}
+                  onEditTier={handleEditTier}
+                />
+              </div>
             </div>
 
             <PricingGrid

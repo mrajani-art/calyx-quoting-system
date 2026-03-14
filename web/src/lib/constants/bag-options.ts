@@ -1,15 +1,14 @@
 export const SUBSTRATES = [
-  { label: "Metallic", value: "Metallic" },
-  { label: "Clear", value: "Clear" },
-  { label: "White Metallic", value: "White Metallic" },
-  { label: "High Barrier", value: "High Barrier" },
+  { label: "Metallic (High Barrier)", value: "Metallic" },
+  { label: "White Metallic (High Barrier)", value: "White Metallic" },
+  { label: "Clear (High Barrier)", value: "High Barrier" },
+  { label: "Standard Clear", value: "Clear" },
 ] as const;
 
 export const FINISHES = [
   { label: "Matte", value: "Matte" },
   { label: "Soft Touch", value: "Soft Touch" },
   { label: "Gloss", value: "Gloss" },
-  { label: "None", value: "None" },
 ] as const;
 
 export const SEAL_TYPES = [
@@ -24,8 +23,8 @@ export const FILL_STYLES = [
 ] as const;
 
 export const GUSSET_TYPES = [
-  { label: "Plow Bottom", value: "Plow Bottom" },
-  { label: "K Seal", value: "K Seal" },
+  { label: "Plow Bottom – Flat base", value: "Plow Bottom" },
+  { label: "K-Style – Skirt seal base", value: "K Seal" },
   { label: "None", value: "None" },
 ] as const;
 
@@ -50,12 +49,6 @@ export const CORNERS = [
   { label: "Straight", value: "Straight" },
 ] as const;
 
-export const EMBELLISHMENTS = [
-  { label: "None", value: "None" },
-  { label: "Foil", value: "Foil" },
-  { label: "Spot UV", value: "Spot UV" },
-] as const;
-
 export const ANNUAL_SPEND_OPTIONS = [
   "<$10K",
   "$10-50K",
@@ -65,16 +58,15 @@ export const ANNUAL_SPEND_OPTIONS = [
 ] as const;
 
 export const OPTION_DESCRIPTIONS: Record<string, string> = {
-  substrate: "Base material — affects appearance and barrier properties",
+  substrate: "High Barrier protects flower & edibles. Standard Clear is for vapes & non-perishables.",
   finish: "Surface coating that changes look and feel",
   sealType: "Determines bag shape and structure",
   fillStyle: "Whether product loads from top or bottom",
-  gussetType: "Bottom fold style that lets the bag stand upright",
+  gussetType: "Bottom fold style — determines how the bag stands upright",
   zipper: "Resealable closure type",
   tearNotch: "Small cut on the side for easy opening",
   holePunch: "Hole at top for hanging on retail displays",
   corners: "Shape of the bag corners",
-  embellishment: "Premium finish like metallic foil or raised UV",
 };
 
 // Default selections
@@ -83,10 +75,9 @@ export const DEFAULTS = {
   finish: "Matte",
   sealType: "Stand Up Pouch",
   fillStyle: "Top",
-  gussetType: "Plow Bottom",
+  gussetType: "K Seal",
   zipper: "Child-Resistant",
   tearNotch: "Standard",
   holePunch: "None",
   corners: "Straight",
-  embellishment: "None",
 } as const;
