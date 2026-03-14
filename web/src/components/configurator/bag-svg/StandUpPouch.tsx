@@ -22,7 +22,8 @@ function buildBagPath(
   cornerR: number,
   gussetType: string,
   gussetStartY: number,
-  midX: number
+  midX: number,
+  gussetDepth: number
 ): string {
   const segments: string[] = [];
 
@@ -36,21 +37,18 @@ function buildBagPath(
     segments.push(`L ${bagRight} ${bagTop}`);
   }
 
-  // Right side down to gusset start
-  segments.push(`L ${bagRight} ${gussetStartY}`);
-
   // Bottom edge based on gusset type
-  if (gussetType === "Plow Bottom") {
-    segments.push(`Q ${bagRight} ${bagBottom}, ${midX} ${bagBottom}`);
-    segments.push(`Q ${bagLeft} ${bagBottom}, ${bagLeft} ${gussetStartY}`);
-  } else if (gussetType === "K Seal") {
-    segments.push(`L ${midX} ${bagBottom}`);
-    segments.push(`L ${bagLeft} ${gussetStartY}`);
+  const bottomR = Math.min(gussetDepth * 0.6, 12);
+  if (gussetType === "Plow Bottom" || gussetType === "K Seal") {
+    // Flat base with rounded bottom corners (bag stands upright)
+    segments.push(`L ${bagRight} ${bagBottom - bottomR}`);
+    segments.push(`Q ${bagRight} ${bagBottom}, ${bagRight - bottomR} ${bagBottom}`);
+    segments.push(`L ${bagLeft + bottomR} ${bagBottom}`);
+    segments.push(`Q ${bagLeft} ${bagBottom}, ${bagLeft} ${bagBottom - bottomR}`);
   } else {
-    // Flat bottom
+    // No gusset — straight sides to flat bottom
     segments.push(`L ${bagRight} ${bagBottom}`);
     segments.push(`L ${bagLeft} ${bagBottom}`);
-    segments.push(`L ${bagLeft} ${gussetStartY}`);
   }
 
   // Left side back up
@@ -106,7 +104,8 @@ export default function StandUpPouch(props: BagVisualProps) {
     cornerR,
     gussetType,
     gussetStartY,
-    midX
+    midX,
+    gussetDepth
   );
 
   // Substrate fills
@@ -140,18 +139,47 @@ export default function StandUpPouch(props: BagVisualProps) {
         }
       />
 
-      {/* K Seal center crease line */}
+      {/* K Seal skirt seal line — horizontal line near bottom showing the skirt */}
       {gussetType === "K Seal" && (
-        <line
-          x1={midX}
-          y1={bagBottom}
-          x2={midX}
-          y2={gussetStartY - 6}
-          stroke="#9CA3AF"
-          strokeWidth={0.75}
-          strokeDasharray="3 2"
-          opacity={0.5}
-        />
+        <>
+          <line
+            x1={bagLeft + 4}
+            y1={bagBottom - 6}
+            x2={bagRight - 4}
+            y2={bagBottom - 6}
+            stroke="#9CA3AF"
+            strokeWidth={1}
+            opacity={0.6}
+          />
+          {/* Small skirt extension lines at corners */}
+          <line
+            x1={bagLeft + 2}
+            y1={bagBottom}
+            x2={bagLeft + 2}
+            y2={bagBottom + 5}
+            stroke="#9CA3AF"
+            strokeWidth={0.75}
+            opacity={0.4}
+          />
+          <line
+            x1={bagRight - 2}
+            y1={bagBottom}
+            x2={bagRight - 2}
+            y2={bagBottom + 5}
+            stroke="#9CA3AF"
+            strokeWidth={0.75}
+            opacity={0.4}
+          />
+          <line
+            x1={bagLeft + 2}
+            y1={bagBottom + 5}
+            x2={bagRight - 2}
+            y2={bagBottom + 5}
+            stroke="#9CA3AF"
+            strokeWidth={0.75}
+            opacity={0.4}
+          />
+        </>
       )}
 
       {/* Gloss finish overlay */}
