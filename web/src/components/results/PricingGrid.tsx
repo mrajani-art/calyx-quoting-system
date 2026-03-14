@@ -106,17 +106,16 @@ export default function PricingGrid({ quote, tiers, activeTier }: Props) {
     }
   }
 
-  // Column count for even widths
-  const totalCols = visibleMethods.length + 1; // +1 for quantity column
-  const colWidth = `${(100 / totalCols).toFixed(2)}%`;
+  // Quantity column gets a small fixed width, methods split the rest evenly
+  const methodColWidth = `${((100 - 12) / visibleMethods.length).toFixed(2)}%`;
 
   return (
     <div className="overflow-x-auto rounded-xl border border-gray-10">
       <table className="w-full border-collapse table-fixed">
         <colgroup>
-          <col style={{ width: colWidth }} />
+          <col style={{ width: "12%" }} />
           {visibleMethods.map(({ key }) => (
-            <col key={key} style={{ width: colWidth }} />
+            <col key={key} style={{ width: methodColWidth }} />
           ))}
         </colgroup>
         <thead>
@@ -130,19 +129,21 @@ export default function PricingGrid({ quote, tiers, activeTier }: Props) {
               return (
                 <th
                   key={key}
-                  className="bg-gray-5 px-4 py-3 text-left text-sm font-semibold text-gray-90"
+                  className="bg-gray-5 px-3 py-3 text-center text-sm font-semibold text-gray-90"
                 >
                   <div className="font-bold">{config.label}</div>
                   <div className="mt-0.5 text-xs font-normal text-gray-50">{config.tagline}</div>
                   <div className="mt-1 text-xs font-normal text-gray-60">
                     {methodPricing?.lead_time ?? config.leadTime}
                   </div>
-                  {bestValueMethodKey === key && (
-                    <span className="inline-block mt-1 bg-green-100 text-green-700 text-[10px] font-semibold px-2 py-0.5 rounded-full">Best Value</span>
-                  )}
-                  {configKey === "digital" && (
-                    <span className="inline-block mt-1 bg-blue-100 text-blue-700 text-[10px] font-semibold px-2 py-0.5 rounded-full">Fastest</span>
-                  )}
+                  <div className="mt-1 flex justify-center gap-1 flex-wrap">
+                    {bestValueMethodKey === key && (
+                      <span className="inline-block bg-green-100 text-green-700 text-[10px] font-semibold px-2 py-0.5 rounded-full">Best Value</span>
+                    )}
+                    {configKey === "digital" && (
+                      <span className="inline-block bg-blue-100 text-blue-700 text-[10px] font-semibold px-2 py-0.5 rounded-full">Fastest</span>
+                    )}
+                  </div>
                 </th>
               );
             })}
@@ -174,7 +175,7 @@ export default function PricingGrid({ quote, tiers, activeTier }: Props) {
                     return (
                       <td
                         key={key}
-                        className="border-t border-gray-10 px-4 py-3 text-gray-30"
+                        className="border-t border-gray-10 px-3 py-3 text-center text-gray-30"
                       >
                         &mdash;
                       </td>
@@ -188,7 +189,7 @@ export default function PricingGrid({ quote, tiers, activeTier }: Props) {
                     return (
                       <td
                         key={key}
-                        className="border-t border-gray-10 px-4 py-3 text-gray-30"
+                        className="border-t border-gray-10 px-3 py-3 text-center text-gray-30"
                       >
                         &mdash;
                       </td>
@@ -202,7 +203,7 @@ export default function PricingGrid({ quote, tiers, activeTier }: Props) {
                   return (
                     <td
                       key={key}
-                      className={`border-t border-gray-10 px-4 py-3${
+                      className={`border-t border-gray-10 px-3 py-3 text-center${
                         isBest ? " bg-green-50" : ""
                       }`}
                     >

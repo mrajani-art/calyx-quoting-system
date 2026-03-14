@@ -17,9 +17,8 @@ export interface MethodConfig {
 export const METHODS: Record<MethodKey, MethodConfig> = {
   digital: {
     label: "Digital",
-    tagline:
-      "Highly customizable, fast turn, great for new items or rush orders",
-    leadTime: "As little as 2 weeks with faster expedite options available",
+    tagline: "Fast turn, great for new items or rush orders",
+    leadTime: "As little as 2 weeks",
     notes: [],
     defaultTiers: [5_000, 10_000, 25_000, 50_000, 75_000, 100_000],
     moq: 5_000,
@@ -27,8 +26,7 @@ export const METHODS: Record<MethodKey, MethodConfig> = {
   },
   flexographic: {
     label: "Flexographic",
-    tagline:
-      "Great for larger runs of consistent items, longer lead time with inventory storage options for up to 90 days",
+    tagline: "Best for large consistent runs with inventory storage",
     leadTime: "6-8 weeks",
     notes: ["Plate fee: $400/color"],
     defaultTiers: [50_000, 100_000, 150_000, 250_000, 500_000, 1_000_000],
@@ -37,8 +35,7 @@ export const METHODS: Record<MethodKey, MethodConfig> = {
   },
   internationalAir: {
     label: "International Air",
-    tagline:
-      "Lowest price and longest lead time. 3rd party quality inspections ensure great product every time",
+    tagline: "Quality-inspected, air shipped for faster delivery",
     leadTime: "4-6 weeks",
     notes: ["Plate fee: $150/color"],
     defaultTiers: [25_000, 50_000, 100_000, 250_000, 500_000, 1_000_000],
@@ -47,8 +44,7 @@ export const METHODS: Record<MethodKey, MethodConfig> = {
   },
   internationalOcean: {
     label: "International Ocean",
-    tagline:
-      "Lowest price and longest lead time. 3rd party quality inspections ensure great product every time",
+    tagline: "Lowest cost, quality-inspected, ocean shipped",
     leadTime: "8-10 weeks",
     notes: ["Plate fee: $150/color"],
     defaultTiers: [25_000, 50_000, 100_000, 250_000, 500_000, 1_000_000],
