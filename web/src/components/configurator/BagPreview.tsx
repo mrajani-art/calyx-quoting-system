@@ -15,7 +15,7 @@ function featureBadges(props: BagVisualProps): string[] {
   else if (props.zipper === "Standard") badges.push("Zipper");
   if (props.tearNotch === "Standard") badges.push("Tear Notch");
   if (props.holePunch === "Round") badges.push("Round Punch");
-  else if (props.holePunch === "Euro Slot") badges.push("Euro Slot");
+  else if (props.holePunch === "Euro Slot") badges.push("Sombrero");
   if (props.corners === "Rounded") badges.push("Rounded");
   if (props.finish !== "None" && props.finish !== "Matte")
     badges.push(props.finish);

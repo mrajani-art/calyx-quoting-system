@@ -18,8 +18,12 @@
 }
 
 /* ── Base ────────────────────────────────────────────── */
+html {
+  overflow-x: hidden;
+}
 body {
   @apply bg-white text-gray-90 antialiased;
+  overflow-x: hidden;
 }
 
 /* ── Gradient utilities ──────────────────────────────── */

@@ -40,7 +40,7 @@ export const TEAR_NOTCHES = [
 
 export const HOLE_PUNCHES = [
   { label: "Round", value: "Round" },
-  { label: "Euro Slot", value: "Euro Slot" },
+  { label: "Sombrero", value: "Euro Slot" },
   { label: "None", value: "None" },
 ] as const;
 

@@ -38,13 +38,13 @@ function buildBagPath(
   }
 
   // Bottom edge based on gusset type
-  const bottomR = Math.min(gussetDepth * 0.6, 12);
+  const cornerCut = Math.min(gussetDepth * 0.8, 18); // 45-degree corner size
   if (gussetType === "Plow Bottom" || gussetType === "K Seal") {
-    // Flat base with rounded bottom corners (bag stands upright)
-    segments.push(`L ${bagRight} ${bagBottom - bottomR}`);
-    segments.push(`Q ${bagRight} ${bagBottom}, ${bagRight - bottomR} ${bagBottom}`);
-    segments.push(`L ${bagLeft + bottomR} ${bagBottom}`);
-    segments.push(`Q ${bagLeft} ${bagBottom}, ${bagLeft} ${bagBottom - bottomR}`);
+    // 45-degree angled corner seals at the bottom
+    segments.push(`L ${bagRight} ${bagBottom - cornerCut}`);
+    segments.push(`L ${bagRight - cornerCut} ${bagBottom}`);
+    segments.push(`L ${bagLeft + cornerCut} ${bagBottom}`);
+    segments.push(`L ${bagLeft} ${bagBottom - cornerCut}`);
   } else {
     // No gusset — straight sides to flat bottom
     segments.push(`L ${bagRight} ${bagBottom}`);
@@ -139,48 +139,30 @@ export default function StandUpPouch(props: BagVisualProps) {
         }
       />
 
-      {/* K Seal skirt seal line — horizontal line near bottom showing the skirt */}
-      {gussetType === "K Seal" && (
-        <>
-          <line
-            x1={bagLeft + 4}
-            y1={bagBottom - 6}
-            x2={bagRight - 4}
-            y2={bagBottom - 6}
-            stroke="#9CA3AF"
-            strokeWidth={1}
-            opacity={0.6}
+      {/* K Seal skirt seal — lighter band at the bottom matching the angled shape */}
+      {gussetType === "K Seal" && gussetDepth > 0 && (() => {
+        const cc = Math.min(gussetDepth * 0.8, 18);
+        const bandH = 12;
+        const skirtPath = [
+          `M ${bagRight} ${bagBottom - cc}`,
+          `L ${bagRight - cc} ${bagBottom}`,
+          `L ${bagLeft + cc} ${bagBottom}`,
+          `L ${bagLeft} ${bagBottom - cc}`,
+          `L ${bagLeft} ${bagBottom - cc - bandH}`,
+          `L ${bagLeft + cc + bandH * 0.7} ${bagBottom - bandH}`,
+          `L ${bagRight - cc - bandH * 0.7} ${bagBottom - bandH}`,
+          `L ${bagRight} ${bagBottom - cc - bandH}`,
+          `Z`,
+        ].join(" ");
+        return (
+          <path
+            d={skirtPath}
+            fill="#D4D4D4"
+            fillOpacity={0.45}
+            stroke="none"
           />
-          {/* Small skirt extension lines at corners */}
-          <line
-            x1={bagLeft + 2}
-            y1={bagBottom}
-            x2={bagLeft + 2}
-            y2={bagBottom + 5}
-            stroke="#9CA3AF"
-            strokeWidth={0.75}
-            opacity={0.4}
-          />
-          <line
-            x1={bagRight - 2}
-            y1={bagBottom}
-            x2={bagRight - 2}
-            y2={bagBottom + 5}
-            stroke="#9CA3AF"
-            strokeWidth={0.75}
-            opacity={0.4}
-          />
-          <line
-            x1={bagLeft + 2}
-            y1={bagBottom + 5}
-            x2={bagRight - 2}
-            y2={bagBottom + 5}
-            stroke="#9CA3AF"
-            strokeWidth={0.75}
-            opacity={0.4}
-          />
-        </>
-      )}
+        );
+      })()}
 
       {/* Gloss finish overlay */}
       {finish === "Gloss" && (

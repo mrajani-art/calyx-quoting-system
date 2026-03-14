@@ -109,9 +109,15 @@ export default function PricingGrid({ quote, tiers, activeTier }: Props) {
   // Quantity column gets a small fixed width, methods split the rest evenly
   const methodColWidth = `${((100 - 12) / visibleMethods.length).toFixed(2)}%`;
 
+  // Minimum width ensures columns aren't crushed on mobile — enables horizontal scroll
+  const minTableWidth = 80 + visibleMethods.length * 160;
+
   return (
-    <div className="overflow-x-auto rounded-xl border border-gray-10">
-      <table className="w-full border-collapse table-fixed">
+    <div className="overflow-x-auto rounded-xl border border-gray-10 -mx-4 sm:mx-0">
+      <table
+        className="w-full border-collapse table-fixed"
+        style={{ minWidth: `${minTableWidth}px` }}
+      >
         <colgroup>
           <col style={{ width: "12%" }} />
           {visibleMethods.map(({ key }) => (
@@ -134,7 +140,7 @@ export default function PricingGrid({ quote, tiers, activeTier }: Props) {
                   <div className="font-bold">{config.label}</div>
                   <div className="mt-0.5 text-xs font-normal text-gray-50">{config.tagline}</div>
                   <div className="mt-1 text-xs font-normal text-gray-60">
-                    {methodPricing?.lead_time ?? config.leadTime}
+                    {config.leadTime}
                   </div>
                   <div className="mt-1 flex justify-center gap-1 flex-wrap">
                     {bestValueMethodKey === key && (

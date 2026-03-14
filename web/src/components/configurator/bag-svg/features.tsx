@@ -87,19 +87,41 @@ export function renderHolePunch(
       />
     );
   }
-  // Euro Slot
+  // Sombrero (inverted T shape — wide base slot with narrow top slot)
   return (
-    <rect
-      key="hole-punch"
-      x={cx - 3}
-      y={cy - 7}
-      width={6}
-      height={14}
-      rx={3}
-      fill="white"
-      stroke="#9CA3AF"
-      strokeWidth={1}
-    />
+    <g key="hole-punch">
+      {/* Wide base slot */}
+      <rect
+        x={cx - 8}
+        y={cy - 2}
+        width={16}
+        height={5}
+        rx={1.5}
+        fill="white"
+        stroke="#9CA3AF"
+        strokeWidth={1}
+      />
+      {/* Narrow top slot */}
+      <rect
+        x={cx - 2.5}
+        y={cy - 7}
+        width={5}
+        height={6}
+        rx={1.5}
+        fill="white"
+        stroke="#9CA3AF"
+        strokeWidth={1}
+      />
+      {/* Cover the seam between the two rects */}
+      <rect
+        x={cx - 2}
+        y={cy - 2.5}
+        width={4}
+        height={3}
+        fill="white"
+        stroke="none"
+      />
+    </g>
   );
 }
 
