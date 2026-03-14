@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import StepTransition from "@/components/layout/StepTransition";
 import StandardSizeSelector from "@/components/configurator/StandardSizeSelector";
 import CustomSizeInput from "@/components/configurator/CustomSizeInput";
 import BagOptionsForm from "@/components/configurator/BagOptionsForm";
@@ -11,9 +12,11 @@ import BagPreview from "@/components/configurator/BagPreview";
 import { LeadCaptureForm } from "@/components/lead-capture/LeadCaptureForm";
 import QuoteSummaryHeader from "@/components/results/QuoteSummaryHeader";
 import PricingGrid from "@/components/results/PricingGrid";
+import ResultsSkeleton from "@/components/results/ResultsSkeleton";
 import { PostQuoteActions } from "@/components/results/PostQuoteActions";
 import { useLeadSession } from "@/lib/hooks/useLeadSession";
 import { submitLead, getInstantQuote, requestAccountManager } from "@/lib/api/quote-client";
+import { getUserFriendlyError } from "@/lib/api/errors";
 import { DEFAULTS } from "@/lib/constants/bag-options";
 import { DEFAULT_ACTIVE_QTY } from "@/lib/constants/method-config";
 import type { InstantQuoteResponse, BagConfig } from "@/lib/types/quote";
@@ -154,20 +157,21 @@ export default function QuotePage() {
       saveLead(leadData);
       await fetchQuote(leadData.lead_id);
     } catch (err) {
-      setError("Failed to submit. Please try again.");
+      setError(getUserFriendlyError(err));
     }
   };
 
   const fetchQuote = async (leadId: string) => {
     setIsLoading(true);
     setError(null);
+    setStep("results");
     try {
       const config = buildBagConfig();
       const result = await getInstantQuote(config, leadId);
       setQuote(result);
-      setStep("results");
     } catch (err) {
-      setError("Failed to get pricing. Please try again.");
+      setError(getUserFriendlyError(err));
+      setStep("configure");
     } finally {
       setIsLoading(false);
     }
@@ -197,18 +201,38 @@ export default function QuotePage() {
         <div className="flex items-center gap-3 mb-8">
           {["Configure", "Contact Info", "Your Pricing"].map((label, i) => {
             const stepKeys: Step[] = ["configure", "lead-capture", "results"];
-            const isActive = stepKeys.indexOf(step) >= i;
+            const currentIdx = stepKeys.indexOf(step);
+            const isActive = currentIdx >= i;
+            const isCompleted = i < currentIdx;
+            const canClick = isCompleted && (stepKeys[i] !== "results" || quote !== null);
+
+            const indicator = (
+              <>
+                <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${isActive ? "bg-calyx-blue text-white" : "bg-gray-10 text-gray-30"}`}>
+                  {i + 1}
+                </span>
+                {label}
+              </>
+            );
+
             return (
               <div key={label} className="flex items-center gap-3">
                 {i > 0 && (
                   <div className={`h-px w-8 ${isActive ? "bg-calyx-blue" : "bg-gray-10"}`} />
                 )}
-                <div className={`flex items-center gap-2 text-sm font-medium ${isActive ? "text-calyx-blue" : "text-gray-30"}`}>
-                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${isActive ? "bg-calyx-blue text-white" : "bg-gray-10 text-gray-30"}`}>
-                    {i + 1}
-                  </span>
-                  {label}
-                </div>
+                {canClick ? (
+                  <button
+                    type="button"
+                    onClick={() => setStep(stepKeys[i])}
+                    className={`flex items-center gap-2 text-sm font-medium cursor-pointer hover:text-flash-blue ${isActive ? "text-calyx-blue" : "text-gray-30"}`}
+                  >
+                    {indicator}
+                  </button>
+                ) : (
+                  <div className={`flex items-center gap-2 text-sm font-medium ${isActive ? "text-calyx-blue" : "text-gray-30"}`}>
+                    {indicator}
+                  </div>
+                )}
               </div>
             );
           })}
@@ -220,6 +244,7 @@ export default function QuotePage() {
           </div>
         )}
 
+        <StepTransition stepKey={step}>
         {/* Step 1: Configure Bag */}
         {step === "configure" && (
           <div className="lg:flex lg:gap-8">
@@ -258,18 +283,37 @@ export default function QuotePage() {
                   holePunch={holePunch}
                   corners={corners}
                   embellishment={embellishment}
+                  gusset={dims.g}
                   onChange={handleOptionChange}
                 />
               </div>
 
               <div>
                 <h3 className="text-lg font-semibold text-gray-90 mb-4">Quantity Tiers</h3>
-                <p className="text-sm text-gray-60 mb-3">Select a quantity to compare pricing across methods.</p>
+                <p className="text-sm text-gray-60 mb-3">Click to compare pricing. Tap the pencil to edit quantities.</p>
                 <TierSelector
                   tiers={selectedTiers}
                   activeTier={activeTier}
                   onTierClick={setActiveTier}
                   onEditTier={handleEditTier}
+                />
+              </div>
+
+              {/* Mobile bag preview */}
+              <div className="lg:hidden">
+                <BagPreview
+                  compact
+                  width={dims.w}
+                  height={dims.h}
+                  gusset={dims.g}
+                  sealType={sealType}
+                  gussetType={gussetType}
+                  zipper={zipper}
+                  tearNotch={tearNotch}
+                  holePunch={holePunch}
+                  corners={corners}
+                  substrate={substrate}
+                  finish={finish}
                 />
               </div>
 
@@ -306,10 +350,26 @@ export default function QuotePage() {
         {/* Step 2: Lead Capture */}
         {step === "lead-capture" && (
           <div className="max-w-lg mx-auto space-y-6">
+            <button
+              type="button"
+              onClick={() => setStep("configure")}
+              className="text-sm text-calyx-blue hover:text-flash-blue font-medium mb-4"
+            >
+              &larr; Back to Configuration
+            </button>
+
+            <div className="rounded-xl border border-gray-10 bg-gray-5 p-4 flex items-center gap-4 mb-6">
+              <BagPreview compact width={dims.w} height={dims.h} gusset={dims.g} sealType={sealType} gussetType={gussetType} zipper={zipper} tearNotch={tearNotch} holePunch={holePunch} corners={corners} substrate={substrate} finish={finish} />
+              <div className="text-sm text-gray-60">
+                <p className="font-medium text-gray-90">{dims.w}&quot; &times; {dims.h}&quot;{dims.g > 0 ? ` \u00d7 ${dims.g}"` : ""} {sealType}</p>
+                <p>{substrate} &middot; {finish}{embellishment !== "None" ? ` \u00b7 ${embellishment}` : ""} &middot; {zipper} Zipper</p>
+              </div>
+            </div>
+
             <div>
-              <h2 className="text-2xl font-semibold text-gray-90">Tell Us About Your Business</h2>
+              <h2 className="text-2xl font-semibold text-gray-90">One more step to see your pricing</h2>
               <p className="mt-1 text-gray-60">
-                We need a few details before showing your pricing.
+                Enter your details and we&apos;ll show your instant quote.
               </p>
             </div>
             <LeadCaptureForm
@@ -319,14 +379,27 @@ export default function QuotePage() {
           </div>
         )}
 
+        {/* Step 3: Loading */}
+        {step === "results" && !quote && isLoading && (
+          <ResultsSkeleton />
+        )}
+
         {/* Step 3: Pricing Results */}
         {step === "results" && quote && (
           <div className="space-y-8">
-            <div>
-              <h2 className="text-2xl font-semibold text-gray-90">Your Instant Quote</h2>
-              <p className="mt-1 text-gray-60">
-                Compare production methods and quantities side by side.
-              </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-semibold text-gray-90">Your Instant Quote</h2>
+                <p className="mt-1 text-gray-60">
+                  Compare production methods and quantities side by side.
+                </p>
+              </div>
+              <button
+                onClick={() => setStep("configure")}
+                className="shrink-0 rounded-lg border border-calyx-blue px-4 py-2 text-sm font-semibold text-calyx-blue hover:bg-calyx-blue hover:text-white transition-colors"
+              >
+                Edit Configuration
+              </button>
             </div>
 
             <QuoteSummaryHeader
@@ -342,6 +415,7 @@ export default function QuotePage() {
                 corners,
                 substrate,
                 finish,
+                embellishment,
               }}
             />
 
@@ -358,6 +432,7 @@ export default function QuotePage() {
             <PricingGrid
               quote={quote}
               tiers={selectedTiers}
+              activeTier={activeTier}
             />
 
             <PostQuoteActions
@@ -376,6 +451,7 @@ export default function QuotePage() {
             </div>
           </div>
         )}
+        </StepTransition>
       </main>
       <Footer />
     </div>

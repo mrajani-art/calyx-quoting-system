@@ -10,6 +10,7 @@ export interface BagVisualProps {
   corners: string;
   substrate: string;
   finish: string;
+  embellishment?: string;
 }
 
 // SVG layout constants

@@ -6,6 +6,7 @@ import type { InstantQuoteResponse, TierPrice } from "@/lib/types/quote";
 interface Props {
   quote: InstantQuoteResponse;
   tiers: number[];
+  activeTier: number;
 }
 
 const METHOD_MAP = [
@@ -40,11 +41,18 @@ const numberFmt = new Intl.NumberFormat("en-US");
 const currencyUnit = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
-  minimumFractionDigits: 4,
-  maximumFractionDigits: 4,
+  minimumFractionDigits: 3,
+  maximumFractionDigits: 3,
 });
 
-export default function PricingGrid({ quote, tiers }: Props) {
+const currencyTotal = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+});
+
+export default function PricingGrid({ quote, tiers, activeTier }: Props) {
   const sortedTiers = [...tiers].sort((a, b) => a - b);
 
   // A method column is visible if ANY tier meets its cell threshold
@@ -72,6 +80,21 @@ export default function PricingGrid({ quote, tiers }: Props) {
       }
     }
     pricingLookup.set(method.key, tierMap);
+  }
+
+  // Determine which visible method has the lowest unit price for the active tier
+  let bestValueMethodKey: string | null = null;
+  let bestValuePrice: number | null = null;
+  for (const method of visibleMethods) {
+    if (activeTier < method.minQtyForCell) continue;
+    const tierMap = pricingLookup.get(method.key);
+    const tier = tierMap?.get(activeTier);
+    if (tier) {
+      if (bestValuePrice === null || tier.unit_price < bestValuePrice) {
+        bestValuePrice = tier.unit_price;
+        bestValueMethodKey = method.key;
+      }
+    }
   }
 
   // Collect all notes across visible methods
@@ -110,9 +133,16 @@ export default function PricingGrid({ quote, tiers }: Props) {
                   className="bg-gray-5 px-4 py-3 text-left text-sm font-semibold text-gray-90"
                 >
                   <div className="font-bold">{config.label}</div>
-                  <div className="mt-0.5 text-xs font-normal text-gray-60">
+                  <div className="mt-0.5 text-xs font-normal text-gray-50">{config.tagline}</div>
+                  <div className="mt-1 text-xs font-normal text-gray-60">
                     {methodPricing?.lead_time ?? config.leadTime}
                   </div>
+                  {bestValueMethodKey === key && (
+                    <span className="inline-block mt-1 bg-green-100 text-green-700 text-[10px] font-semibold px-2 py-0.5 rounded-full">Best Value</span>
+                  )}
+                  {configKey === "digital" && (
+                    <span className="inline-block mt-1 bg-blue-100 text-blue-700 text-[10px] font-semibold px-2 py-0.5 rounded-full">Fastest</span>
+                  )}
                 </th>
               );
             })}
@@ -186,7 +216,10 @@ export default function PricingGrid({ quote, tiers }: Props) {
                         {currencyUnit.format(tier.unit_price)}
                       </div>
                       <div className="mt-0.5 text-xs text-gray-60">
-                        per unit
+                        /unit
+                      </div>
+                      <div className="mt-0.5 text-xs text-gray-60">
+                        {currencyTotal.format(tier.total_price)} total
                       </div>
                     </td>
                   );

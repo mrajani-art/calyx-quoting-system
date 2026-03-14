@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ShieldCheck } from "lucide-react";
 import { ANNUAL_SPEND_OPTIONS } from "@/lib/constants/bag-options";
 
 interface Props {
@@ -190,6 +191,12 @@ export function LeadCaptureForm({ onSubmit, isSubmitting = false }: Props) {
         {errors.annual_spend && (
           <p className="mt-1 text-sm text-red-600">{errors.annual_spend}</p>
         )}
+      </div>
+
+      {/* Trust indicator */}
+      <div className="flex items-center gap-2 text-xs text-gray-50">
+        <ShieldCheck className="h-4 w-4 shrink-0 text-gray-40" />
+        <span>Your information is kept private. Our team may reach out to help with your order.</span>
       </div>
 
       {/* Submit */}

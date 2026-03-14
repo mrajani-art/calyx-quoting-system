@@ -22,53 +22,55 @@ export default function StandardSizeSelector({
   onSelect,
   isCustom,
 }: Props) {
-  return (
-    <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-      {STANDARD_SIZES.map((size) => {
-        const isSelected =
-          !isCustom &&
-          selectedSize?.w === size.w &&
-          selectedSize?.h === size.h &&
-          selectedSize?.g === size.g;
+  const flatSizes = STANDARD_SIZES.filter(s => s.g === 0);
+  const standUpSizes = STANDARD_SIZES.filter(s => s.g > 0);
 
-        return (
-          <button
-            key={`${size.w}-${size.h}-${size.g}-${size.label}`}
-            type="button"
-            onClick={() =>
-              onSelect({ w: size.w, h: size.h, g: size.g })
-            }
+  function renderSizeCard(size: (typeof STANDARD_SIZES)[number]) {
+    const isSelected =
+      !isCustom &&
+      selectedSize?.w === size.w &&
+      selectedSize?.h === size.h &&
+      selectedSize?.g === size.g;
+
+    return (
+      <button
+        key={`${size.w}-${size.h}-${size.g}-${size.label}`}
+        type="button"
+        onClick={() =>
+          onSelect({ w: size.w, h: size.h, g: size.g })
+        }
+        className={clsx(
+          "flex flex-col items-start gap-1 rounded-lg border-2 p-3 text-left transition-colors",
+          isSelected
+            ? "border-calyx-blue bg-cloud-blue"
+            : "border-gray-10 hover:border-gray-30"
+        )}
+      >
+        <div className="flex items-center gap-1.5">
+          <Package
             className={clsx(
-              "flex flex-col items-start gap-1 rounded-lg border-2 p-3 text-left transition-colors",
-              isSelected
-                ? "border-calyx-blue bg-cloud-blue"
-                : "border-gray-10 hover:border-gray-30"
+              "h-4 w-4 shrink-0",
+              isSelected ? "text-calyx-blue" : "text-gray-60"
+            )}
+          />
+          <span
+            className={clsx(
+              "text-sm font-semibold",
+              isSelected ? "text-calyx-blue" : "text-gray-90"
             )}
           >
-            <div className="flex items-center gap-1.5">
-              <Package
-                className={clsx(
-                  "h-4 w-4 shrink-0",
-                  isSelected ? "text-calyx-blue" : "text-gray-60"
-                )}
-              />
-              <span
-                className={clsx(
-                  "text-sm font-semibold",
-                  isSelected ? "text-calyx-blue" : "text-gray-90"
-                )}
-              >
-                {formatDimensions(size.w, size.h, size.g)}
-              </span>
-            </div>
-            <span className="line-clamp-2 text-xs leading-tight text-gray-60">
-              {size.label}
-            </span>
-          </button>
-        );
-      })}
+            {formatDimensions(size.w, size.h, size.g)}
+          </span>
+        </div>
+        <span className="line-clamp-2 text-xs leading-tight text-gray-60">
+          {size.label}
+        </span>
+      </button>
+    );
+  }
 
-      {/* Custom Size card */}
+  function renderCustomCard() {
+    return (
       <button
         type="button"
         onClick={() => onSelect("custom")}
@@ -99,6 +101,24 @@ export default function StandardSizeSelector({
           Enter your own dimensions
         </span>
       </button>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-40 mb-2">Flat Pouches</h4>
+        <div className="grid grid-cols-2 gap-3">
+          {flatSizes.map(size => renderSizeCard(size))}
+        </div>
+      </div>
+      <div>
+        <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-40 mb-2">Stand-Up Pouches</h4>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+          {standUpSizes.map(size => renderSizeCard(size))}
+          {renderCustomCard()}
+        </div>
+      </div>
     </div>
   );
 }

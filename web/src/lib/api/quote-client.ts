@@ -3,6 +3,7 @@ import type {
   LeadData,
   BagConfig,
 } from "@/lib/types/quote";
+import { QuoteError } from "./errors";
 
 const API_BASE = "/api/v1";
 
@@ -14,7 +15,7 @@ export async function submitLead(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error("Failed to submit lead");
+  if (!res.ok) throw new QuoteError(res.status, `Request failed with status ${res.status}`);
   const json = await res.json();
   return { ...data, lead_id: json.lead_id };
 }
@@ -28,7 +29,7 @@ export async function getInstantQuote(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ ...config, lead_id: leadId }),
   });
-  if (!res.ok) throw new Error("Failed to get quote");
+  if (!res.ok) throw new QuoteError(res.status, `Request failed with status ${res.status}`);
   return res.json();
 }
 
@@ -41,5 +42,5 @@ export async function requestAccountManager(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ quote_id: quoteId, lead_id: leadId }),
   });
-  if (!res.ok) throw new Error("Failed to request manager");
+  if (!res.ok) throw new QuoteError(res.status, `Request failed with status ${res.status}`);
 }

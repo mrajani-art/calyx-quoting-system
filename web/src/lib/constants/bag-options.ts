@@ -64,6 +64,19 @@ export const ANNUAL_SPEND_OPTIONS = [
   "$250K+",
 ] as const;
 
+export const OPTION_DESCRIPTIONS: Record<string, string> = {
+  substrate: "Base material — affects appearance and barrier properties",
+  finish: "Surface coating that changes look and feel",
+  sealType: "Determines bag shape and structure",
+  fillStyle: "Whether product loads from top or bottom",
+  gussetType: "Bottom fold style that lets the bag stand upright",
+  zipper: "Resealable closure type",
+  tearNotch: "Small cut on the side for easy opening",
+  holePunch: "Hole at top for hanging on retail displays",
+  corners: "Shape of the bag corners",
+  embellishment: "Premium finish like metallic foil or raised UV",
+};
+
 // Default selections
 export const DEFAULTS = {
   substrate: "Metallic",
