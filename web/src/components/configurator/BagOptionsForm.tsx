@@ -12,7 +12,6 @@ import {
   TEAR_NOTCHES,
   HOLE_PUNCHES,
   CORNERS,
-  EMBELLISHMENTS,
   OPTION_DESCRIPTIONS,
 } from "@/lib/constants/bag-options";
 
@@ -26,7 +25,6 @@ interface Props {
   tearNotch: string;
   holePunch: string;
   corners: string;
-  embellishment: string;
   gusset: number;
   onChange: (field: string, value: string) => void;
 }
@@ -118,7 +116,6 @@ export default function BagOptionsForm({
   tearNotch,
   holePunch,
   corners,
-  embellishment,
   gusset,
   onChange,
 }: Props) {
@@ -176,14 +173,6 @@ export default function BagOptionsForm({
           options={FINISHES}
           onChange={(v) => onChange("finish", v)}
           helpText={OPTION_DESCRIPTIONS.finish}
-        />
-        <SelectField
-          id="embellishment"
-          label="Embellishment"
-          value={embellishment}
-          options={EMBELLISHMENTS}
-          onChange={(v) => onChange("embellishment", v)}
-          helpText={OPTION_DESCRIPTIONS.embellishment}
         />
       </OptionGroup>
 

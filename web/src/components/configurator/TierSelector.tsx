@@ -109,8 +109,7 @@ export default function TierSelector({
               <span
                 onClick={(e) => { e.stopPropagation(); startEdit(tier); }}
                 className={clsx(
-                  "absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-0.5 transition-opacity",
-                  "opacity-0 group-hover:opacity-100",
+                  "absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-0.5",
                   isActive ? "hover:bg-white/20" : "hover:bg-gray-20"
                 )}
               >

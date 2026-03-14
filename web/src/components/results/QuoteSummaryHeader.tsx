@@ -22,7 +22,6 @@ const specs: { label: string; key: string }[] = [
   { label: "Tear Notch", key: "tearNotch" },
   { label: "Hole Punch", key: "holePunch" },
   { label: "Corners", key: "corners" },
-  { label: "Embellishment", key: "embellishment" },
 ];
 
 function getSpecValue(key: string, visualProps: BagVisualProps): string {

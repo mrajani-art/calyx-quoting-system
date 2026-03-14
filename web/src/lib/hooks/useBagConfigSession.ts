@@ -22,7 +22,6 @@ export interface BagConfigSession {
   tearNotch: string;
   holePunch: string;
   corners: string;
-  embellishment: string;
   selectedTiers: number[];
   activeTier: number;
 }
@@ -42,7 +41,6 @@ const DEFAULT_CONFIG: BagConfigSession = {
   tearNotch: DEFAULTS.tearNotch,
   holePunch: DEFAULTS.holePunch,
   corners: DEFAULTS.corners,
-  embellishment: DEFAULTS.embellishment,
   selectedTiers: DEFAULT_TIERS,
   activeTier: DEFAULT_ACTIVE_QTY,
 };
