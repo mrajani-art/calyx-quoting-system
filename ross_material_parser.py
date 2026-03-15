@@ -26,18 +26,18 @@ import os
 
 # Finish (laminate — first stock in material_spec)
 ROSS_FINISH_MAP = {
-    "3904": "Matte",       # 2700 Series Platinum Poly Matte Thermal Laminate
-    "3905": "Soft Touch",  # 1.5 mil Karess Thermal Tactile Over Laminate
-    "3907": "Gloss",       # 2500 Series Platinum Poly Gloss Thermal Lamination
-    "3912": "Holographic", # 1.4 mil Rainbow Holografik Thermal Lamination (not in app options)
+    "3904": "Matte Laminate",       # 2700 Series Platinum Poly Matte Thermal Laminate
+    "3905": "Soft Touch Laminate",  # 1.5 mil Karess Thermal Tactile Over Laminate
+    "3907": "Gloss Laminate",       # 2500 Series Platinum Poly Gloss Thermal Lamination
+    "3912": "Holographic",          # 1.4 mil Rainbow Holografik Thermal Lamination
 }
 
 # Keyword fallback for finish (when stock# not parseable)
 ROSS_FINISH_KEYWORDS = {
-    "MATTE": "Matte",
-    "KARESS": "Soft Touch",
-    "TACTILE": "Soft Touch",
-    "GLOSS": "Gloss",
+    "MATTE": "Matte Laminate",
+    "KARESS": "Soft Touch Laminate",
+    "TACTILE": "Soft Touch Laminate",
+    "GLOSS": "Gloss Laminate",
     "HOLOGRAFIK": "Holographic",
     "HOLOGRAPHIC": "Holographic",
 }
@@ -56,7 +56,7 @@ ROSS_SUBSTRATE_MAP = {
     "5101": "MET PET",      # 48PET/10#LDPE/FOIL — not currently used
     "5309": "HB CLR PET",   # 3mil CLEAR EVOH LDPE (SUP) — high barrier clear
     "5312": "CLR PET",      # 46ga PVDC PET / 3.0mil CLEAR LDPE
-    "5313": "ALOX PET",     # .50 ALOX PET / 3.0 LLDPE
+    "5313": "HB CLR PET",   # .50 ALOX PET / 3.0 LLDPE → HB CLR PET (high-barrier clear)
     "5408": "WHT MET PET",  # EZTEAR WHITE LAMINATED POUCH STRUCTURE
     "5701": "CLR PET",      # CLEAR STAND UP POUCH
     "5999": None,           # CUSTOMER SUPPLIED MATERIAL — unknown
@@ -64,7 +64,7 @@ ROSS_SUBSTRATE_MAP = {
 
 # Keyword fallback for substrate
 ROSS_SUBSTRATE_KEYWORDS = {
-    "ALOX": "ALOX PET",
+    "ALOX": "HB CLR PET",
     "EVOH": "HB CLR PET",
     "WHITE MET PET": "WHT MET PET",
     "WHITE COSMETIC": "WHT MET PET",
@@ -332,27 +332,27 @@ def test_parser():
         # (material_spec, expected_substrate, expected_finish, expected_embellishment)
         (
             "Stock# 3904 2700 SERIES PLATINUM POLY MATTE THERMAL LAMINATE / Stock# 5010 3.5 MIL MET PET / CLEAR PE FILM",
-            "MET PET", "Matte", None
+            "MET PET", "Matte Laminate", None
         ),
         (
             "Stock# 3905 1.5 mil KARESS THERMAL TACTILE OVER LAMINATE / Stock# 5309 3mil CLEAR EVOH LDPE (SUP)",
-            "HB CLR PET", "Soft Touch", None
+            "HB CLR PET", "Soft Touch Laminate", None
         ),
         (
             "Stock# 3907 2500 SERIES PLATINUM POLY GLOSS THERMAL LAMINATION / Stock# 5001 48PET/10#WLDPE/FOIL/10#HB-PE/1.5 METALLOCENE",
-            "WHT MET PET", "Gloss", None
+            "WHT MET PET", "Gloss Laminate", None
         ),
         (
             "Stock#39051.5milKARESSTHERMALTACTILEOVERLAMINATE / Stock#50143.9MILWHITECOSMETICWEB",
-            "WHT MET PET", "Soft Touch", None
+            "WHT MET PET", "Soft Touch Laminate", None
         ),
         (
             "Stock#39042700SERIESPLATINUMPOLYMATTETHERMALLAMINATE / Stock#510148PET/10#LDPE/FOIL/10#HB-PE/1.5METALLOCENE",
-            "MET PET", "Matte", None
+            "MET PET", "Matte Laminate", None
         ),
         (
             "Stock#39072500SERIESPLATINUMPOLYGLOSSTHERMALLAMINATION / Stock#500148PET/10#WLDPE/FOIL/10#HB-PE/1.5METALLOCENE / Stock#8308GD202SUNSETGOLDCOLDFOIL",
-            "WHT MET PET", "Gloss", "Cold Foil"
+            "WHT MET PET", "Gloss Laminate", "Cold Foil"
         ),
         (
             "Stock#53093milCLEAREVOHLDPE(SUP)",
@@ -360,11 +360,11 @@ def test_parser():
         ),
         (
             "Stock#39051.5milKARESSTHERMALTACTILEOVERLAMINATE / Stock#531346gaPVDCPET/3.0milCLEARLDPE",
-            None, "Soft Touch", None  # 5313 = ALOX PET
+            "HB CLR PET", "Soft Touch Laminate", None  # 5313 = ALOX PET → HB CLR PET
         ),
         (
             "Stock# 3905 1.5 mil KARESS THERMAL TACTILE OVER LAMINATE / Stock# 5313 .50 ALOX PET / 3.0 LLDPE",
-            "ALOX PET", "Soft Touch", None
+            "HB CLR PET", "Soft Touch Laminate", None
         ),
         (
             "Stock#39121.4MILRAINBOWHOLOGRAFIKTHERMALLAMINATION / Stock#53093milCLEAREVOHLDPE(SUP)",

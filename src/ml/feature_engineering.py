@@ -156,6 +156,14 @@ def prepare_features(df: pd.DataFrame) -> pd.DataFrame:
     if "substrate" in df.columns:
         df["substrate"] = df["substrate"].apply(normalize_substrate)
 
+    # ── Normalize finish to canonical "X Laminate" form ──────────
+    finish_normalize = {
+        "Matte": "Matte Laminate", "Soft Touch": "Soft Touch Laminate",
+        "Gloss": "Gloss Laminate",
+    }
+    if "finish" in df.columns:
+        df["finish"] = df["finish"].replace(finish_normalize)
+
     # ── Fill missing categoricals with safe defaults ────────────────
     defaults = {
         "substrate": "CUSTOM",
@@ -194,8 +202,10 @@ def prepare_features(df: pd.DataFrame) -> pd.DataFrame:
     zipper_map = {
         "No Zipper": "No Zipper",
         "CR Zipper": "CR Zipper", "Standard CR": "CR Zipper", "Presto CR Zipper": "CR Zipper",
+        "Child Resistant": "CR Zipper", "Child-Resistant": "CR Zipper",
+        "Standard Other: RoundCorners": "CR Zipper",
         "Single Profile Non-CR": "Non-CR Zipper", "Double Profile Non-CR": "Non-CR Zipper",
-        "Non-CR Zipper": "Non-CR Zipper",
+        "Non-CR Zipper": "Non-CR Zipper", "Slider": "Non-CR Zipper",
     }
     df["zipper"] = df["zipper"].map(zipper_map).fillna("No Zipper")
 

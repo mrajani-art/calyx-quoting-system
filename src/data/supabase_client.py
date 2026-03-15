@@ -300,11 +300,31 @@ def fetch_training_data() -> pd.DataFrame:
     """
     client = get_client()
     try:
-        res = client.table("quotes").select("*, quote_prices(*)").execute()
-        if not res.data:
+        # ── Paginated fetch (Supabase default limit = 1000) ─────
+        all_quotes = []
+        offset = 0
+        batch_size = 1000
+        while True:
+            res = (
+                client.table("quotes")
+                .select("*, quote_prices(*)")
+                .range(offset, offset + batch_size - 1)
+                .execute()
+            )
+            if not res.data:
+                break
+            all_quotes.extend(res.data)
+            if len(res.data) < batch_size:
+                break
+            offset += batch_size
+
+        if not all_quotes:
             return pd.DataFrame()
+
+        logger.info(f"Fetched {len(all_quotes)} quotes from Supabase")
+
         rows = []
-        for q in res.data:
+        for q in all_quotes:
             base = {k: v for k, v in q.items() if k != "quote_prices"}
             for p in q.get("quote_prices", []):
                 row = {**base}
@@ -322,11 +342,31 @@ def fetch_training_data() -> pd.DataFrame:
         if df.empty:
             return df
 
+        # ── Dimension sanity check (catch mm-vs-inches outliers) ─
+        max_dim_in = 30.0  # largest real bag is ~24" wide
+        bad_dims = (df["width"] > max_dim_in) | (df["height"] > max_dim_in)
+        if bad_dims.any():
+            n_bad = bad_dims.sum()
+            logger.warning(
+                f"Dropped {n_bad} rows with dimensions > {max_dim_in}\" "
+                f"(likely mm instead of inches)"
+            )
+            df = df[~bad_dims]
+
         # ── Split TedPack rows into tedpack_air / tedpack_ocean ───
         df = _split_tedpack_rows(df)
 
         # ── Deduplication: keep latest revision per spec+qty ──────
         df = deduplicate_training_data(df)
+
+        # ── Exclude rows with NULL finish from training ─────────
+        # Business rule: every real bag has a finish. Rows without
+        # finish are unparseable legacy data that would skew the model.
+        before_finish = len(df)
+        df = df[df["finish"].notna()]
+        dropped = before_finish - len(df)
+        if dropped:
+            logger.info(f"Excluded {dropped} rows with NULL finish from training data")
 
         return df
     except Exception as e:

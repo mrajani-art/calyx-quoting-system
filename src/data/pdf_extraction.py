@@ -41,10 +41,15 @@ except ImportError:
 
 # ── Dazpak PDF Parser ──────────────────────────────────────────────
 
-def extract_dazpak_pdf(pdf_path: str) -> Optional[dict]:
+def extract_dazpak_pdf(pdf_path: str, *, source_filename: str = None) -> Optional[dict]:
     """
     Extract structured data from a single Dazpak quotation PDF.
     Returns dict with quote metadata, specs, and pricing tiers.
+
+    Args:
+        pdf_path: Local path to the downloaded PDF file.
+        source_filename: Original Google Drive filename (used to extract
+            substrate, finish, and num_colors when PDF body parsing fails).
     """
     if not HAS_PDFPLUMBER:
         return None
@@ -131,13 +136,40 @@ def extract_dazpak_pdf(pdf_path: str) -> Optional[dict]:
         result["moq"] = int(m.group(1).replace(',', ''))
 
     # ── Extract material specification ──────────────────────────────
-    # Look for material block between "Material:" and next section
-    mat_match = re.search(
-        r'Material:\s*\n(.+?)(?:\n\s*Pricing|\n\s*UOM)',
-        text, re.DOTALL
+    # Look for material block between "Material:" and next section.
+    # Try multiple patterns — pdfplumber output varies across PDFs.
+    mat_match = (
+        # Pattern 1: Material on next line(s) until Pricing/UOM
+        re.search(r'Material:\s*\n(.+?)(?:\n\s*Pricing|\n\s*UOM)', text, re.DOTALL)
+        # Pattern 2: Material on same line
+        or re.search(r'Material:\s*(.+?)(?:\n\s*(?:Pricing|UOM|Web Width|Repeat))', text, re.DOTALL)
+        # Pattern 3: Material followed by any section break
+        or re.search(r'Material:\s*\n?(.+?)(?:\n\n|\n\s*\n)', text, re.DOTALL)
     )
     if mat_match:
         result["material_spec"] = mat_match.group(1).strip().replace('\n', ' / ')
+
+    # ── Parse substrate + finish from material_spec or filename ────
+    from dazpak_material_parser import parse_dazpak_material_spec, parse_dazpak_filename
+
+    # Try material_spec first (from PDF body)
+    if result.get("material_spec"):
+        mat = parse_dazpak_material_spec(result["material_spec"])
+        if mat["substrate"]:
+            result["substrate"] = mat["substrate"]
+        if mat["finish"]:
+            result["finish"] = mat["finish"]
+
+    # Fallback: parse the original Drive filename
+    fname = source_filename or Path(pdf_path).name
+    if not result.get("substrate") or not result.get("finish"):
+        fn_mat = parse_dazpak_filename(fname)
+        if fn_mat["substrate"] and not result.get("substrate"):
+            result["substrate"] = fn_mat["substrate"]
+        if fn_mat["finish"] and not result.get("finish"):
+            result["finish"] = fn_mat["finish"]
+        if fn_mat["num_colors"] and not result.get("num_colors"):
+            result["num_colors"] = fn_mat["num_colors"]
 
     # ── Extract Web Width and Repeat ────────────────────────────────
     m = re.search(r'Web Width\s*[\n\s]*([\d.]+)', text)

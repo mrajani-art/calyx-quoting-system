@@ -170,9 +170,12 @@ def ingest_vendor(vendor: str, folder_id: str, extract_fn, drive_service, supaba
                 stats["errors"] += 1
                 continue
 
-            # Parse PDF
+            # Parse PDF — pass original filename for material extraction
             try:
-                parsed_result = extract_fn(local_path)
+                if vendor == "dazpak":
+                    parsed_result = extract_fn(local_path, source_filename=file_name)
+                else:
+                    parsed_result = extract_fn(local_path)
             except Exception as e:
                 logger.error(f"[{vendor}] Failed to parse {file_name}: {e}")
                 stats["errors"] += 1
@@ -196,7 +199,10 @@ def ingest_vendor(vendor: str, folder_id: str, extract_fn, drive_service, supaba
             # Insert each parsed quote
             for quote_data in parsed_quotes:
                 # Layer 2: Content-level dedup
+                # Use PDF-parsed FL, fall back to filename FL
                 parsed_fl = quote_data.get("fl_number", "").strip().upper()
+                if not parsed_fl and fl_number:
+                    parsed_fl = fl_number
                 if parsed_fl and parsed_fl in existing_fls:
                     logger.debug(f"[{vendor}] SKIP (content-level dedup): {parsed_fl}")
                     stats["already_ingested"] += 1
@@ -224,6 +230,9 @@ def ingest_vendor(vendor: str, folder_id: str, extract_fn, drive_service, supaba
                         "gusset": quote_data.get("gusset", 0),
                         "substrate": quote_data.get("substrate"),
                         "finish": quote_data.get("finish"),
+                        "num_colors": quote_data.get("num_colors"),
+                        "material_spec": quote_data.get("material_spec"),
+                        "source_file": quote_data.get("source_file"),
                         "fill_style": quote_data.get("fill_style"),
                         "seal_type": quote_data.get("seal_type"),
                         "gusset_type": quote_data.get("gusset_type"),
