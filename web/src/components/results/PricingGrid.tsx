@@ -132,17 +132,18 @@ export default function PricingGrid({ quote, tiers, activeTier }: Props) {
             {visibleMethods.map(({ key, configKey, quoteKey }) => {
               const config = METHODS[configKey];
               const methodPricing = quote[quoteKey];
+              const hasBadge = bestValueMethodKey === key || configKey === "digital";
               return (
                 <th
                   key={key}
-                  className="bg-gray-5 px-3 py-3 text-center text-sm font-semibold text-gray-90"
+                  className="bg-gray-5 px-3 py-3 text-center text-sm font-semibold text-gray-90 align-top"
                 >
                   <div className="font-bold">{config.label}</div>
-                  <div className="mt-0.5 text-xs font-normal text-gray-50">{config.tagline}</div>
+                  <div className="mt-0.5 text-xs font-normal text-gray-60">{config.tagline}</div>
                   <div className="mt-1 text-xs font-normal text-gray-60">
                     {config.leadTime}
                   </div>
-                  <div className="mt-1 flex justify-center gap-1 flex-wrap">
+                  <div className="mt-1 flex justify-center gap-1 flex-wrap" style={{ minHeight: "1.25rem" }}>
                     {bestValueMethodKey === key && (
                       <span className="inline-block bg-green-100 text-green-700 text-[10px] font-semibold px-2 py-0.5 rounded-full">Best Value</span>
                     )}
