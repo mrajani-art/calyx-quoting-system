@@ -57,7 +57,6 @@ export default function StandUpPouch(props: BagVisualProps) {
     holePunch,
     corners,
     substrate,
-    finish,
   } = props;
 
   // Compute dynamic layout — both width and height scale with real dimensions
@@ -92,7 +91,7 @@ export default function StandUpPouch(props: BagVisualProps) {
       role="img"
       aria-label="Stand-up pouch diagram"
     >
-      {renderDefs(fills.start, fills.end, finish)}
+      {renderDefs(fills.start, fills.end)}
 
       {/* Main bag body */}
       <path
@@ -102,15 +101,7 @@ export default function StandUpPouch(props: BagVisualProps) {
         stroke="#9CA3AF"
         strokeWidth={1.5}
         strokeLinejoin="round"
-        filter={
-          finish === "Soft Touch" ? "url(#soft-touch-texture)" : undefined
-        }
       />
-
-      {/* Gloss finish overlay */}
-      {finish === "Gloss" && (
-        <path d={bagPath} fill="url(#gloss-sheen)" pointerEvents="none" />
-      )}
 
       {/* K Seal / Plow Bottom — triangular corner folds inside the bag */}
       {(gussetType === "K Seal" || gussetType === "Plow Bottom") &&

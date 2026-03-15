@@ -235,11 +235,10 @@ export function renderDimensionArrows(
   );
 }
 
-/** SVG defs for substrate gradient and finish overlay */
+/** SVG defs for substrate gradient */
 export function renderDefs(
   gradientStart: string,
   gradientEnd: string,
-  finish: string
 ): React.ReactNode {
   return (
     <defs>
@@ -247,33 +246,6 @@ export function renderDefs(
         <stop offset="0%" stopColor={gradientStart} />
         <stop offset="100%" stopColor={gradientEnd} />
       </linearGradient>
-
-      {finish === "Gloss" && (
-        <linearGradient id="gloss-sheen" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="white" stopOpacity={0.25} />
-          <stop offset="40%" stopColor="white" stopOpacity={0} />
-          <stop offset="60%" stopColor="white" stopOpacity={0} />
-          <stop offset="100%" stopColor="white" stopOpacity={0.15} />
-        </linearGradient>
-      )}
-
-      {finish === "Soft Touch" && (
-        <filter id="soft-touch-texture">
-          <feTurbulence
-            type="fractalNoise"
-            baseFrequency="0.9"
-            numOctaves={4}
-            result="noise"
-          />
-          <feColorMatrix
-            type="saturate"
-            values="0"
-            in="noise"
-            result="gray-noise"
-          />
-          <feBlend in="SourceGraphic" in2="gray-noise" mode="soft-light" />
-        </filter>
-      )}
     </defs>
   );
 }

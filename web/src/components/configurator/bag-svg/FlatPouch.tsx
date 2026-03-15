@@ -22,7 +22,6 @@ export default function FlatPouch(props: BagVisualProps) {
     holePunch,
     corners,
     substrate,
-    finish,
   } = props;
 
   // Compute dynamic layout — both width and height scale with real dimensions
@@ -41,7 +40,7 @@ export default function FlatPouch(props: BagVisualProps) {
       role="img"
       aria-label="Flat pouch diagram"
     >
-      {renderDefs(fills.start, fills.end, finish)}
+      {renderDefs(fills.start, fills.end)}
 
       {/* Main bag body */}
       <rect
@@ -55,24 +54,7 @@ export default function FlatPouch(props: BagVisualProps) {
         fillOpacity={fills.opacity}
         stroke="#9CA3AF"
         strokeWidth={1.5}
-        filter={
-          finish === "Soft Touch" ? "url(#soft-touch-texture)" : undefined
-        }
       />
-
-      {/* Gloss finish overlay */}
-      {finish === "Gloss" && (
-        <rect
-          x={bagLeft}
-          y={bagTop}
-          width={bagW}
-          height={bagH}
-          rx={cornerR}
-          ry={cornerR}
-          fill="url(#gloss-sheen)"
-          pointerEvents="none"
-        />
-      )}
 
       {/* Seal lines */}
       {/* Left seal */}
