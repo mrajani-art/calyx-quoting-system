@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import dynamic from "next/dynamic";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import StepTransition from "@/components/layout/StepTransition";
@@ -11,12 +10,6 @@ import BagOptionsForm from "@/components/configurator/BagOptionsForm";
 import TierSelector from "@/components/configurator/TierSelector";
 import BagPreview from "@/components/configurator/BagPreview";
 import { LeadCaptureForm } from "@/components/lead-capture/LeadCaptureForm";
-
-// Three.js cannot SSR — dynamic import with ssr disabled
-const BagViewer3D = dynamic(
-  () => import("@/components/configurator/BagViewer3D"),
-  { ssr: false, loading: () => <div className="h-64 rounded-lg bg-gray-5 animate-pulse" /> }
-);
 import QuoteSummaryHeader from "@/components/results/QuoteSummaryHeader";
 import PricingGrid from "@/components/results/PricingGrid";
 import ResultsSkeleton from "@/components/results/ResultsSkeleton";
@@ -303,9 +296,9 @@ export default function QuotePage() {
                 />
               </div>
 
-              {/* Mobile 3D bag preview */}
+              {/* Mobile bag preview */}
               <div className="lg:hidden">
-                <BagViewer3D
+                <BagPreview
                   compact
                   width={dims.w}
                   height={dims.h}
@@ -330,10 +323,10 @@ export default function QuotePage() {
               </button>
             </div>
 
-            {/* Right: sticky 3D bag preview (desktop only) */}
+            {/* Right: sticky bag preview (desktop only) */}
             <div className="hidden lg:block lg:w-80 xl:w-96 shrink-0">
               <div className="sticky top-8">
-                <BagViewer3D
+                <BagPreview
                   width={dims.w}
                   height={dims.h}
                   gusset={dims.g}
