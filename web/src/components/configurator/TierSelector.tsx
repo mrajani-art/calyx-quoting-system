@@ -36,10 +36,12 @@ export default function TierSelector({
     setInputValue(String(tier));
   }
 
+  const MIN_QTY = 5_000;
+
   function confirmEdit() {
     if (editingTier === null) return;
     const parsed = Number(inputValue);
-    if (!parsed || parsed <= 0 || !Number.isInteger(parsed)) {
+    if (!parsed || parsed < MIN_QTY || !Number.isInteger(parsed)) {
       cancelEdit();
       return;
     }
@@ -78,6 +80,7 @@ export default function TierSelector({
               <input
                 ref={inputRef}
                 type="number"
+                min={MIN_QTY}
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={(e) => {
