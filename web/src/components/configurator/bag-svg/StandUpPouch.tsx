@@ -134,12 +134,12 @@ export default function StandUpPouch(props: BagVisualProps) {
               strokeWidth={1}
               strokeLinejoin="round"
             />
-            {/* Horizontal skirt seal line connecting the triangle tops */}
+            {/* Skirt seal line near the base, between the triangle tips */}
             <line
-              x1={bagLeft}
-              y1={bagBottom - triSize}
-              x2={bagRight}
-              y2={bagBottom - triSize}
+              x1={bagLeft + triSize}
+              y1={bagBottom - triSize * 0.2}
+              x2={bagRight - triSize}
+              y2={bagBottom - triSize * 0.2}
               stroke="#9CA3AF"
               strokeWidth={1}
             />
