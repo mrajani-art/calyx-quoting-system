@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import StepTransition from "@/components/layout/StepTransition";
 import StandardSizeSelector from "@/components/configurator/StandardSizeSelector";
@@ -211,51 +210,52 @@ export default function QuotePage() {
 
   if (!isLoaded) return null;
 
+  // Step indicator component to avoid duplication
+  const stepIndicators = (
+    <div className="flex items-center gap-3">
+      {["Configure", "Contact Info", "Your Pricing"].map((label, i) => {
+        const stepKeys: Step[] = ["configure", "lead-capture", "results"];
+        const currentIdx = stepKeys.indexOf(step);
+        const isActive = currentIdx >= i;
+        const isCompleted = i < currentIdx;
+        const canClick = isCompleted && (stepKeys[i] !== "results" || quote !== null);
+
+        const indicator = (
+          <>
+            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${isActive ? "bg-calyx-blue text-white" : "bg-gray-10 text-gray-30"}`}>
+              {i + 1}
+            </span>
+            {label}
+          </>
+        );
+
+        return (
+          <div key={label} className="flex items-center gap-3">
+            {i > 0 && (
+              <div className={`h-px w-8 ${isActive ? "bg-calyx-blue" : "bg-gray-10"}`} />
+            )}
+            {canClick ? (
+              <button
+                type="button"
+                onClick={() => setStep(stepKeys[i])}
+                className={`flex items-center gap-2 text-sm font-medium cursor-pointer hover:text-flash-blue ${isActive ? "text-calyx-blue" : "text-gray-30"}`}
+              >
+                {indicator}
+              </button>
+            ) : (
+              <div className={`flex items-center gap-2 text-sm font-medium ${isActive ? "text-calyx-blue" : "text-gray-30"}`}>
+                {indicator}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+
   return (
     <div className="min-h-[100dvh] flex flex-col overflow-x-hidden">
-      <Header />
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-8">
-        {/* Step indicators */}
-        <div className="flex items-center gap-3 mb-8">
-          {["Configure", "Contact Info", "Your Pricing"].map((label, i) => {
-            const stepKeys: Step[] = ["configure", "lead-capture", "results"];
-            const currentIdx = stepKeys.indexOf(step);
-            const isActive = currentIdx >= i;
-            const isCompleted = i < currentIdx;
-            const canClick = isCompleted && (stepKeys[i] !== "results" || quote !== null);
-
-            const indicator = (
-              <>
-                <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${isActive ? "bg-calyx-blue text-white" : "bg-gray-10 text-gray-30"}`}>
-                  {i + 1}
-                </span>
-                {label}
-              </>
-            );
-
-            return (
-              <div key={label} className="flex items-center gap-3">
-                {i > 0 && (
-                  <div className={`h-px w-8 ${isActive ? "bg-calyx-blue" : "bg-gray-10"}`} />
-                )}
-                {canClick ? (
-                  <button
-                    type="button"
-                    onClick={() => setStep(stepKeys[i])}
-                    className={`flex items-center gap-2 text-sm font-medium cursor-pointer hover:text-flash-blue ${isActive ? "text-calyx-blue" : "text-gray-30"}`}
-                  >
-                    {indicator}
-                  </button>
-                ) : (
-                  <div className={`flex items-center gap-2 text-sm font-medium ${isActive ? "text-calyx-blue" : "text-gray-30"}`}>
-                    {indicator}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
         {error && (
           <div className="mb-6 rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-700">
             {error}
@@ -268,9 +268,12 @@ export default function QuotePage() {
           <div className="lg:flex lg:gap-8">
             {/* Left: form content */}
             <div className="flex-1 min-w-0 space-y-8">
-              <div>
-                <h2 className="text-2xl font-semibold text-gray-90">Configure Your Bag</h2>
-                <p className="mt-1 text-gray-60">Select a standard size or enter custom dimensions.</p>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl font-semibold text-gray-90">Configure Your Bag</h2>
+                  <p className="mt-1 text-gray-60">Select a standard size or enter custom dimensions.</p>
+                </div>
+                <div className="hidden sm:block shrink-0">{stepIndicators}</div>
               </div>
 
               <StandardSizeSelector
@@ -367,13 +370,16 @@ export default function QuotePage() {
         {/* Step 2: Lead Capture */}
         {step === "lead-capture" && (
           <div className="max-w-lg mx-auto space-y-6">
-            <button
-              type="button"
-              onClick={() => setStep("configure")}
-              className="text-sm text-calyx-blue hover:text-flash-blue font-medium mb-4"
-            >
-              &larr; Back to Configuration
-            </button>
+            <div className="flex items-start justify-between gap-4">
+              <button
+                type="button"
+                onClick={() => setStep("configure")}
+                className="text-sm text-calyx-blue hover:text-flash-blue font-medium"
+              >
+                &larr; Back to Configuration
+              </button>
+              <div className="hidden sm:block shrink-0">{stepIndicators}</div>
+            </div>
 
             <div className="rounded-xl border border-gray-10 bg-gray-5 p-4 flex items-center gap-4 mb-6">
               <BagPreview compact width={dims.w} height={dims.h} gusset={dims.g} sealType={sealType} gussetType={gussetType} zipper={zipper} tearNotch={tearNotch} holePunch={holePunch} corners={corners} substrate={substrate} finish={finish} />
@@ -404,19 +410,22 @@ export default function QuotePage() {
         {/* Step 3: Pricing Results */}
         {step === "results" && quote && (
           <div className="space-y-8">
-            <div className="flex items-center justify-between">
+            <div className="flex items-start justify-between gap-4">
               <div>
                 <h2 className="text-2xl font-semibold text-gray-90">Your Instant Quote</h2>
                 <p className="mt-1 text-gray-60">
                   Compare production methods and quantities side by side.
                 </p>
               </div>
-              <button
-                onClick={() => setStep("configure")}
-                className="shrink-0 rounded-lg border border-calyx-blue px-4 py-2 text-sm font-semibold text-calyx-blue hover:bg-calyx-blue hover:text-white transition-colors"
-              >
-                Edit Configuration
-              </button>
+              <div className="flex items-center gap-4 shrink-0">
+                <div className="hidden sm:block">{stepIndicators}</div>
+                <button
+                  onClick={() => setStep("configure")}
+                  className="rounded-lg border border-calyx-blue px-4 py-2 text-sm font-semibold text-calyx-blue hover:bg-calyx-blue hover:text-white transition-colors"
+                >
+                  Edit Configuration
+                </button>
+              </div>
             </div>
 
             <QuoteSummaryHeader
