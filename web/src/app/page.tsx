@@ -181,16 +181,9 @@ export default function QuotePage() {
 
   const handleSubmitRequest = async (note: string, file: File | null) => {
     if (!quote || !lead) return;
-    // Mark as requested optimistically — the API call is fire-and-forget
-    // (backend needs redeployment to register the endpoint)
+    const artworkUrl = file ? file.name : undefined; // TODO: upload to Supabase Storage
+    await requestAccountManager(quote.quote_id, lead.lead_id, note || undefined, artworkUrl);
     setManagerRequested(true);
-    try {
-      const artworkUrl = file ? file.name : undefined; // TODO: upload to Supabase Storage
-      await requestAccountManager(quote.quote_id, lead.lead_id, note || undefined, artworkUrl);
-    } catch (err) {
-      console.error("Failed to submit request:", err);
-      // Don't throw — modal should still show success since the request is noted
-    }
   };
 
   if (!isLoaded) return null;
