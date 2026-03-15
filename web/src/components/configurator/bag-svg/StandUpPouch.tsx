@@ -1,10 +1,8 @@
 import {
   BagVisualProps,
-  SVG_PADDING,
-  MIN_SVG_HEIGHT,
-  MAX_SVG_HEIGHT,
   SVG_WIDTH,
   SUBSTRATE_FILLS,
+  computeBagLayout,
 } from "./types";
 import {
   renderZipper,
@@ -21,12 +19,11 @@ function buildBagPath(
   bagBottom: number,
   cornerR: number,
   gussetType: string,
-  gussetStartY: number,
-  midX: number,
-  gussetDepth: number
+  bagW: number
 ): string {
   const segments: string[] = [];
 
+  // Top edge with optional rounded corners
   if (cornerR > 0) {
     segments.push(`M ${bagLeft} ${bagTop + cornerR}`);
     segments.push(`Q ${bagLeft} ${bagTop}, ${bagLeft + cornerR} ${bagTop}`);
@@ -37,16 +34,19 @@ function buildBagPath(
     segments.push(`L ${bagRight} ${bagTop}`);
   }
 
-  // Bottom edge based on gusset type
-  const cornerCut = Math.min(gussetDepth * 0.8, 18); // 45-degree corner size
-  if (gussetType === "Plow Bottom" || gussetType === "K Seal") {
-    // 45-degree angled corner seals at the bottom
+  // Bottom edge — small 45° chamfers for Plow Bottom / K Seal
+  // Kept subtle (~5% of width) so the bag reads as a rectangle
+  const cornerCut =
+    gussetType === "Plow Bottom" || gussetType === "K Seal"
+      ? Math.min(bagW * 0.05, 12)
+      : 0;
+
+  if (cornerCut > 0) {
     segments.push(`L ${bagRight} ${bagBottom - cornerCut}`);
     segments.push(`L ${bagRight - cornerCut} ${bagBottom}`);
     segments.push(`L ${bagLeft + cornerCut} ${bagBottom}`);
     segments.push(`L ${bagLeft} ${bagBottom - cornerCut}`);
   } else {
-    // No gusset — straight sides to flat bottom
     segments.push(`L ${bagRight} ${bagBottom}`);
     segments.push(`L ${bagLeft} ${bagBottom}`);
   }
@@ -76,23 +76,17 @@ export default function StandUpPouch(props: BagVisualProps) {
     finish,
   } = props;
 
-  // Compute SVG layout
-  const bagLeft = SVG_PADDING;
-  const bagRight = SVG_WIDTH - SVG_PADDING;
-  const bagWidth = bagRight - bagLeft;
-  const aspectRatio = width / height;
-  const rawH = bagWidth / aspectRatio + 50;
-  const svgH = Math.min(MAX_SVG_HEIGHT, Math.max(MIN_SVG_HEIGHT, rawH));
-  const bagTop = 20;
-  const bagBottom = svgH - 30;
-  const midX = (bagLeft + bagRight) / 2;
+  // Compute dynamic layout — both width and height scale with real dimensions
+  const { svgH, bagLeft, bagRight, bagTop, bagBottom, bagW, bagH, midX } =
+    computeBagLayout(width, height);
+
   const cornerR = corners === "Rounded" ? 8 : 0;
 
-  // Gusset depth
+  // Gusset depth (for dimension arrows only)
   const gussetDepth =
     gussetType === "None"
       ? 0
-      : Math.min((gusset / height) * (bagBottom - bagTop) * 0.35, 30);
+      : Math.min((gusset / height) * bagH * 0.35, 30);
   const gussetStartY = bagBottom - gussetDepth;
 
   // Build outline path
@@ -103,9 +97,7 @@ export default function StandUpPouch(props: BagVisualProps) {
     bagBottom,
     cornerR,
     gussetType,
-    gussetStartY,
-    midX,
-    gussetDepth
+    bagW
   );
 
   // Substrate fills
@@ -115,6 +107,12 @@ export default function StandUpPouch(props: BagVisualProps) {
   const zipperY = bagTop + 20;
   const tearNotchY = bagTop + 35;
   const holePunchCY = bagTop + 8;
+
+  // 45° corner cut size for K Seal skirt band
+  const cornerCut =
+    gussetType === "Plow Bottom" || gussetType === "K Seal"
+      ? Math.min(bagW * 0.05, 12)
+      : 0;
 
   return (
     <svg
@@ -140,18 +138,17 @@ export default function StandUpPouch(props: BagVisualProps) {
       />
 
       {/* K Seal skirt seal — lighter band at the bottom matching the angled shape */}
-      {gussetType === "K Seal" && gussetDepth > 0 && (() => {
-        const cc = Math.min(gussetDepth * 0.8, 18);
+      {gussetType === "K Seal" && cornerCut > 0 && (() => {
         const bandH = 12;
         const skirtPath = [
-          `M ${bagRight} ${bagBottom - cc}`,
-          `L ${bagRight - cc} ${bagBottom}`,
-          `L ${bagLeft + cc} ${bagBottom}`,
-          `L ${bagLeft} ${bagBottom - cc}`,
-          `L ${bagLeft} ${bagBottom - cc - bandH}`,
-          `L ${bagLeft + cc + bandH * 0.7} ${bagBottom - bandH}`,
-          `L ${bagRight - cc - bandH * 0.7} ${bagBottom - bandH}`,
-          `L ${bagRight} ${bagBottom - cc - bandH}`,
+          `M ${bagRight} ${bagBottom - cornerCut}`,
+          `L ${bagRight - cornerCut} ${bagBottom}`,
+          `L ${bagLeft + cornerCut} ${bagBottom}`,
+          `L ${bagLeft} ${bagBottom - cornerCut}`,
+          `L ${bagLeft} ${bagBottom - cornerCut - bandH}`,
+          `L ${bagLeft + cornerCut + bandH * 0.7} ${bagBottom - bandH}`,
+          `L ${bagRight - cornerCut - bandH * 0.7} ${bagBottom - bandH}`,
+          `L ${bagRight} ${bagBottom - cornerCut - bandH}`,
           `Z`,
         ].join(" ");
         return (

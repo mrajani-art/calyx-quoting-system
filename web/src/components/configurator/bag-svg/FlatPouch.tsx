@@ -1,10 +1,8 @@
 import {
   BagVisualProps,
-  SVG_PADDING,
-  MIN_SVG_HEIGHT,
-  MAX_SVG_HEIGHT,
   SVG_WIDTH,
   SUBSTRATE_FILLS,
+  computeBagLayout,
 } from "./types";
 import {
   renderZipper,
@@ -27,17 +25,9 @@ export default function FlatPouch(props: BagVisualProps) {
     finish,
   } = props;
 
-  // Compute SVG dimensions
-  const bagLeft = SVG_PADDING;
-  const bagRight = SVG_WIDTH - SVG_PADDING;
-  const bagWidth = bagRight - bagLeft;
-  const aspectRatio = width / (height || 1);
-  const rawH = bagWidth / aspectRatio + 50;
-  const svgH = Math.max(MIN_SVG_HEIGHT, Math.min(MAX_SVG_HEIGHT, rawH));
-  const bagTop = 20;
-  const bagBottom = svgH - 30;
-  const bagHeight = bagBottom - bagTop;
-  const midX = (bagLeft + bagRight) / 2;
+  // Compute dynamic layout — both width and height scale with real dimensions
+  const { svgH, bagLeft, bagRight, bagTop, bagBottom, bagW, bagH, midX } =
+    computeBagLayout(width, height);
 
   const fills = SUBSTRATE_FILLS[substrate] ?? SUBSTRATE_FILLS["Metallic"];
   const cornerR = corners === "Rounded" ? 8 : 0;
@@ -57,8 +47,8 @@ export default function FlatPouch(props: BagVisualProps) {
       <rect
         x={bagLeft}
         y={bagTop}
-        width={bagWidth}
-        height={bagHeight}
+        width={bagW}
+        height={bagH}
         rx={cornerR}
         ry={cornerR}
         fill="url(#substrate-fill)"
@@ -75,8 +65,8 @@ export default function FlatPouch(props: BagVisualProps) {
         <rect
           x={bagLeft}
           y={bagTop}
-          width={bagWidth}
-          height={bagHeight}
+          width={bagW}
+          height={bagH}
           rx={cornerR}
           ry={cornerR}
           fill="url(#gloss-sheen)"

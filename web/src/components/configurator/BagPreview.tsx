@@ -85,7 +85,7 @@ export default function BagPreview({ compact = false, ...visualProps }: Props) {
         style={{ perspective: "600px" }}
       >
         <div
-          className={compact ? "w-40" : "w-full max-w-[200px]"}
+          className={compact ? "w-48" : "w-full max-w-[300px]"}
           style={{
             transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
             transition: isHovering
