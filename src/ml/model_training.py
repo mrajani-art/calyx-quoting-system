@@ -207,9 +207,14 @@ class QuoteModelTrainer:
         if self.vendor == "internal":
             n_est, depth, lr, min_leaf = 500, 6, 0.03, 3
         elif self.vendor == "ross":
-            n_est, depth, lr, min_leaf = 500, 6, 0.02, 3
+            # Slightly reduced complexity — tested: depth=4/300 → 15.3% ± 1.3%
+            # vs depth=6/500 → 15.8% ± 1.5%
+            n_est, depth, lr, min_leaf = 300, 4, 0.03, 5
         elif self.vendor in ("tedpack_air", "tedpack_ocean"):
-            n_est, depth, lr, min_leaf = 500, 5, 0.025, 3
+            # Reduced complexity for small dataset (53 bags) — prevents
+            # overfitting and stabilizes MAPE across random splits.
+            # Tested: depth=2/150 trees → 18.8% ± 3.5% vs depth=5/500 → 21.1% ± 4.6%
+            n_est, depth, lr, min_leaf = 150, 2, 0.05, 8
         else:  # dazpak
             n_est, depth, lr, min_leaf = 400, 5, 0.03, 4
 
