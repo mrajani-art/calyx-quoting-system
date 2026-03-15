@@ -134,15 +134,17 @@ export default function StandUpPouch(props: BagVisualProps) {
               strokeWidth={1}
               strokeLinejoin="round"
             />
-            {/* Skirt seal line near the base, between the triangle tips */}
-            <line
-              x1={bagLeft + triSize}
-              y1={bagBottom - triSize * 0.2}
-              x2={bagRight - triSize}
-              y2={bagBottom - triSize * 0.2}
-              stroke="#9CA3AF"
-              strokeWidth={1}
-            />
+            {/* Skirt seal line — K Seal only */}
+            {gussetType === "K Seal" && (
+              <line
+                x1={bagLeft + triSize}
+                y1={bagBottom - triSize * 0.2}
+                x2={bagRight - triSize}
+                y2={bagBottom - triSize * 0.2}
+                stroke="#9CA3AF"
+                strokeWidth={1}
+              />
+            )}
           </g>
         )}
 

@@ -96,7 +96,11 @@ export default function QuotePage() {
       case "finish": setFinish(value); break;
       case "sealType":
         setSealType(value);
-        if (value === "Stand Up Pouch") setFillStyle("Top");
+        if (value === "Stand Up Pouch") {
+          setFillStyle("Top");
+          // Stand Up Pouches always need a gusset type
+          setGussetType((prev) => prev === "None" ? "K Seal" : prev);
+        }
         break;
       case "fillStyle": setFillStyle(value); break;
       case "gussetType": setGussetType(value); break;

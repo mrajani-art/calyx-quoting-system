@@ -149,7 +149,7 @@ export default function BagOptionsForm({
             id="gusset-type"
             label="Gusset Type"
             value={gussetType}
-            options={GUSSET_TYPES}
+            options={isStandUpPouch ? GUSSET_TYPES.filter(g => g.value !== "None") : GUSSET_TYPES}
             onChange={(v) => onChange("gussetType", v)}
             helpText={OPTION_DESCRIPTIONS.gussetType}
           />
