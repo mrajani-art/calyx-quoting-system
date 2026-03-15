@@ -84,8 +84,10 @@ export function ContactRequestModal({
 
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files && e.target.files.length > 0) {
-        setFiles(prev => [...prev, ...Array.from(e.target.files!)]);
+      // Capture files eagerly — resetting the input below clears the FileList
+      const newFiles = e.target.files ? Array.from(e.target.files) : [];
+      if (newFiles.length > 0) {
+        setFiles((prev) => [...prev, ...newFiles]);
       }
       // Reset input so the same file can be re-selected
       if (fileInputRef.current) {
