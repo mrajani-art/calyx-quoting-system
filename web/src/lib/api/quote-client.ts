@@ -35,12 +35,14 @@ export async function getInstantQuote(
 
 export async function requestAccountManager(
   quoteId: string,
-  leadId: string
+  leadId: string,
+  note?: string,
+  artworkUrl?: string
 ): Promise<void> {
   const res = await fetch(`${API_BASE}/quotes/request-manager`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ quote_id: quoteId, lead_id: leadId }),
+    body: JSON.stringify({ quote_id: quoteId, lead_id: leadId, note, artwork_url: artworkUrl }),
   });
   if (!res.ok) throw new QuoteError(res.status, `Request failed with status ${res.status}`);
 }

@@ -104,7 +104,7 @@ async def notify_slack_quote(lead_data: dict, quote_data: dict):
     await _post_to_slack(text)
 
 
-async def notify_slack_manager_request(lead_data: dict, quote_id: str):
+async def notify_slack_manager_request(lead_data: dict, quote_id: str, note: str | None = None, artwork_url: str | None = None):
     """Notify Slack that a customer wants to speak with an account manager."""
     text = (
         f":speech_balloon: *Account Manager Requested*\n"
@@ -116,4 +116,8 @@ async def notify_slack_manager_request(lead_data: dict, quote_id: str):
         f"\n"
         f":rotating_light: *Please reach out to this customer ASAP.*"
     )
+    if note:
+        text += f"\n:memo: *Note from customer:*\n>{note}"
+    if artwork_url:
+        text += f"\n:frame_with_picture: *Artwork uploaded:* <{artwork_url}|View File>"
     await _post_to_slack(text)

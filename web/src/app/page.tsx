@@ -179,18 +179,17 @@ export default function QuotePage() {
     }
   };
 
-  const handleRequestManager = async () => {
+  const handleSubmitRequest = async (note: string, file: File | null) => {
     if (!quote || !lead) return;
-    setManagerRequested(true);
     try {
-      await requestAccountManager(quote.quote_id, lead.lead_id);
+      // TODO: If file provided, upload to Supabase Storage and get URL
+      const artworkUrl = file ? file.name : undefined; // placeholder until storage is set up
+      await requestAccountManager(quote.quote_id, lead.lead_id, note || undefined, artworkUrl);
+      setManagerRequested(true);
     } catch (err) {
-      console.error("Failed to request manager:", err);
+      console.error("Failed to submit request:", err);
+      throw err; // Re-throw so modal can show error state
     }
-  };
-
-  const handleUploadArtwork = () => {
-    // TODO: Upload to Supabase Storage
   };
 
   if (!isLoaded) return null;
@@ -438,8 +437,7 @@ export default function QuotePage() {
             />
 
             <PostQuoteActions
-              onRequestManager={handleRequestManager}
-              onUploadArtwork={handleUploadArtwork}
+              onSubmitRequest={handleSubmitRequest}
               managerRequested={managerRequested}
             />
 

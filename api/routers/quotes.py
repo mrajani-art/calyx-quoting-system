@@ -136,6 +136,8 @@ async def instant_quote(
 class ManagerRequest(BaseModel):
     lead_id: str
     quote_id: str
+    note: str | None = None
+    artwork_url: str | None = None
 
 
 @router.post("/quotes/request-manager")
@@ -166,6 +168,8 @@ async def request_manager(
         notify_slack_manager_request,
         lead_data,
         request.quote_id,
+        note=request.note,
+        artwork_url=request.artwork_url,
     )
 
     logger.info(f"Manager requested for quote {request.quote_id} by lead {request.lead_id}")
