@@ -64,7 +64,7 @@ async def notify_slack_new_lead(lead_data: dict):
 
 async def notify_slack_manager_request(lead_data: dict, quote_id: str, lead_id: str, note: str | None = None, artwork_url: str | None = None):
     """Notify Slack that a customer wants to speak with an account manager."""
-    lead_url = f"https://quote.calyxcontainers.com/lead/{lead_id}"
+    lead_url = f"https://calyx-quoting-portal.vercel.app/lead/{lead_id}"
     text = (
         f":speech_balloon: *Account Manager Requested*\n"
         f"━━━━━━━━━━━━━━━━━━\n"
