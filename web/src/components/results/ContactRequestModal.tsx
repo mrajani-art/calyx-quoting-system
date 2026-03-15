@@ -7,7 +7,7 @@ import { X, Upload, Check, Loader2 } from "lucide-react";
 interface ContactRequestModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (note: string, file: File | null) => Promise<void>;
+  onSubmit: (note: string, files: File[]) => Promise<void>;
 }
 
 function formatFileSize(bytes: number): string {
@@ -22,7 +22,7 @@ export function ContactRequestModal({
   onSubmit,
 }: ContactRequestModalProps) {
   const [note, setNote] = useState("");
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +32,7 @@ export function ContactRequestModal({
   useEffect(() => {
     if (open) {
       setNote("");
-      setFile(null);
+      setFiles([]);
       setLoading(false);
       setSuccess(false);
       setError(null);
@@ -70,7 +70,7 @@ export function ContactRequestModal({
     setLoading(true);
     setError(null);
     try {
-      await onSubmit(note, file);
+      await onSubmit(note, files);
       setSuccess(true);
     } catch (err) {
       setLoading(false);
@@ -80,12 +80,12 @@ export function ContactRequestModal({
           : "Something went wrong. Please try again."
       );
     }
-  }, [note, file, onSubmit]);
+  }, [note, files, onSubmit]);
 
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files && e.target.files.length > 0) {
-        setFile(e.target.files[0]);
+        setFiles(prev => [...prev, ...Array.from(e.target.files!)]);
       }
       // Reset input so the same file can be re-selected
       if (fileInputRef.current) {
@@ -95,8 +95,8 @@ export function ContactRequestModal({
     []
   );
 
-  const removeFile = useCallback(() => {
-    setFile(null);
+  const removeFile = useCallback((index: number) => {
+    setFiles(prev => prev.filter((_, i) => i !== index));
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -168,42 +168,47 @@ export function ContactRequestModal({
                 ref={fileInputRef}
                 type="file"
                 accept="image/*,.pdf,.ai,.eps"
+                multiple
                 onChange={handleFileChange}
                 className="hidden"
               />
 
-              {file ? (
-                <div className="flex items-center gap-3 rounded-lg border border-gray-10 bg-gray-5 px-4 py-3">
-                  <Upload size={18} className="shrink-0 text-calyx-blue" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-gray-90">
-                      {file.name}
-                    </p>
-                    <p className="text-xs text-gray-60">
-                      {formatFileSize(file.size)}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={removeFile}
-                    disabled={loading}
-                    className="shrink-0 rounded p-1 text-gray-40 hover:bg-white hover:text-gray-60 disabled:opacity-50 transition-colors"
-                    aria-label="Remove file"
-                  >
-                    <X size={16} />
-                  </button>
+              {files.length > 0 && (
+                <div className="space-y-2 mb-2">
+                  {files.map((f, index) => (
+                    <div key={`${f.name}-${index}`} className="flex items-center gap-3 rounded-lg border border-gray-10 bg-gray-5 px-4 py-3">
+                      <Upload size={18} className="shrink-0 text-calyx-blue" />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-gray-90">
+                          {f.name}
+                        </p>
+                        <p className="text-xs text-gray-60">
+                          {formatFileSize(f.size)}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeFile(index)}
+                        disabled={loading}
+                        className="shrink-0 rounded p-1 text-gray-40 hover:bg-white hover:text-gray-60 disabled:opacity-50 transition-colors"
+                        aria-label="Remove file"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={loading}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-gray-10 bg-gray-5 px-4 py-3 text-sm font-medium text-gray-60 hover:border-calyx-blue hover:text-calyx-blue disabled:opacity-50 transition-colors"
-                >
-                  <Upload size={18} />
-                  <span>Attach artwork (optional)</span>
-                </button>
               )}
+
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={loading}
+                className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-gray-10 bg-gray-5 px-4 py-3 text-sm font-medium text-gray-60 hover:border-calyx-blue hover:text-calyx-blue disabled:opacity-50 transition-colors"
+              >
+                <Upload size={18} />
+                <span>Attach artwork (optional)</span>
+              </button>
             </div>
 
             {/* Error message */}

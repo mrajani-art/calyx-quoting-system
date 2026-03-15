@@ -5,7 +5,7 @@ import { MessageSquare, Check } from "lucide-react";
 import { ContactRequestModal } from "./ContactRequestModal";
 
 interface Props {
-  onSubmitRequest: (note: string, file: File | null) => Promise<void>;
+  onSubmitRequest: (note: string, files: File[]) => Promise<void>;
   managerRequested?: boolean;
 }
 

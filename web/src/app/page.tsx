@@ -15,7 +15,7 @@ import PricingGrid from "@/components/results/PricingGrid";
 import ResultsSkeleton from "@/components/results/ResultsSkeleton";
 import { PostQuoteActions } from "@/components/results/PostQuoteActions";
 import { useLeadSession } from "@/lib/hooks/useLeadSession";
-import { submitLead, getInstantQuote, requestAccountManager } from "@/lib/api/quote-client";
+import { submitLead, getInstantQuote, requestAccountManager, uploadFiles } from "@/lib/api/quote-client";
 import { getUserFriendlyError } from "@/lib/api/errors";
 import { DEFAULTS } from "@/lib/constants/bag-options";
 import { DEFAULT_ACTIVE_QTY } from "@/lib/constants/method-config";
@@ -200,10 +200,12 @@ export default function QuotePage() {
     }
   };
 
-  const handleSubmitRequest = async (note: string, file: File | null) => {
+  const handleSubmitRequest = async (note: string, files: File[]) => {
     if (!quote || !lead) return;
-    const artworkUrl = file ? file.name : undefined; // TODO: upload to Supabase Storage
-    await requestAccountManager(quote.quote_id, lead.lead_id, note || undefined, artworkUrl);
+    if (files.length > 0) {
+      await uploadFiles(lead.lead_id, quote.quote_id, files);
+    }
+    await requestAccountManager(quote.quote_id, lead.lead_id, note || undefined);
     setManagerRequested(true);
   };
 

@@ -11,7 +11,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routers import leads, quotes
+from api.routers import leads, quotes, files
 from api.services.prediction_service import load_models
 
 # Configure logging
@@ -59,6 +59,7 @@ app.add_middleware(
 # Include routers
 app.include_router(leads.router)
 app.include_router(quotes.router)
+app.include_router(files.router)
 
 # Conditionally register debug router when DEBUG_API_KEY is set
 import os

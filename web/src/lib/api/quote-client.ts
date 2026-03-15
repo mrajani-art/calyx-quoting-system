@@ -33,6 +33,24 @@ export async function getInstantQuote(
   return res.json();
 }
 
+export async function uploadFiles(
+  leadId: string,
+  quoteId: string | null,
+  files: File[]
+): Promise<{ uploaded: { id: string; file_name: string; public_url: string }[] }> {
+  const formData = new FormData();
+  formData.append("lead_id", leadId);
+  if (quoteId) formData.append("quote_id", quoteId);
+  files.forEach((file) => formData.append("files", file));
+
+  const res = await fetch(`${API_BASE}/files/upload`, {
+    method: "POST",
+    body: formData,
+  });
+  if (!res.ok) throw new QuoteError(res.status, "File upload failed");
+  return res.json();
+}
+
 export async function requestAccountManager(
   quoteId: string,
   leadId: string,

@@ -13,7 +13,7 @@ from pydantic import BaseModel
 
 from api.services.prediction_service import generate_instant_quote, DEFAULT_MARGIN_PCT
 from api.services.supabase_client import insert_quote, update_quote, get_supabase
-from api.services.slack_service import notify_slack_quote, notify_slack_manager_request
+from api.services.slack_service import notify_slack_manager_request
 from api.middleware.sanitizer import sanitize_response
 
 logger = logging.getLogger(__name__)
@@ -101,27 +101,6 @@ async def instant_quote(
         # Non-fatal: still return the quote even if DB write fails
         response.quote_id = "transient"
 
-    # Fire-and-forget Slack notification
-    background_tasks.add_task(
-        notify_slack_quote,
-        {
-            "lead_id": request.lead_id,
-            "full_name": "",  # Slack service will look up from lead if needed
-            "business_name": "",
-            "email": "",
-            "phone": "",
-            "annual_spend": "",
-        },
-        {
-            "quote_id": response.quote_id,
-            "specifications": specifications,
-            "digital": _method_to_json(response.digital),
-            "flexographic": _method_to_json(response.flexographic),
-            "international_air": _method_to_json(response.international_air),
-            "international_ocean": _method_to_json(response.international_ocean),
-        },
-    )
-
     logger.info(
         f"Quote {response.quote_id} generated for lead {request.lead_id} | "
         f"Digital={'yes' if response.digital else 'no'} | "
@@ -168,6 +147,7 @@ async def request_manager(
         notify_slack_manager_request,
         lead_data,
         request.quote_id,
+        request.lead_id,
         note=request.note,
         artwork_url=request.artwork_url,
     )
