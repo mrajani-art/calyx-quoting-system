@@ -90,10 +90,10 @@ async def upload_files(
                 "lead_id": lead_id,
                 "quote_id": quote_id,
                 "file_name": file_name,
+                "file_type": content_type,
+                "file_size": len(content),
                 "storage_path": storage_path,
                 "public_url": public_url,
-                "content_type": content_type,
-                "size_bytes": len(content),
             })
             uploaded.append({
                 "id": record.get("id"),
