@@ -26,7 +26,7 @@ export const METHODS: Record<MethodKey, MethodConfig> = {
   },
   flexographic: {
     label: "Flexographic",
-    tagline: "Best for large consistent runs with inventory storage",
+    tagline: "Best for large consistent runs with inventory storage options",
     leadTime: "6-8 weeks",
     notes: ["Plate fee: $400/color"],
     defaultTiers: [50_000, 100_000, 150_000, 250_000, 500_000, 1_000_000],
