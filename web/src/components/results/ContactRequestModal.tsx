@@ -25,6 +25,7 @@ export function ContactRequestModal({
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Reset state when modal opens
@@ -34,6 +35,7 @@ export function ContactRequestModal({
       setFile(null);
       setLoading(false);
       setSuccess(false);
+      setError(null);
     }
   }, [open]);
 
@@ -66,11 +68,17 @@ export function ContactRequestModal({
 
   const handleSubmit = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       await onSubmit(note, file);
       setSuccess(true);
-    } catch {
+    } catch (err) {
       setLoading(false);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again."
+      );
     }
   }, [note, file, onSubmit]);
 
@@ -197,6 +205,13 @@ export function ContactRequestModal({
                 </button>
               )}
             </div>
+
+            {/* Error message */}
+            {error && (
+              <div className="mt-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+                {error}
+              </div>
+            )}
 
             {/* Submit button */}
             <button
