@@ -12,18 +12,16 @@ import {
   renderDefs,
 } from "./features";
 
+/** Always a full rectangle — optional rounded top corners only */
 function buildBagPath(
   bagLeft: number,
   bagRight: number,
   bagTop: number,
   bagBottom: number,
-  cornerR: number,
-  gussetType: string,
-  bagW: number
+  cornerR: number
 ): string {
   const segments: string[] = [];
 
-  // Top edge with optional rounded corners
   if (cornerR > 0) {
     segments.push(`M ${bagLeft} ${bagTop + cornerR}`);
     segments.push(`Q ${bagLeft} ${bagTop}, ${bagLeft + cornerR} ${bagTop}`);
@@ -34,24 +32,10 @@ function buildBagPath(
     segments.push(`L ${bagRight} ${bagTop}`);
   }
 
-  // Bottom edge — small 45° chamfers for Plow Bottom / K Seal
-  // Kept subtle (~5% of width) so the bag reads as a rectangle
-  const cornerCut =
-    gussetType === "Plow Bottom" || gussetType === "K Seal"
-      ? Math.min(bagW * 0.05, 12)
-      : 0;
+  // Straight sides and flat bottom — always a full rectangle
+  segments.push(`L ${bagRight} ${bagBottom}`);
+  segments.push(`L ${bagLeft} ${bagBottom}`);
 
-  if (cornerCut > 0) {
-    segments.push(`L ${bagRight} ${bagBottom - cornerCut}`);
-    segments.push(`L ${bagRight - cornerCut} ${bagBottom}`);
-    segments.push(`L ${bagLeft + cornerCut} ${bagBottom}`);
-    segments.push(`L ${bagLeft} ${bagBottom - cornerCut}`);
-  } else {
-    segments.push(`L ${bagRight} ${bagBottom}`);
-    segments.push(`L ${bagLeft} ${bagBottom}`);
-  }
-
-  // Left side back up
   if (cornerR > 0) {
     segments.push(`L ${bagLeft} ${bagTop + cornerR}`);
   } else {
@@ -82,23 +66,15 @@ export default function StandUpPouch(props: BagVisualProps) {
 
   const cornerR = corners === "Rounded" ? 8 : 0;
 
-  // Gusset depth (for dimension arrows only)
-  const gussetDepth =
+  // K Seal / Plow Bottom triangle size — proportional to gusset depth
+  const triSize =
     gussetType === "None"
       ? 0
-      : Math.min((gusset / height) * bagH * 0.35, 30);
-  const gussetStartY = bagBottom - gussetDepth;
+      : Math.min((gusset / height) * bagH * 0.4, bagH * 0.2, 40);
+  const gussetStartY = bagBottom - triSize;
 
-  // Build outline path
-  const bagPath = buildBagPath(
-    bagLeft,
-    bagRight,
-    bagTop,
-    bagBottom,
-    cornerR,
-    gussetType,
-    bagW
-  );
+  // Build outline path — always a full rectangle
+  const bagPath = buildBagPath(bagLeft, bagRight, bagTop, bagBottom, cornerR);
 
   // Substrate fills
   const fills = SUBSTRATE_FILLS[substrate] || SUBSTRATE_FILLS["Metallic"];
@@ -107,12 +83,6 @@ export default function StandUpPouch(props: BagVisualProps) {
   const zipperY = bagTop + 20;
   const tearNotchY = bagTop + 35;
   const holePunchCY = bagTop + 8;
-
-  // 45° corner cut size for K Seal skirt band
-  const cornerCut =
-    gussetType === "Plow Bottom" || gussetType === "K Seal"
-      ? Math.min(bagW * 0.05, 12)
-      : 0;
 
   return (
     <svg
@@ -137,34 +107,44 @@ export default function StandUpPouch(props: BagVisualProps) {
         }
       />
 
-      {/* K Seal skirt seal — lighter band at the bottom matching the angled shape */}
-      {gussetType === "K Seal" && cornerCut > 0 && (() => {
-        const bandH = 12;
-        const skirtPath = [
-          `M ${bagRight} ${bagBottom - cornerCut}`,
-          `L ${bagRight - cornerCut} ${bagBottom}`,
-          `L ${bagLeft + cornerCut} ${bagBottom}`,
-          `L ${bagLeft} ${bagBottom - cornerCut}`,
-          `L ${bagLeft} ${bagBottom - cornerCut - bandH}`,
-          `L ${bagLeft + cornerCut + bandH * 0.7} ${bagBottom - bandH}`,
-          `L ${bagRight - cornerCut - bandH * 0.7} ${bagBottom - bandH}`,
-          `L ${bagRight} ${bagBottom - cornerCut - bandH}`,
-          `Z`,
-        ].join(" ");
-        return (
-          <path
-            d={skirtPath}
-            fill="#D4D4D4"
-            fillOpacity={0.45}
-            stroke="none"
-          />
-        );
-      })()}
-
       {/* Gloss finish overlay */}
       {finish === "Gloss" && (
         <path d={bagPath} fill="url(#gloss-sheen)" pointerEvents="none" />
       )}
+
+      {/* K Seal / Plow Bottom — triangular corner folds inside the bag */}
+      {(gussetType === "K Seal" || gussetType === "Plow Bottom") &&
+        triSize > 0 && (
+          <g>
+            {/* Left triangle fold */}
+            <path
+              d={`M ${bagLeft} ${bagBottom} L ${bagLeft + triSize} ${bagBottom} L ${bagLeft} ${bagBottom - triSize} Z`}
+              fill="#D4D4D4"
+              fillOpacity={0.3}
+              stroke="#9CA3AF"
+              strokeWidth={1}
+              strokeLinejoin="round"
+            />
+            {/* Right triangle fold */}
+            <path
+              d={`M ${bagRight} ${bagBottom} L ${bagRight - triSize} ${bagBottom} L ${bagRight} ${bagBottom - triSize} Z`}
+              fill="#D4D4D4"
+              fillOpacity={0.3}
+              stroke="#9CA3AF"
+              strokeWidth={1}
+              strokeLinejoin="round"
+            />
+            {/* Horizontal skirt seal line connecting the triangle tops */}
+            <line
+              x1={bagLeft}
+              y1={bagBottom - triSize}
+              x2={bagRight}
+              y2={bagBottom - triSize}
+              stroke="#9CA3AF"
+              strokeWidth={1}
+            />
+          </g>
+        )}
 
       {/* Features */}
       {renderZipper(bagLeft, bagRight, zipperY, zipper)}
