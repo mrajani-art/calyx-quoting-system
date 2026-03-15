@@ -57,6 +57,7 @@ export default function QuotePage() {
   // Results state
   const [quote, setQuote] = useState<InstantQuoteResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [managerRequested, setManagerRequested] = useState(false);
 
@@ -111,16 +112,6 @@ export default function QuotePage() {
     }
   }, []);
 
-  const handleEditTier = useCallback((oldQty: number, newQty: number) => {
-    setSelectedTiers((prev) =>
-      prev.map((t) => (t === oldQty ? newQty : t)).sort((a, b) => a - b)
-    );
-    // If the active tier was the one edited, update it
-    if (oldQty === activeTier) {
-      setActiveTier(newQty);
-    }
-  }, [activeTier]);
-
   const buildBagConfig = useCallback((): BagConfig => ({
     width: dims.w,
     height: dims.h,
@@ -137,6 +128,36 @@ export default function QuotePage() {
     embellishment: "None",
     quantities: selectedTiers,
   }), [dims, substrate, finish, sealType, fillStyle, gussetType, zipper, tearNotch, holePunch, corners, selectedTiers]);
+
+  const refreshQuote = async (tiers: number[]) => {
+    if (!lead) return;
+    setIsRefreshing(true);
+    try {
+      const config = { ...buildBagConfig(), quantities: tiers };
+      const result = await getInstantQuote(config, lead.lead_id);
+      setQuote(result);
+    } catch (err) {
+      // Keep showing existing pricing on refresh failure
+      console.error("Failed to refresh quote:", err);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  const handleEditTier = useCallback((oldQty: number, newQty: number) => {
+    const newTiers = selectedTiers
+      .map((t) => (t === oldQty ? newQty : t))
+      .sort((a, b) => a - b);
+    setSelectedTiers(newTiers);
+    // If the active tier was the one edited, update it
+    if (oldQty === activeTier) {
+      setActiveTier(newQty);
+    }
+    // Re-fetch pricing for the new quantities when on the results page
+    if (step === "results" && lead) {
+      refreshQuote(newTiers);
+    }
+  }, [activeTier, selectedTiers, step, lead, buildBagConfig]);
 
   const handleContinue = () => {
     // If lead already captured in session, skip to results
@@ -424,11 +445,13 @@ export default function QuotePage() {
               </div>
             </div>
 
-            <PricingGrid
-              quote={quote}
-              tiers={selectedTiers}
-              activeTier={activeTier}
-            />
+            <div className={`transition-opacity duration-200 ${isRefreshing ? "opacity-50 pointer-events-none" : ""}`}>
+              <PricingGrid
+                quote={quote}
+                tiers={selectedTiers}
+                activeTier={activeTier}
+              />
+            </div>
 
             <PostQuoteActions
               onSubmitRequest={handleSubmitRequest}
