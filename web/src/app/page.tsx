@@ -347,7 +347,12 @@ export default function QuotePage() {
             </div>
 
             {/* Right: sticky bag preview (desktop only) */}
-            <div className="hidden lg:block lg:w-80 xl:w-96 shrink-0">
+            <div className="hidden lg:flex lg:flex-col lg:w-80 xl:w-96 shrink-0 space-y-8">
+              {/* Invisible spacer matching the left-column heading height */}
+              <div aria-hidden="true" className="invisible">
+                <h2 className="text-2xl font-semibold">&nbsp;</h2>
+                <p className="mt-1">&nbsp;</p>
+              </div>
               <div className="sticky top-8">
                 <BagPreview
                   width={dims.w}
