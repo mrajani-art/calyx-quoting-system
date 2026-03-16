@@ -62,6 +62,7 @@ async def instant_quote(
         "width": request.width,
         "height": request.height,
         "gusset": request.gusset,
+        "gusset_type": request.gusset_type,
         "substrate": request.substrate,
         "finish": request.finish,
         "seal_type": request.seal_type,
@@ -116,7 +117,6 @@ class ManagerRequest(BaseModel):
     lead_id: str
     quote_id: str
     note: str | None = None
-    artwork_url: str | None = None
 
 
 @router.post("/quotes/request-manager")
@@ -148,8 +148,6 @@ async def request_manager(
         lead_data,
         request.quote_id,
         request.lead_id,
-        note=request.note,
-        artwork_url=request.artwork_url,
     )
 
     logger.info(f"Manager requested for quote {request.quote_id} by lead {request.lead_id}")

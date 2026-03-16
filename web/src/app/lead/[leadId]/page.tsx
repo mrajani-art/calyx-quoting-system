@@ -1,12 +1,16 @@
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 import type { LeadDetailResponse } from "@/lib/types/lead-detail";
 import LeadDetailView from "./LeadDetailView";
 
-const API_URL = process.env.API_URL || "http://localhost:8000";
-
 async function getLeadDetail(leadId: string): Promise<LeadDetailResponse | null> {
   try {
-    const res = await fetch(`${API_URL}/api/v1/leads/${leadId}/detail`, {
+    const headersList = await headers();
+    const proto = headersList.get("x-forwarded-proto") || "https";
+    const host = headersList.get("host") || "localhost:3000";
+    const origin = `${proto}://${host}`;
+
+    const res = await fetch(`${origin}/api/v1/leads/${leadId}/detail`, {
       cache: "no-store",
     });
     if (!res.ok) return null;

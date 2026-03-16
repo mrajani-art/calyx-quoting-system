@@ -7,7 +7,7 @@ import logging
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 
-from api.services.supabase_client import upload_file_to_storage, insert_file_record
+from api.services.supabase_client import upload_file_to_storage, insert_file_record, get_supabase
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +47,12 @@ async def upload_files(
             status_code=400,
             detail=f"Too many files. Maximum is {MAX_FILES}.",
         )
+
+    # Validate lead exists
+    sb = get_supabase()
+    lead_check = sb.table("customer_leads").select("id").eq("id", lead_id).execute()
+    if not lead_check.data:
+        raise HTTPException(status_code=404, detail="Lead not found")
 
     uploaded = []
 
@@ -101,6 +107,11 @@ async def upload_files(
                 "public_url": public_url,
             })
         except Exception as e:
+            # Attempt to clean up the orphaned storage file
+            try:
+                get_supabase().storage.from_("customer-artwork").remove([storage_path])
+            except Exception:
+                logger.warning(f"Failed to clean up orphaned file: {storage_path}")
             logger.error(f"Failed to insert file record for '{file_name}': {e}")
             raise HTTPException(
                 status_code=500,

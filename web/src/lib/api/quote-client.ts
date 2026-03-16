@@ -15,7 +15,11 @@ export async function submitLead(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new QuoteError(res.status, `Request failed with status ${res.status}`);
+  if (!res.ok) {
+    let detail = "Failed to submit lead";
+    try { const body = await res.json(); if (body.detail) detail = body.detail; } catch {}
+    throw new QuoteError(res.status, detail);
+  }
   const json = await res.json();
   return { ...data, lead_id: json.lead_id };
 }
@@ -29,7 +33,11 @@ export async function getInstantQuote(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ ...config, lead_id: leadId }),
   });
-  if (!res.ok) throw new QuoteError(res.status, `Request failed with status ${res.status}`);
+  if (!res.ok) {
+    let detail = "Failed to get quote";
+    try { const body = await res.json(); if (body.detail) detail = body.detail; } catch {}
+    throw new QuoteError(res.status, detail);
+  }
   return res.json();
 }
 
@@ -47,20 +55,27 @@ export async function uploadFiles(
     method: "POST",
     body: formData,
   });
-  if (!res.ok) throw new QuoteError(res.status, "File upload failed");
+  if (!res.ok) {
+    let detail = "File upload failed";
+    try { const body = await res.json(); if (body.detail) detail = body.detail; } catch {}
+    throw new QuoteError(res.status, detail);
+  }
   return res.json();
 }
 
 export async function requestAccountManager(
   quoteId: string,
   leadId: string,
-  note?: string,
-  artworkUrl?: string
+  note?: string
 ): Promise<void> {
   const res = await fetch(`${API_BASE}/quotes/request-manager`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ quote_id: quoteId, lead_id: leadId, note, artwork_url: artworkUrl }),
+    body: JSON.stringify({ quote_id: quoteId, lead_id: leadId, note }),
   });
-  if (!res.ok) throw new QuoteError(res.status, `Request failed with status ${res.status}`);
+  if (!res.ok) {
+    let detail = "Failed to request account manager";
+    try { const body = await res.json(); if (body.detail) detail = body.detail; } catch {}
+    throw new QuoteError(res.status, detail);
+  }
 }

@@ -74,7 +74,7 @@ export default function PricingGrid({ quote, tiers, activeTier }: Props) {
   for (const method of visibleMethods) {
     const methodPricing = quote[method.quoteKey];
     const tierMap = new Map<number, TierPrice>();
-    if (methodPricing) {
+    if (methodPricing && methodPricing.tiers) {
       for (const tier of methodPricing.tiers) {
         tierMap.set(tier.quantity, tier);
       }

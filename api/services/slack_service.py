@@ -12,8 +12,8 @@ import httpx
 logger = logging.getLogger(__name__)
 
 SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN", "")
-# Testing: DM Cory directly. Switch to C090UDK9CF5 for #inbound-channel in production.
-INBOUND_CHANNEL_ID = "U04P18H18B1"
+# Production: #inbound-channel
+INBOUND_CHANNEL_ID = "C090UDK9CF5"
 SLACK_API_URL = "https://slack.com/api/chat.postMessage"
 
 
@@ -62,7 +62,7 @@ async def notify_slack_new_lead(lead_data: dict):
     await _post_to_slack(text)
 
 
-async def notify_slack_manager_request(lead_data: dict, quote_id: str, lead_id: str, note: str | None = None, artwork_url: str | None = None):
+async def notify_slack_manager_request(lead_data: dict, quote_id: str, lead_id: str):
     """Notify Slack that a customer wants to speak with an account manager."""
     lead_url = f"https://calyx-quoting-portal.vercel.app/lead/{lead_id}"
     text = (
