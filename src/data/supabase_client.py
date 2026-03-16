@@ -46,7 +46,7 @@ SCHEMA_SQL = """
 
 -- Historical quotes ingested from PDFs and spreadsheet
 CREATE TABLE IF NOT EXISTS quotes (
-    id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    id              BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     created_at      TIMESTAMPTZ DEFAULT now(),
 
     -- Source tracking
@@ -95,8 +95,8 @@ CREATE TABLE IF NOT EXISTS quotes (
 
 -- Pricing tiers — one row per quote × quantity level
 CREATE TABLE IF NOT EXISTS quote_prices (
-    id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    quote_id        UUID REFERENCES quotes(id) ON DELETE CASCADE,
+    id              BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    quote_id        BIGINT REFERENCES quotes(id) ON DELETE CASCADE,
     tier_index      SMALLINT NOT NULL,
     quantity        INTEGER NOT NULL,
 
@@ -122,7 +122,7 @@ CREATE TABLE IF NOT EXISTS quote_prices (
 
 -- ML model registry
 CREATE TABLE IF NOT EXISTS ml_models (
-    id                  UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    id                  BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     created_at          TIMESTAMPTZ DEFAULT now(),
     vendor              TEXT NOT NULL,
     model_type          TEXT NOT NULL,       -- 'gradient_boosting', 'random_forest', etc.
@@ -136,7 +136,7 @@ CREATE TABLE IF NOT EXISTS ml_models (
 
 -- Generated quotes (predictions)
 CREATE TABLE IF NOT EXISTS generated_quotes (
-    id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    id              BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     created_at      TIMESTAMPTZ DEFAULT now(),
     requested_by    TEXT DEFAULT 'system',
     input_params    JSONB NOT NULL,
@@ -148,7 +148,7 @@ CREATE TABLE IF NOT EXISTS generated_quotes (
 
 -- Generated estimates (PDF output audit trail + data store)
 CREATE TABLE IF NOT EXISTS estimates (
-    id                  UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    id                  BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     created_at          TIMESTAMPTZ DEFAULT now(),
     estimate_number     TEXT NOT NULL UNIQUE,
     customer_name       TEXT NOT NULL,

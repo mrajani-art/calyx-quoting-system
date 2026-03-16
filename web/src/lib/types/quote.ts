@@ -11,7 +11,7 @@ export interface MethodPricing {
 }
 
 export interface InstantQuoteResponse {
-  quote_id: string;
+  quote_id: number;
   specifications: Record<string, string | number>;
   digital: MethodPricing | null;
   flexographic: MethodPricing | null;
@@ -20,7 +20,7 @@ export interface InstantQuoteResponse {
 }
 
 export interface LeadData {
-  lead_id: string;
+  lead_id: number;
   full_name: string;
   business_name: string;
   email: string;

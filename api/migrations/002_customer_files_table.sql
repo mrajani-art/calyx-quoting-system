@@ -2,10 +2,10 @@
 -- Tracks files uploaded via the contact request modal, stored in Supabase Storage.
 
 CREATE TABLE IF NOT EXISTS customer_files (
-    id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    id              BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     created_at      TIMESTAMPTZ DEFAULT now(),
-    lead_id         UUID NOT NULL REFERENCES customer_leads(id),
-    quote_id        UUID REFERENCES customer_quotes(id),
+    lead_id         BIGINT NOT NULL REFERENCES customer_leads(id),
+    quote_id        BIGINT REFERENCES customer_quotes(id),
     file_name       TEXT NOT NULL,
     file_type       TEXT NOT NULL,
     file_size       INTEGER NOT NULL,

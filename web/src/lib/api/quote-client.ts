@@ -26,7 +26,7 @@ export async function submitLead(
 
 export async function getInstantQuote(
   config: BagConfig,
-  leadId: string
+  leadId: number
 ): Promise<InstantQuoteResponse> {
   const res = await fetch(`${API_BASE}/quotes/instant`, {
     method: "POST",
@@ -42,13 +42,13 @@ export async function getInstantQuote(
 }
 
 export async function uploadFiles(
-  leadId: string,
-  quoteId: string | null,
+  leadId: number,
+  quoteId: number | null,
   files: File[]
-): Promise<{ uploaded: { id: string; file_name: string; public_url: string }[] }> {
+): Promise<{ uploaded: { id: number; file_name: string; public_url: string }[] }> {
   const formData = new FormData();
-  formData.append("lead_id", leadId);
-  if (quoteId) formData.append("quote_id", quoteId);
+  formData.append("lead_id", String(leadId));
+  if (quoteId) formData.append("quote_id", String(quoteId));
   files.forEach((file) => formData.append("files", file));
 
   const res = await fetch(`${API_BASE}/files/upload`, {
@@ -64,8 +64,8 @@ export async function uploadFiles(
 }
 
 export async function requestAccountManager(
-  quoteId: string,
-  leadId: string,
+  quoteId: number,
+  leadId: number,
   note?: string
 ): Promise<void> {
   const res = await fetch(`${API_BASE}/quotes/request-manager`, {

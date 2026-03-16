@@ -183,7 +183,7 @@ export default function QuotePage() {
     }
   };
 
-  const fetchQuote = async (leadId: string) => {
+  const fetchQuote = async (leadId: number) => {
     setIsLoading(true);
     setError(null);
     setStep("results");

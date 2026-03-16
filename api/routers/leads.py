@@ -24,7 +24,7 @@ async def capture_lead(
     """
     Capture a new lead.
 
-    Persists to Supabase customer_leads and returns the generated UUID
+    Persists to Supabase customer_leads and returns the generated ID
     for use as lead_id when requesting quotes.
     """
     try:
@@ -39,8 +39,8 @@ async def capture_lead(
         logger.error(f"Failed to persist lead: {e}")
         raise HTTPException(status_code=500, detail="Failed to save lead. Please try again.")
 
-    lead_id = row.get("id", "")
-    if not lead_id:
+    lead_id = row.get("id")
+    if lead_id is None:
         raise HTTPException(status_code=500, detail="Failed to save lead.")
 
     logger.info(
@@ -67,7 +67,7 @@ async def capture_lead(
 
 
 @router.get("/leads/{lead_id}/detail")
-async def get_lead_detail(lead_id: str):
+async def get_lead_detail(lead_id: int):
     """Get complete lead detail including all quotes and files. Used by sales rep backend page."""
     sb = get_supabase()
 

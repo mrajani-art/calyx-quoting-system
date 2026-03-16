@@ -76,7 +76,7 @@ async def instant_quote(
     }
 
     response = InstantQuoteResponse(
-        quote_id="pending",  # Will be replaced by DB-generated UUID
+        quote_id=0,  # Will be replaced by DB-generated ID
         specifications=specifications,
         digital=sanitized.get("digital"),
         flexographic=sanitized.get("flexographic"),
@@ -100,7 +100,7 @@ async def instant_quote(
     except Exception as e:
         logger.error(f"Failed to persist quote for lead {request.lead_id}: {e}")
         # Non-fatal: still return the quote even if DB write fails
-        response.quote_id = "transient"
+        response.quote_id = 0
 
     logger.info(
         f"Quote {response.quote_id} generated for lead {request.lead_id} | "
@@ -114,8 +114,8 @@ async def instant_quote(
 
 
 class ManagerRequest(BaseModel):
-    lead_id: str
-    quote_id: str
+    lead_id: int
+    quote_id: int
     note: str | None = None
 
 

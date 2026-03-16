@@ -1,5 +1,5 @@
 export interface LeadDetail {
-  id: string;
+  id: number;
   full_name: string;
   business_name: string;
   email: string;
@@ -15,7 +15,7 @@ export interface MethodPricingData {
 }
 
 export interface QuoteDetail {
-  id: string;
+  id: number;
   created_at: string;
   specifications: {
     width: number;
@@ -42,7 +42,7 @@ export interface QuoteDetail {
 }
 
 export interface FileDetail {
-  id: string;
+  id: number;
   file_name: string;
   file_type: string;
   file_size: number;

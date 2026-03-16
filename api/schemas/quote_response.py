@@ -21,7 +21,7 @@ class MethodPricing(BaseModel):
 
 
 class InstantQuoteResponse(BaseModel):
-    quote_id: str
+    quote_id: int
     specifications: dict  # echo back the bag configuration
     digital: Optional[MethodPricing] = None
     flexographic: Optional[MethodPricing] = None

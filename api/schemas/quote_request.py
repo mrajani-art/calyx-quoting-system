@@ -58,7 +58,7 @@ class InstantQuoteRequest(BaseModel):
         max_length=6,
         description="Quantity tiers to quote (1-6 values)",
     )
-    lead_id: str = Field(
+    lead_id: int = Field(
         ...,
-        description="UUID from lead capture step",
+        description="ID from lead capture step",
     )

@@ -42,14 +42,14 @@ def insert_quote(quote_data: dict) -> dict:
     return result.data[0] if result.data else {}
 
 
-def update_quote(quote_id: str, updates: dict) -> dict:
+def update_quote(quote_id: int, updates: dict) -> dict:
     """Update a customer quote by ID."""
     sb = get_supabase()
     result = sb.table("customer_quotes").update(updates).eq("id", quote_id).execute()
     return result.data[0] if result.data else {}
 
 
-def upload_file_to_storage(lead_id: str, file_name: str, file_content: bytes, content_type: str) -> tuple[str, str]:
+def upload_file_to_storage(lead_id: int, file_name: str, file_content: bytes, content_type: str) -> tuple[str, str]:
     """Upload a file to Supabase Storage and return (storage_path, public_url)."""
     sb = get_supabase()
     file_uuid = str(uuid_lib.uuid4())
@@ -71,7 +71,7 @@ def insert_file_record(file_data: dict) -> dict:
     return result.data[0] if result.data else {}
 
 
-def get_files_for_lead(lead_id: str) -> list[dict]:
+def get_files_for_lead(lead_id: int) -> list[dict]:
     """Get all files uploaded for a lead."""
     sb = get_supabase()
     result = sb.table("customer_files").select("*").eq("lead_id", lead_id).order("created_at", desc=True).execute()

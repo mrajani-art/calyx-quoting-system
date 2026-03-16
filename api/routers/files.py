@@ -32,8 +32,8 @@ ALLOWED_CONTENT_TYPES = {
 
 @router.post("/files/upload")
 async def upload_files(
-    lead_id: str = Form(...),
-    quote_id: str | None = Form(default=None),
+    lead_id: int = Form(...),
+    quote_id: int | None = Form(default=None),
     files: list[UploadFile] = File(...),
 ):
     """

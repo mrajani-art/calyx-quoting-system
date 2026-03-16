@@ -16,5 +16,5 @@ class LeadCaptureRequest(BaseModel):
 
 
 class LeadCaptureResponse(BaseModel):
-    lead_id: str
+    lead_id: int
     message: str = "Lead captured successfully"

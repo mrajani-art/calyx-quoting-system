@@ -4,7 +4,7 @@
 
 -- ── customer_leads ──────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS customer_leads (
-    id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    id              BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     created_at      TIMESTAMPTZ DEFAULT now(),
     full_name       TEXT NOT NULL,
     business_name   TEXT NOT NULL,
@@ -20,9 +20,9 @@ CREATE INDEX idx_customer_leads_created_at ON customer_leads (created_at DESC);
 
 -- ── customer_quotes ─────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS customer_quotes (
-    id                  UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    id                  BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     created_at          TIMESTAMPTZ DEFAULT now(),
-    lead_id             UUID NOT NULL REFERENCES customer_leads(id),
+    lead_id             BIGINT NOT NULL REFERENCES customer_leads(id),
     specifications      JSONB NOT NULL,
     pricing_digital     JSONB,
     pricing_flexo       JSONB,
