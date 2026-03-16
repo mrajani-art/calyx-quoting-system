@@ -49,9 +49,14 @@ async def upload_files(
         )
 
     # Validate lead exists
-    sb = get_supabase()
-    lead_check = sb.table("customer_leads").select("id").eq("id", lead_id).execute()
-    if not lead_check.data:
+    try:
+        sb = get_supabase()
+        lead_check = sb.table("customer_leads").select("id").eq("id", lead_id).execute()
+        if not lead_check.data:
+            raise HTTPException(status_code=404, detail="Lead not found")
+    except HTTPException:
+        raise
+    except Exception:
         raise HTTPException(status_code=404, detail="Lead not found")
 
     uploaded = []
