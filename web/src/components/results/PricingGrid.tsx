@@ -15,24 +15,28 @@ const METHOD_MAP = [
     configKey: "digital" as const,
     quoteKey: "digital" as const,
     minQtyForCell: 0,
+    maxQtyForCell: 100_000,
   },
   {
     key: "flexographic",
     configKey: "flexographic" as const,
     quoteKey: "flexographic" as const,
     minQtyForCell: 50_000,
+    maxQtyForCell: Infinity,
   },
   {
     key: "internationalAir",
     configKey: "internationalAir" as const,
     quoteKey: "international_air" as const,
     minQtyForCell: 25_000,
+    maxQtyForCell: Infinity,
   },
   {
     key: "internationalOcean",
     configKey: "internationalOcean" as const,
     quoteKey: "international_ocean" as const,
     minQtyForCell: 25_000,
+    maxQtyForCell: Infinity,
   },
 ] as const;
 
@@ -55,9 +59,9 @@ const currencyTotal = new Intl.NumberFormat("en-US", {
 export default function PricingGrid({ quote, tiers, activeTier }: Props) {
   const sortedTiers = [...tiers].sort((a, b) => a - b);
 
-  // A method column is visible if ANY tier meets its cell threshold
-  const visibleMethods = METHOD_MAP.filter(({ minQtyForCell }) => {
-    return sortedTiers.some((t) => t >= minQtyForCell);
+  // A method column is visible if ANY tier falls within its min/max range
+  const visibleMethods = METHOD_MAP.filter(({ minQtyForCell, maxQtyForCell }) => {
+    return sortedTiers.some((t) => t >= minQtyForCell && t <= maxQtyForCell);
   });
 
   if (visibleMethods.length === 0) {
@@ -86,7 +90,7 @@ export default function PricingGrid({ quote, tiers, activeTier }: Props) {
   let bestValueMethodKey: string | null = null;
   let bestValuePrice: number | null = null;
   for (const method of visibleMethods) {
-    if (activeTier < method.minQtyForCell) continue;
+    if (activeTier < method.minQtyForCell || activeTier > method.maxQtyForCell) continue;
     const tierMap = pricingLookup.get(method.key);
     const tier = tierMap?.get(activeTier);
     if (tier) {
@@ -161,7 +165,7 @@ export default function PricingGrid({ quote, tiers, activeTier }: Props) {
             // Find the best (lowest) unit price for this tier across visible methods
             let bestUnitPrice: number | null = null;
             for (const method of visibleMethods) {
-              if (qty < method.minQtyForCell) continue;
+              if (qty < method.minQtyForCell || qty > method.maxQtyForCell) continue;
               const tierMap = pricingLookup.get(method.key);
               const tier = tierMap?.get(qty);
               if (tier) {
@@ -176,9 +180,9 @@ export default function PricingGrid({ quote, tiers, activeTier }: Props) {
                 <td className="border-t border-gray-10 px-4 py-3 font-medium text-gray-90">
                   {numberFmt.format(qty)}
                 </td>
-                {visibleMethods.map(({ key, minQtyForCell }) => {
-                  // Blank if below this method's threshold
-                  if (qty < minQtyForCell) {
+                {visibleMethods.map(({ key, minQtyForCell, maxQtyForCell }) => {
+                  // Blank if outside this method's quantity range
+                  if (qty < minQtyForCell || qty > maxQtyForCell) {
                     return (
                       <td
                         key={key}
