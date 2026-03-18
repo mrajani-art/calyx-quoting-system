@@ -472,6 +472,8 @@ export default function QuotePage() {
             <PostQuoteActions
               onSubmitRequest={handleSubmitRequest}
               managerRequested={managerRequested}
+              leadName={lead?.full_name}
+              leadEmail={lead?.email}
             />
 
             <div className="pt-4 border-t border-gray-10">

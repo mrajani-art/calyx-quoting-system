@@ -126,7 +126,13 @@ def generate_estimate_pdf(
     y -= 22
 
     # ── Print Method Header ───────────────────────────────────
-    method_label = "Flexographic" if print_method.lower() == "flexographic" else "Digital"
+    METHOD_DISPLAY = {
+        "digital": "Digital",
+        "flexographic": "Flexographic",
+        "international air": "International Air",
+        "international ocean": "International Ocean",
+    }
+    method_label = METHOD_DISPLAY.get(print_method.lower(), print_method)
     c.setFont("Helvetica-Bold", 12)
     c.setFillColor(CHARCOAL)
     c.drawString(ml, y, method_label)

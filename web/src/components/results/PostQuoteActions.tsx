@@ -7,11 +7,15 @@ import { ContactRequestModal } from "./ContactRequestModal";
 interface Props {
   onSubmitRequest: (note: string, files: File[]) => Promise<void>;
   managerRequested?: boolean;
+  leadName?: string;
+  leadEmail?: string;
 }
 
 export function PostQuoteActions({
   onSubmitRequest,
   managerRequested = false,
+  leadName,
+  leadEmail,
 }: Props) {
   const [showModal, setShowModal] = useState(false);
 
@@ -50,6 +54,8 @@ export function PostQuoteActions({
         open={showModal}
         onClose={() => setShowModal(false)}
         onSubmit={onSubmitRequest}
+        leadName={leadName}
+        leadEmail={leadEmail}
       />
     </>
   );
