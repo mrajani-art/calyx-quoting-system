@@ -67,6 +67,9 @@ GUSSET_TYPE_MAP = {
 # Default margin percentage applied to convert cost to sell price
 DEFAULT_MARGIN_PCT = 20.0
 
+# Higher margin for Digital quotes routed to the Internal vendor (web width < 12")
+INTERNAL_VENDOR_MARGIN_PCT = 25.0
+
 # Lead times by print method (customer-facing)
 LEAD_TIMES = {
     "digital": "As little as 2 weeks with faster expedite options available",
@@ -315,11 +318,13 @@ def generate_instant_quote(
     try:
         digital_specs = {**specs, "print_method": "Digital"}
         digital_result = predictor.predict(digital_specs, quantities)
+        digital_vendor = (digital_result.get("vendor") or "").lower()
         logger.info("Digital: vendor=%s route=%s tier0_cost=%s",
                     digital_result.get("vendor"), digital_result.get("routing_reason"),
                     digital_result.get("predictions", [{}])[0].get("unit_price"))
+        digital_margin = INTERNAL_VENDOR_MARGIN_PCT if digital_vendor == "internal" else margin_pct
         result["digital"] = _extract_digital_pricing(
-            digital_result, quantities, margin_pct
+            digital_result, quantities, digital_margin
         )
     except Exception as e:
         logger.error(f"Digital prediction failed: {e}")
