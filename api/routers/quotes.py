@@ -163,6 +163,7 @@ async def request_manager(
     )
 
     # Fire-and-forget PDF estimate email to customer
+    logger.info(f"Email check: lead_email={lead_data.get('email')!r} quote_data_keys={list(quote_data.keys()) if quote_data else 'empty'}")
     if lead_data.get("email") and quote_data:
         background_tasks.add_task(
             _send_estimate_email_task,
@@ -176,34 +177,35 @@ async def request_manager(
 
 async def _send_estimate_email_task(lead_data: dict, quote_data: dict):
     """Background task: generate PDFs and email them to the customer."""
-    customer_name = lead_data.get("full_name", "Customer")
-    customer_email = lead_data.get("email", "")
-
-    if not customer_email:
-        logger.warning("No email for lead — skipping estimate email")
-        return
-
     try:
+        customer_name = lead_data.get("full_name", "Customer")
+        customer_email = lead_data.get("email", "")
+        logger.info(f"Email task started for {customer_email}")
+
+        if not customer_email:
+            logger.warning("No email for lead — skipping estimate email")
+            return
+
         pdfs = build_pdfs_for_quote(quote_data, customer_name)
+        logger.info(f"PDF generation returned {len(pdfs)} PDFs")
+
+        if not pdfs:
+            logger.warning("No pricing methods available for PDF generation")
+            return
+
+        primary_estimate_number = pdfs[0][1]
+
+        attachments = []
+        for pdf_bytes, est_num, method_label in pdfs:
+            safe_method = method_label.replace(" ", "_")
+            filename = f"Calyx_Estimate_{safe_method}_{est_num}.pdf"
+            attachments.append((pdf_bytes, filename))
+
+        await send_estimate_email(
+            to_email=customer_email,
+            customer_name=customer_name,
+            attachments=attachments,
+            primary_estimate_number=primary_estimate_number,
+        )
     except Exception as e:
-        logger.error(f"PDF generation failed: {e}")
-        return
-
-    if not pdfs:
-        logger.warning("No pricing methods available for PDF generation")
-        return
-
-    primary_estimate_number = pdfs[0][1]
-
-    attachments = []
-    for pdf_bytes, est_num, method_label in pdfs:
-        safe_method = method_label.replace(" ", "_")
-        filename = f"Calyx_Estimate_{safe_method}_{est_num}.pdf"
-        attachments.append((pdf_bytes, filename))
-
-    await send_estimate_email(
-        to_email=customer_email,
-        customer_name=customer_name,
-        attachments=attachments,
-        primary_estimate_number=primary_estimate_number,
-    )
+        logger.error(f"Email task failed: {e}", exc_info=True)
