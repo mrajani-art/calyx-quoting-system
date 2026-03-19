@@ -116,6 +116,11 @@ export default function StandardSizeSelector({
         <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-40 mb-2">Stand-Up Pouches</h4>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
           {standUpSizes.map(size => renderSizeCard(size))}
+        </div>
+      </div>
+      <div>
+        <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-40 mb-2">Custom Size</h4>
+        <div className="grid grid-cols-2 gap-3">
           {renderCustomCard()}
         </div>
       </div>
