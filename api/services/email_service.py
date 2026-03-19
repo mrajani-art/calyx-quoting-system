@@ -54,8 +54,13 @@ async def send_estimate_email(
 
     html_body = f"""
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <div style="background-color: #0033A1; padding: 24px; text-align: center;">
-        <h1 style="color: #ffffff; margin: 0; font-size: 24px;">Calyx Containers</h1>
+      <div style="background-color: #0033A1; padding: 20px 24px; text-align: center;">
+        <img
+          src="https://calyx-quoting-portal.vercel.app/calyx-logo.svg"
+          alt="Calyx Containers"
+          width="220"
+          style="display: block; margin: 0 auto;"
+        />
       </div>
       <div style="padding: 32px 24px;">
         <p style="font-size: 16px; color: #1a1a1a;">Hi {first_name},</p>
@@ -68,12 +73,13 @@ async def send_estimate_email(
           will be confirmed once artwork is received and reviewed by our team.
         </p>
         <p style="font-size: 14px; color: #4a4a4a; line-height: 1.6;">
-          If you have any questions, our team is here to help.
+          Have questions or ready to move forward? <strong>Simply reply to this
+          email</strong> and one of our account managers will be in touch shortly.
         </p>
         <p style="font-size: 14px; color: #1a1a1a; margin-top: 24px;">
           Best regards,<br/>
           <strong>The Calyx Containers Team</strong><br/>
-          <span style="color: #6b7280; font-size: 13px;">(888) 860-5202</span>
+          <span style="color: #6b7280; font-size: 13px;">(724) 303-7481</span>
         </p>
       </div>
       <div style="background-color: #f3f4f6; padding: 16px 24px; text-align: center;">
