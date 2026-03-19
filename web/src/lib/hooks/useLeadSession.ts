@@ -13,7 +13,13 @@ export function useLeadSession() {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       try {
-        setLead(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        // Guard against stale sessions from pre-BIGINT migration where lead_id was a UUID string
+        if (typeof parsed.lead_id !== "number") {
+          localStorage.removeItem(STORAGE_KEY);
+        } else {
+          setLead(parsed);
+        }
       } catch {
         localStorage.removeItem(STORAGE_KEY);
       }
