@@ -5,6 +5,7 @@ Produces a branded PDF matching the Calyx document style,
 using 'Estimate' terminology with appropriate terms & conditions.
 """
 import io
+import urllib.request
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -22,8 +23,11 @@ MID_GREY = HexColor("#6b7280")
 LIGHT_GREY = HexColor("#e5e7eb")
 TABLE_HEADER_BG = HexColor("#f3f4f6")
 
-# Logo path — try multiple locations to work locally and on Railway
-def _find_logo_path() -> Path | None:
+# Logo — cached PNG bytes fetched once at startup (from filesystem or URL)
+_LOGO_BYTES: bytes | None = None
+
+def _load_logo() -> bytes | None:
+    # Try filesystem first
     candidates = [
         Path(__file__).resolve().parent.parent.parent / "assets" / "calyx_logo.png",
         Path.cwd() / "assets" / "calyx_logo.png",
@@ -31,10 +35,17 @@ def _find_logo_path() -> Path | None:
     ]
     for p in candidates:
         if p.exists():
-            return p
-    return None
+            return p.read_bytes()
+    # Fall back to fetching from public Vercel URL
+    try:
+        with urllib.request.urlopen(
+            "https://calyx-quoting-portal.vercel.app/calyx-logo.svg", timeout=5
+        ) as resp:
+            return resp.read()
+    except Exception:
+        return None
 
-LOGO_PATH = _find_logo_path()
+_LOGO_BYTES = _load_logo()
 
 
 def _generate_estimate_number() -> str:
@@ -82,10 +93,10 @@ def generate_estimate_pdf(
 
     # ── Logo ───────────────────────────────────────────────────
     logo_drawn = False
-    if LOGO_PATH is not None:
+    if _LOGO_BYTES:
         try:
-            logo = ImageReader(str(LOGO_PATH))
-            c.drawImage(logo, ml, y - 32, width=180, height=78,
+            logo = ImageReader(io.BytesIO(_LOGO_BYTES))
+            c.drawImage(logo, ml, y - 32, width=200, height=60,
                         preserveAspectRatio=True, anchor='sw', mask='auto')
             logo_drawn = True
         except Exception:
