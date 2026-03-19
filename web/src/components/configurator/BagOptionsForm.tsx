@@ -177,7 +177,7 @@ export default function BagOptionsForm({
       </OptionGroup>
 
       {/* Group 3: Closures & Features */}
-      <OptionGroup title="Closures & Features" description="Zipper, tear notch, and physical features">
+      <OptionGroup title="Closures & Features" description="Zipper, tear notch, and physical features" defaultOpen>
         <SelectField
           id="zipper"
           label="Zipper"
