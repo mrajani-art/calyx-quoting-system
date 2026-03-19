@@ -15,7 +15,7 @@ from api.services.prediction_service import generate_instant_quote, DEFAULT_MARG
 from api.services.supabase_client import insert_quote, update_quote, get_supabase
 from api.services.slack_service import notify_slack_manager_request
 from api.services.email_service import send_estimate_email
-from api.services.pdf_builder import build_pdfs_for_quote
+from api.services.pdf_builder import build_merged_pdf_for_quote
 from api.middleware.sanitizer import sanitize_response
 
 logger = logging.getLogger(__name__)
@@ -186,25 +186,19 @@ async def _send_estimate_email_task(lead_data: dict, quote_data: dict):
             logger.warning("No email for lead — skipping estimate email")
             return
 
-        pdfs = build_pdfs_for_quote(quote_data, customer_name)
-        logger.info(f"PDF generation returned {len(pdfs)} PDFs")
-
-        if not pdfs:
+        result = build_merged_pdf_for_quote(quote_data, customer_name)
+        if not result:
             logger.warning("No pricing methods available for PDF generation")
             return
 
-        primary_estimate_number = pdfs[0][1]
+        merged_pdf, primary_estimate_number = result
+        logger.info(f"Merged PDF generated ({len(merged_pdf):,} bytes, estimate {primary_estimate_number})")
 
-        attachments = []
-        for pdf_bytes, est_num, method_label in pdfs:
-            safe_method = method_label.replace(" ", "_")
-            filename = f"Calyx_Estimate_{safe_method}_{est_num}.pdf"
-            attachments.append((pdf_bytes, filename))
-
+        filename = f"Calyx_Estimate_{primary_estimate_number}.pdf"
         await send_estimate_email(
             to_email=customer_email,
             customer_name=customer_name,
-            attachments=attachments,
+            attachments=[(merged_pdf, filename)],
             primary_estimate_number=primary_estimate_number,
         )
     except Exception as e:

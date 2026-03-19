@@ -5,8 +5,10 @@ Extracts parameters from the quote's JSONB specifications and pricing
 columns and calls the existing generate_estimate_pdf function for
 each active pricing method.
 """
+import io
 import logging
 
+from pypdf import PdfWriter, PdfReader
 from src.utils.pdf_estimate import generate_estimate_pdf
 
 logger = logging.getLogger(__name__)
@@ -78,3 +80,34 @@ def build_pdfs_for_quote(
         results.append((pdf_bytes, estimate_number, method_label))
 
     return results
+
+
+def merge_pdfs(pdf_bytes_list: list[bytes]) -> bytes:
+    """Merge multiple PDFs into a single PDF in order."""
+    writer = PdfWriter()
+    for pdf_bytes in pdf_bytes_list:
+        reader = PdfReader(io.BytesIO(pdf_bytes))
+        for page in reader.pages:
+            writer.add_page(page)
+    output = io.BytesIO()
+    writer.write(output)
+    return output.getvalue()
+
+
+def build_merged_pdf_for_quote(
+    quote_data: dict,
+    customer_name: str,
+    calyx_rep: str = "Owen Labombard",
+) -> tuple[bytes, str] | None:
+    """
+    Generate all method PDFs and merge into a single PDF.
+
+    Returns (merged_pdf_bytes, primary_estimate_number) or None if no pricing.
+    Order: Digital → Flexographic → International Air → International Ocean
+    """
+    pdfs = build_pdfs_for_quote(quote_data, customer_name, calyx_rep)
+    if not pdfs:
+        return None
+    primary_estimate_number = pdfs[0][1]
+    merged = merge_pdfs([pdf_bytes for pdf_bytes, _, _ in pdfs])
+    return merged, primary_estimate_number
