@@ -54,11 +54,11 @@ async def send_estimate_email(
 
     html_body = f"""
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <div style="background-color: #0033A1; padding: 20px 24px; text-align: center;">
+      <div style="background-color: #ffffff; padding: 24px; text-align: center; border-bottom: 3px solid #0033A1;">
         <img
           src="https://calyx-quoting-portal.vercel.app/calyx-logo.svg"
           alt="Calyx Containers"
-          width="220"
+          width="200"
           style="display: block; margin: 0 auto;"
         />
       </div>

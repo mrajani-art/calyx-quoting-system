@@ -22,8 +22,19 @@ MID_GREY = HexColor("#6b7280")
 LIGHT_GREY = HexColor("#e5e7eb")
 TABLE_HEADER_BG = HexColor("#f3f4f6")
 
-# Logo path (PNG rendered from SVG at build time)
-LOGO_PATH = Path(__file__).resolve().parent.parent.parent / "assets" / "calyx_logo.png"
+# Logo path — try multiple locations to work locally and on Railway
+def _find_logo_path() -> Path | None:
+    candidates = [
+        Path(__file__).resolve().parent.parent.parent / "assets" / "calyx_logo.png",
+        Path.cwd() / "assets" / "calyx_logo.png",
+        Path("/app/assets/calyx_logo.png"),
+    ]
+    for p in candidates:
+        if p.exists():
+            return p
+    return None
+
+LOGO_PATH = _find_logo_path()
 
 
 def _generate_estimate_number() -> str:
@@ -70,16 +81,16 @@ def generate_estimate_pdf(
     y = h - 0.6 * inch
 
     # ── Logo ───────────────────────────────────────────────────
-    if LOGO_PATH.exists():
+    logo_drawn = False
+    if LOGO_PATH is not None:
         try:
             logo = ImageReader(str(LOGO_PATH))
             c.drawImage(logo, ml, y - 32, width=180, height=78,
                         preserveAspectRatio=True, anchor='sw', mask='auto')
+            logo_drawn = True
         except Exception:
-            c.setFont("Helvetica-Bold", 11)
-            c.setFillColor(CHARCOAL)
-            c.drawString(ml, y, "CALYX CONTAINERS")
-    else:
+            pass
+    if not logo_drawn:
         c.setFont("Helvetica-Bold", 11)
         c.setFillColor(CHARCOAL)
         c.drawString(ml, y, "CALYX CONTAINERS")
@@ -95,7 +106,7 @@ def generate_estimate_pdf(
     c.setFont("Helvetica", 8.5)
     c.setFillColor(DARK_GREY)
     for line in ["Calyx Containers", "1991 Parkway Blvd",
-                 "West Valley City, UT 84119", "(888) 860-5202"]:
+                 "West Valley City, UT 84119", "(724) 303-7481"]:
         c.drawString(ml, y, line)
         y -= 12
 
