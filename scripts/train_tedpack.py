@@ -21,6 +21,30 @@ def train_models():
     df = pd.read_csv(CSV_PATH)
     print(f"Loaded {len(df)} rows from {CSV_PATH}")
 
+    # For ocean ratio model, compute ocean_air_ratio from paired air/ocean rows
+    air_df = df[df["vendor"] == "tedpack_air"].copy()
+    ocean_df = df[df["vendor"] == "tedpack_ocean"].copy()
+    if len(air_df) > 0 and len(ocean_df) > 0:
+        # Build lookup: (Bag ID, quantity) → air price
+        air_lookup = {}
+        for _, row in air_df.iterrows():
+            key = (row["Bag ID"], row["quantity"])
+            air_lookup[key] = row["unit_price"]
+        # Add ddp_air_price and ocean_air_ratio to ocean rows
+        ocean_df["ddp_air_price"] = ocean_df.apply(
+            lambda r: air_lookup.get((r["Bag ID"], r["quantity"]), np.nan), axis=1
+        )
+        has_both = ocean_df["ddp_air_price"].notna() & (ocean_df["ddp_air_price"] > 0)
+        ocean_df["ocean_air_ratio"] = np.where(
+            has_both,
+            ocean_df["unit_price"] / ocean_df["ddp_air_price"],
+            np.nan,
+        )
+        n_ratio = has_both.sum()
+        print(f"Computed ocean_air_ratio for {n_ratio}/{len(ocean_df)} ocean rows")
+        # Update the main df with the enriched ocean rows
+        df = pd.concat([df[df["vendor"] != "tedpack_ocean"], ocean_df], ignore_index=True)
+
     results = {}
     for vendor in ["tedpack_air", "tedpack_ocean"]:
         vdf = df[df["vendor"] == vendor].copy()
@@ -28,13 +52,21 @@ def train_models():
             print(f"No data for {vendor} — skipping")
             continue
 
+        # Ocean uses ratio target; all others use log-transformed unit_price
+        is_ocean = vendor == "tedpack_ocean"
+        use_log = not is_ocean
+        target_col = "ocean_air_ratio" if is_ocean else "unit_price"
+
         print(f"\n{'='*60}")
         print(f"Training {vendor}: {len(vdf)} samples")
         print(f"Price range: ${vdf['unit_price'].min():.4f} – ${vdf['unit_price'].max():.4f}")
+        if is_ocean and "ocean_air_ratio" in vdf.columns:
+            valid_ratios = vdf["ocean_air_ratio"].dropna()
+            print(f"Ratio range: {valid_ratios.min():.3f} – {valid_ratios.max():.3f} (avg {valid_ratios.mean():.3f})")
         print(f"{'='*60}")
 
-        trainer = QuoteModelTrainer(vendor, use_log_target=True)
-        metrics = trainer.train(vdf)
+        trainer = QuoteModelTrainer(vendor, use_log_target=use_log)
+        metrics = trainer.train(vdf, target_col=target_col)
         trainer.save()
         results[vendor] = (trainer, metrics)
 
@@ -55,6 +87,9 @@ def simulate_accuracy(results):
     print(f"\n{'='*60}")
     print("SIMULATION: Predicting on all training data")
     print(f"{'='*60}")
+
+    # For ratio-based ocean simulation, we need air predictions first
+    air_trainer = results.get("tedpack_air", (None, None))[0]
 
     sim_rows = []
     for vendor, (trainer, _) in results.items():
@@ -77,6 +112,30 @@ def simulate_accuracy(results):
             pred = pred_raw
             lower = lower_raw
             upper = upper_raw
+
+        # For ratio models, convert ratio predictions to absolute prices
+        if trainer.is_ratio_model and air_trainer is not None:
+            # Get air predictions for the same rows (by matching specs)
+            air_vdf = df[df["vendor"] == "tedpack_air"].copy()
+            air_lookup = {}
+            air_feat = prepare_features(air_vdf.copy())
+            air_X = air_trainer.preprocessor.transform(air_feat)
+            air_preds_raw = air_trainer.model_point.predict(air_X)
+            if air_trainer.use_log_target:
+                air_preds_all = np.exp(air_preds_raw)
+            else:
+                air_preds_all = air_preds_raw
+            for i, (_, row) in enumerate(air_vdf.iterrows()):
+                air_lookup[(row.get("Bag ID", ""), row.get("quantity", 0))] = air_preds_all[i]
+
+            # Multiply ratio by air prediction
+            air_prices_for_ocean = np.array([
+                air_lookup.get((row.get("Bag ID", ""), row.get("quantity", 0)), np.nan)
+                for _, row in vdf.iterrows()
+            ])
+            pred = pred * air_prices_for_ocean
+            lower = lower * air_prices_for_ocean
+            upper = upper * air_prices_for_ocean
 
         actual = vdf["unit_price"].values
         error_pct = np.abs(pred - actual) / np.clip(actual, 1e-6, None) * 100

@@ -64,6 +64,7 @@ class QuoteModelTrainer:
         """
         self.vendor = vendor
         self.use_log_target = use_log_target
+        self.is_ratio_model = False
         self.preprocessor = build_preprocessor(vendor=vendor)
         self.model_point = None       # Main prediction model (squared error)
         self.model_lower = None       # 10th percentile
@@ -112,6 +113,12 @@ class QuoteModelTrainer:
         # Prepare features
         df = prepare_features(df)
 
+        # ── Ratio model setup for tedpack_ocean ──────────────────────
+        # Must be set before outlier filters so they can adapt behavior
+        if self.vendor == "tedpack_ocean" and target_col == "ocean_air_ratio":
+            self.is_ratio_model = True
+            self.use_log_target = False  # ratio is bounded (0.3–0.9), no log needed
+
         # Drop rows with missing target
         valid_mask = df[target_col].notna()
         df = df[valid_mask]
@@ -138,7 +145,8 @@ class QuoteModelTrainer:
                     groups = groups[inlier_mask]
 
         # ── TedPack secondary filter: price-per-sqin IQR ────────
-        if self.vendor.startswith("tedpack") and len(df) > 20:
+        # Skip for ratio models — ratio is not a price, dividing by area is meaningless
+        if self.vendor.startswith("tedpack") and not self.is_ratio_model and len(df) > 20:
             if "width" in df.columns and "height" in df.columns:
                 area = (df["width"] * df["height"]).clip(lower=1)
                 psi = df[target_col] / area
@@ -157,11 +165,19 @@ class QuoteModelTrainer:
         if len(df) < 10:
             logger.warning(f"Only {len(df)} samples for {self.vendor} — model may be unreliable")
 
+        # Preserve air prices and actual ocean prices for ratio→price back-conversion
+        if self.is_ratio_model:
+            _air_prices = df["ddp_air_price"].values.copy() if "ddp_air_price" in df.columns else None
+            _actual_ocean_prices = df["unit_price"].values.copy()
+        else:
+            _air_prices = None
+
         X = df.drop(columns=[target_col, "unit_price", "total_price",
                              "price_per_m_imps", "price_per_msi",
                              "price_per_ea_imp", "tolerance_pct",
                              "adder_per_m_imps", "adder_per_msi",
-                             "adder_per_ea_imp"],
+                             "adder_per_ea_imp",
+                             "ocean_air_ratio", "ddp_air_price"],
                     errors="ignore")
         y_raw = df[target_col].values
 
@@ -190,6 +206,9 @@ class QuoteModelTrainer:
             w_train, w_test = sample_weights[train_idx], sample_weights[test_idx]
             if self.use_log_target:
                 y_raw_test = y_raw[test_idx]
+            if self.is_ratio_model and _air_prices is not None:
+                _air_prices_test = _air_prices[test_idx]
+                _actual_ocean_test = _actual_ocean_prices[test_idx]
         else:
             # Too few groups for group split — fall back to random
             logger.warning(f"  Only {n_unique_groups} unique FL groups — using random split")
@@ -201,6 +220,13 @@ class QuoteModelTrainer:
                 _, _, _, y_raw_test, _, _ = train_test_split(
                     X_transformed, y_raw, sample_weights,
                     test_size=TEST_SIZE, random_state=RANDOM_STATE
+                )
+            if self.is_ratio_model and _air_prices is not None:
+                _, _air_prices_test = train_test_split(
+                    _air_prices, test_size=TEST_SIZE, random_state=RANDOM_STATE
+                )
+                _, _actual_ocean_test = train_test_split(
+                    _actual_ocean_prices, test_size=TEST_SIZE, random_state=RANDOM_STATE
                 )
 
         # ── Point prediction model ─────────────────────────────────
@@ -215,9 +241,9 @@ class QuoteModelTrainer:
             # depth=2/200/lr=0.03 → 14.5% ± 2.3% (best mean for 52-bag dataset)
             n_est, depth, lr, min_leaf = 200, 2, 0.03, 12
         elif self.vendor == "tedpack_ocean":
-            # Grid search winner (256 combos × 5 splits):
-            # depth=2/100/lr=0.03 → 18.8% ± 4.1% (best mean for 52-bag dataset)
-            n_est, depth, lr, min_leaf = 100, 2, 0.03, 5
+            # Ratio-based model: predicts ocean/air ratio (~0.3–0.9)
+            # More estimators + larger leaves for stable ratio predictions
+            n_est, depth, lr, min_leaf = 200, 2, 0.03, 10
         else:  # dazpak
             n_est, depth, lr, min_leaf = 400, 5, 0.03, 4
 
@@ -290,27 +316,53 @@ class QuoteModelTrainer:
             y_pred_upper = y_pred_upper_raw
             y_eval = y_test
 
-        # Metrics (always in original price scale)
+        # ── Convert ratio predictions to absolute prices for metrics ──
+        # For ratio models, report metrics in absolute price scale so they
+        # are comparable with the old baseline (direct price prediction).
+        if self.is_ratio_model and _air_prices is not None:
+            # ratio predictions → absolute ocean price = ratio * air_price
+            y_pred_abs = y_pred * _air_prices_test
+            y_pred_lower_abs = y_pred_lower * _air_prices_test
+            y_pred_upper_abs = y_pred_upper * _air_prices_test
+            y_eval_abs = _actual_ocean_test
+            # Also store ratio-level metrics for diagnostics
+            ratio_mape = float(mean_absolute_percentage_error(y_eval, y_pred) * 100)
+            ratio_rmse = float(np.sqrt(mean_squared_error(y_eval, y_pred)))
+            ratio_r2 = float(r2_score(y_eval, y_pred))
+        else:
+            y_pred_abs = y_pred
+            y_pred_lower_abs = y_pred_lower
+            y_pred_upper_abs = y_pred_upper
+            y_eval_abs = y_eval
+
+        # Metrics (always in original price scale for comparability)
         self.metrics = {
             "n_train": len(X_train),
             "n_test": len(X_test),
             "n_groups_train": int(groups.iloc[train_idx].nunique()) if n_unique_groups >= 5 else "N/A",
             "n_groups_test": int(groups.iloc[test_idx].nunique()) if n_unique_groups >= 5 else "N/A",
             "group_split": n_unique_groups >= 5,
-            "mape": float(mean_absolute_percentage_error(y_eval, y_pred) * 100),
-            "rmse": float(np.sqrt(mean_squared_error(y_eval, y_pred))),
-            "r2": float(r2_score(y_eval, y_pred)),
+            "mape": float(mean_absolute_percentage_error(y_eval_abs, y_pred_abs) * 100),
+            "rmse": float(np.sqrt(mean_squared_error(y_eval_abs, y_pred_abs))),
+            "r2": float(r2_score(y_eval_abs, y_pred_abs)),
             "coverage_90": float(
-                np.mean((y_eval >= y_pred_lower) & (y_eval <= y_pred_upper)) * 100
+                np.mean((y_eval_abs >= y_pred_lower_abs) & (y_eval_abs <= y_pred_upper_abs)) * 100
             ),
             "ci_bounds": f"{ci_lower_alpha:.0%}/{ci_upper_alpha:.0%}",
             "use_log_target": self.use_log_target,
+            "is_ratio_model": self.is_ratio_model,
             "recency_weighting": True,
             "recency_date_column": date_col,
             "recency_recent_days": RECENCY_RECENT_DAYS,
             "recency_recent_weight": RECENCY_RECENT_WEIGHT,
             "n_recent_train": int((w_train >= RECENCY_RECENT_WEIGHT * 0.99).sum()),
         }
+
+        # Add ratio-level diagnostics for ratio models
+        if self.is_ratio_model and _air_prices is not None:
+            self.metrics["ratio_mape"] = ratio_mape
+            self.metrics["ratio_rmse"] = ratio_rmse
+            self.metrics["ratio_r2"] = ratio_r2
 
         # ── Cross-validation ───────────────────────────────────────
         # For log-target models, use a custom scorer that back-transforms
@@ -371,6 +423,7 @@ class QuoteModelTrainer:
         joblib.dump(self.metrics, model_dir / f"{tag}_metrics.joblib")
         joblib.dump(self.feature_importances, model_dir / f"{tag}_importances.joblib")
         joblib.dump(self.use_log_target, model_dir / f"{tag}_log_target.joblib")
+        joblib.dump(self.is_ratio_model, model_dir / f"{tag}_is_ratio_model.joblib")
 
         logger.info(f"Saved {self.vendor} models to {model_dir}")
 
@@ -393,7 +446,11 @@ class QuoteModelTrainer:
         trainer.metrics = joblib.load(model_dir / f"{tag}_metrics.joblib")
         trainer.feature_importances = joblib.load(model_dir / f"{tag}_importances.joblib")
 
-        logger.info(f"Loaded {vendor} model (MAPE={trainer.metrics.get('mape', '?')}%, log_target={use_log})")
+        # Load ratio model flag (backwards-compatible: defaults to False for old models)
+        ratio_flag_path = model_dir / f"{tag}_is_ratio_model.joblib"
+        trainer.is_ratio_model = joblib.load(ratio_flag_path) if ratio_flag_path.exists() else False
+
+        logger.info(f"Loaded {vendor} model (MAPE={trainer.metrics.get('mape', '?')}%, log_target={use_log}, ratio_model={trainer.is_ratio_model})")
         return trainer
 
 
@@ -410,11 +467,11 @@ def train_all_models(training_df: pd.DataFrame) -> dict:
             logger.warning(f"No data for {vendor} — skipping")
             continue
 
-        # All vendors use log-target for better fit across wide price/qty ranges
-        use_log = vendor in ("internal", "ross", "dazpak",
-                             "tedpack_air", "tedpack_ocean")
+        # All vendors use log-target except tedpack_ocean (ratio target is bounded 0.3–0.9)
+        use_log = vendor in ("internal", "ross", "dazpak", "tedpack_air")
+        target_col = "ocean_air_ratio" if vendor == "tedpack_ocean" else "unit_price"
         trainer = QuoteModelTrainer(vendor, use_log_target=use_log)
-        metrics = trainer.train(vendor_df)
+        metrics = trainer.train(vendor_df, target_col=target_col)
         trainer.save()
         results[vendor] = metrics
 

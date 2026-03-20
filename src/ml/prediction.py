@@ -187,21 +187,51 @@ class QuotePredictor:
             }
 
         predictions = []
+        ocean_is_ratio = (
+            "tedpack_ocean" in self.models
+            and getattr(self.models["tedpack_ocean"], "is_ratio_model", False)
+        )
+
         for qty in quantity_tiers:
             row = {**specs, "quantity": qty}
             tier = {"quantity": qty}
 
-            for sub, label in [("tedpack_air", "air"), ("tedpack_ocean", "ocean")]:
-                if sub in self.models:
-                    pred = self._predict_single(self.models[sub], row, is_tedpack=True)
-                    tier[f"{label}_unit_price"] = round(pred["point"], 5)
-                    tier[f"{label}_total_price"] = round(pred["point"] * qty, 2)
-                    tier[f"{label}_lower_bound"] = round(pred["lower"], 5)
-                    tier[f"{label}_upper_bound"] = round(pred["upper"], 5)
-                    tier[f"{label}_confidence_range"] = round(pred["upper"] - pred["lower"], 5)
+            # Always predict air first (unchanged)
+            if "tedpack_air" in self.models:
+                air_pred = self._predict_single(self.models["tedpack_air"], row, is_tedpack=True)
+                tier["air_unit_price"] = round(air_pred["point"], 5)
+                tier["air_total_price"] = round(air_pred["point"] * qty, 2)
+                tier["air_lower_bound"] = round(air_pred["lower"], 5)
+                tier["air_upper_bound"] = round(air_pred["upper"], 5)
+                tier["air_confidence_range"] = round(air_pred["upper"] - air_pred["lower"], 5)
+            else:
+                air_pred = None
+                tier["air_unit_price"] = None
+                tier["air_total_price"] = None
+
+            # Ocean: ratio-based or direct prediction
+            if "tedpack_ocean" in self.models:
+                ocean_raw = self._predict_single(self.models["tedpack_ocean"], row, is_tedpack=True)
+
+                if ocean_is_ratio and air_pred is not None:
+                    # Ratio model: ocean_price = air_price * ratio
+                    ocean_point = air_pred["point"] * ocean_raw["point"]
+                    ocean_lower = air_pred["point"] * ocean_raw["lower"]
+                    ocean_upper = air_pred["point"] * ocean_raw["upper"]
                 else:
-                    tier[f"{label}_unit_price"] = None
-                    tier[f"{label}_total_price"] = None
+                    # Legacy direct prediction
+                    ocean_point = ocean_raw["point"]
+                    ocean_lower = ocean_raw["lower"]
+                    ocean_upper = ocean_raw["upper"]
+
+                tier["ocean_unit_price"] = round(ocean_point, 5)
+                tier["ocean_total_price"] = round(ocean_point * qty, 2)
+                tier["ocean_lower_bound"] = round(ocean_lower, 5)
+                tier["ocean_upper_bound"] = round(ocean_upper, 5)
+                tier["ocean_confidence_range"] = round(ocean_upper - ocean_lower, 5)
+            else:
+                tier["ocean_unit_price"] = None
+                tier["ocean_total_price"] = None
 
             predictions.append(tier)
 

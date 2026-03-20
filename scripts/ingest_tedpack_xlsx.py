@@ -48,6 +48,11 @@ EXCLUDED_BAG_TYPES = {
 
 EXCLUDED_GUSSET_TYPES = {"Side Gusset"}
 
+EXCLUDED_BAG_IDS = {
+    "FL-DL-1049",
+    "FL-DL-1051",
+}
+
 
 # ── Mapping Tables ───────────────────────────────────────────────────
 
@@ -161,7 +166,8 @@ def ingest_tedpack(xlsx_path: str) -> pd.DataFrame:
     # ── Step 1a: Exclusions ───────────────────────────────────────────
     before = len(df)
     mask_exclude = (
-        df["Substrate"].isin(EXCLUDED_SUBSTRATES)
+        df["Bag ID"].isin(EXCLUDED_BAG_IDS)
+        | df["Substrate"].isin(EXCLUDED_SUBSTRATES)
         | df["Finish"].isin(EXCLUDED_FINISHES)
         | df["Embellishment"].isin(EXCLUDED_EMBELLISHMENTS)
         | df["Bag Type"].isin(EXCLUDED_BAG_TYPES)
@@ -183,6 +189,34 @@ def ingest_tedpack(xlsx_path: str) -> pd.DataFrame:
     # ── Parse prices ──────────────────────────────────────────────────
     df["ddp_air_price"] = df["DDP Air $/pc"].apply(parse_price)
     df["ddp_ocean_price"] = df["DDP Ocean $/pc"].apply(parse_price)
+
+    # ── Validate ocean vs air pricing ─────────────────────────────────
+    has_both = df["ddp_air_price"].notna() & df["ddp_ocean_price"].notna()
+    both_df = df[has_both]
+
+    # Reject rows where ocean price > air price (data error)
+    ocean_gt_air = both_df["ddp_ocean_price"] > both_df["ddp_air_price"]
+    if ocean_gt_air.any():
+        bad_ids = df.loc[ocean_gt_air[ocean_gt_air].index, "Bag ID"].unique()
+        for bag_id in bad_ids:
+            logger.warning(f"Ocean price > air price for {bag_id} — excluding row(s)")
+        df = df.drop(ocean_gt_air[ocean_gt_air].index)
+        logger.info(f"Rejected {ocean_gt_air.sum()} rows with ocean > air pricing")
+
+    # Warn on unusual ocean/air ratios (outside [0.3, 0.95])
+    has_both = df["ddp_air_price"].notna() & df["ddp_ocean_price"].notna()
+    both_df = df[has_both]
+    if len(both_df) > 0:
+        ratio = both_df["ddp_ocean_price"] / both_df["ddp_air_price"]
+        unusual = (ratio < 0.3) | (ratio > 0.95)
+        if unusual.any():
+            for idx in unusual[unusual].index:
+                bag_id = df.loc[idx, "Bag ID"]
+                r = ratio.loc[idx]
+                logger.warning(
+                    f"Unusual ocean/air ratio {r:.2f} for {bag_id} "
+                    f"(qty={df.loc[idx, 'quantity']}) — flagged for manual review"
+                )
 
     # ── Map substrates ────────────────────────────────────────────────
     df["substrate"] = df["Substrate"].map(SUBSTRATE_MAP)

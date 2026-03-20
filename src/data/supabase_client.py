@@ -6,6 +6,7 @@ and the Google Sheets quote-request tracker.
 """
 import logging
 from typing import Optional
+import numpy as np
 import pandas as pd
 
 logger = logging.getLogger(__name__)
@@ -260,6 +261,7 @@ def _split_tedpack_rows(df: pd.DataFrame) -> pd.DataFrame:
         logger.warning("No ddp_air_price data — using unit_price as fallback for tedpack_air")
 
     # Ocean rows: use ddp_ocean_price where available
+    # Also compute ocean/air ratio for ratio-based model training
     has_ocean = (
         "ddp_ocean_price" in tedpack.columns
         and tedpack["ddp_ocean_price"].notna().any()
@@ -268,6 +270,20 @@ def _split_tedpack_rows(df: pd.DataFrame) -> pd.DataFrame:
         ocean_df = tedpack[tedpack["ddp_ocean_price"].notna()].copy()
         ocean_df["vendor"] = "tedpack_ocean"
         ocean_df["unit_price"] = ocean_df["ddp_ocean_price"]
+        # Compute ocean/air ratio (only where both prices > 0)
+        if "ddp_air_price" in ocean_df.columns:
+            both_positive = (
+                ocean_df["ddp_air_price"].notna()
+                & (ocean_df["ddp_air_price"] > 0)
+                & (ocean_df["ddp_ocean_price"] > 0)
+            )
+            ocean_df["ocean_air_ratio"] = np.where(
+                both_positive,
+                ocean_df["ddp_ocean_price"] / ocean_df["ddp_air_price"],
+                np.nan,
+            )
+            n_ratio = both_positive.sum()
+            logger.info(f"Computed ocean_air_ratio for {n_ratio}/{len(ocean_df)} ocean rows")
         split_rows.append(ocean_df)
     else:
         logger.warning("No ddp_ocean_price data — tedpack_ocean will have no training rows")
@@ -275,9 +291,13 @@ def _split_tedpack_rows(df: pd.DataFrame) -> pd.DataFrame:
     result = pd.concat([non_tedpack] + split_rows, ignore_index=True)
 
     # Clean up DDP columns (no longer needed after split)
-    for col in ("ddp_air_price", "ddp_ocean_price"):
-        if col in result.columns:
-            result = result.drop(columns=[col])
+    # Keep ddp_air_price on ocean rows — needed for ratio→price back-conversion
+    if "ddp_ocean_price" in result.columns:
+        result = result.drop(columns=["ddp_ocean_price"])
+    # Drop ddp_air_price only for non-ocean vendors (ocean needs it for training)
+    if "ddp_air_price" in result.columns:
+        non_ocean_mask = result["vendor"] != "tedpack_ocean"
+        result.loc[non_ocean_mask, "ddp_air_price"] = np.nan
 
     tedpack_air_count = len(result[result["vendor"] == "tedpack_air"])
     tedpack_ocean_count = len(result[result["vendor"] == "tedpack_ocean"])
