@@ -63,7 +63,7 @@ ZIPPERS = {
 STOCK_WIDTH = 13.0  # inches — ALWAYS 13" for HP and Thermo
 
 # ── HP 6900 (Stage 1) ──
-HP_RATE = 125.0       # $/hr (all color counts)
+HP_RATE = 216.0       # $/hr (all color counts)
 HP_SETUP_HRS = 0.25   # makeready hours
 HP_SETUP_FT = 100     # setup length in feet
 HP_SPOILAGE = 0.02    # 2% flat (WS6000 series)
